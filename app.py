@@ -60,24 +60,43 @@ st.write("Upload a UK planning permission decision notice (PDF) and get every co
 uploaded_file = st.file_uploader("Choose a PDF", type="pdf")
 
 if uploaded_file is not None:
-    with st.spinner("Reading the decision notice — usually 15–30 seconds..."):
-        with pdfplumber.open(uploaded_file) as pdf:
-            pdf_text = ""
-            for page in pdf.pages:
-                pdf_text += page.extract_text()
+    try:
+        with st.spinner("Reading the decision notice — usually 15–30 seconds..."):
+            with pdfplumber.open(uploaded_file) as pdf:
+                pdf_text = ""
+                for page in pdf.pages:
+                    pdf_text += page.extract_text() or ""
 
-        message = client.messages.create(
-            model="claude-sonnet-4-5",
-            max_tokens=4000,
-            system=system_prompt,
-            messages=[{"role": "user", "content": pdf_text}],
-        )
-        data = json.loads(strip_fences(message.content[0].text))
+            if len(pdf_text.strip()) < 100:
+                st.error("This PDF appears to be a scanned image with no readable text. "
+                         "Please upload a text-based decision notice (OCR support coming soon).")
+                st.stop()
 
-    st.success(f"{data['decision'].upper()} — {len(data['conditions'])} conditions found")
-    st.dataframe(data["conditions"])
+            message = client.messages.create(
+                model="claude-sonnet-4-5",
+                max_tokens=4000,
+                system=system_prompt,
+                messages=[{"role": "user", "content": pdf_text}],
+            )
 
-    excel_bytes = build_excel(data)
-    st.download_button("Download Excel tracker", excel_bytes,
-                       file_name="tracker.xlsx",
-                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+            try:
+                data = json.loads(strip_fences(message.content[0].text))
+            except json.JSONDecodeError:
+                st.error("Couldn't read the AI's response for this document. "
+                         "It may be an unusual format — try another decision notice.")
+                st.stop()
+
+        st.success(f"{data['decision'].upper()} — {len(data['conditions'])} conditions found")
+
+        if len(data["conditions"]) == 0:
+            st.info("No conditions found. This may be a refusal or a document without planning conditions.")
+        else:
+            st.dataframe(data["conditions"])
+            excel_bytes = build_excel(data)
+            st.download_button("Download Excel tracker", excel_bytes,
+                               file_name="tracker.xlsx",
+                               mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+    except Exception:
+        st.error("Something went wrong processing this file. Please check it's a valid "
+                 "UK planning decision notice PDF and try again.")
