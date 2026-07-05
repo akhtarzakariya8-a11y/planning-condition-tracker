@@ -450,7 +450,7 @@ if uploaded_file is not None:
 # ----- DEMO VIDEO -----
 st.markdown('<div class="section-label">See it in action</div>', unsafe_allow_html=True)
 st.markdown('<p class="video-sub">A quick walkthrough of uploading a decision notice and getting a categorised tracker.</p>', unsafe_allow_html=True)
-st.video("https://youtu.be/qOlSIYaaAN0")
+st.video("https://youtu.be/xCxEUwjAwiw")
 
 # ----- FOOTER -----
 st.markdown(
