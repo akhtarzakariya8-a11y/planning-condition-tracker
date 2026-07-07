@@ -253,16 +253,6 @@ st.markdown("""
     }
     .stDownloadButton button:active { transform: translateY(0); }
 
-    /* ================= VIDEO ================= */
-    .video-sub {
-        color: var(--ink-2); font-size: 0.92rem;
-        margin: -6px 0 16px 0; max-width: 560px;
-    }
-    [data-testid="stVideo"] {
-        border-radius: var(--radius); overflow: hidden;
-        border: 1px solid var(--line); box-shadow: var(--shadow-md);
-    }
-
     /* ================= FOOTER ================= */
     .footer {
         color: var(--ink-3); font-size: 0.83rem; text-align: center;
@@ -446,11 +436,6 @@ if uploaded_file is not None:
     except Exception:
         st.error("Something went wrong processing this file. Please check it's a valid "
                  "UK planning decision notice PDF and try again.")
-
-# ----- DEMO VIDEO -----
-st.markdown('<div class="section-label">See it in action</div>', unsafe_allow_html=True)
-st.markdown('<p class="video-sub">A quick walkthrough of uploading a decision notice and getting a categorised tracker.</p>', unsafe_allow_html=True)
-st.video("https://youtu.be/xCxEUwjAwiw")
 
 # ----- FOOTER -----
 st.markdown(
