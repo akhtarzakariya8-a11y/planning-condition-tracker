@@ -3,6 +3,7 @@ import anthropic
 import pdfplumber
 import json
 import io
+import base64
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from dotenv import load_dotenv
@@ -78,16 +79,6 @@ st.markdown("""
         line-height: 1.65; max-width: 600px; margin: 0;
         text-wrap: pretty;
     }
-    .hero-meta {
-        display: flex; gap: 22px; margin-top: 26px;
-        font-family: var(--mono); font-size: 0.72rem; font-weight: 500;
-        color: var(--ink-3); letter-spacing: 0.04em;
-    }
-    .hero-meta span { display: flex; align-items: center; gap: 7px; }
-    .hero-meta span::before {
-        content: ""; width: 5px; height: 5px; border-radius: 50%;
-        background: #b9c6d8;
-    }
 
     /* ================= SECTION LABELS ================= */
     .section-label {
@@ -118,7 +109,7 @@ st.markdown("""
     }
     .step-text { color: var(--ink-2); font-size: 0.87rem; line-height: 1.55; }
 
-    /* ================= UPLOADER — the focal point ================= */
+    /* ================= UPLOADER ================= */
     [data-testid="stFileUploader"] section {
         background: var(--card);
         border: 1.5px dashed #b7c8de;
@@ -273,7 +264,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ----- HELPERS (unchanged pipeline) -----
+# ----- HELPERS -----
 def strip_fences(text):
     text = text.strip()
     if text.startswith("```"):
@@ -363,22 +354,39 @@ uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="c
 
 if uploaded_file is not None:
     try:
+        # read the raw bytes once (used by both the text path and the scanned/vision path)
+        file_bytes = uploaded_file.getvalue()
+
         with st.spinner("Reading the decision notice — usually 15–30 seconds..."):
-            with pdfplumber.open(uploaded_file) as pdf:
+            # 1. try fast digital text extraction
+            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 pdf_text = ""
                 for page in pdf.pages:
                     pdf_text += page.extract_text() or ""
 
-            if len(pdf_text.strip()) < 100:
-                st.error("This PDF appears to be a scanned image with no readable text. "
-                         "Please upload a text-based decision notice (OCR support coming soon).")
-                st.stop()
+            if len(pdf_text.strip()) >= 100:
+                # digital PDF — send the extracted text (fast, cheap)
+                user_content = pdf_text
+            else:
+                # scanned / image PDF — send the PDF itself so Claude reads it with vision
+                pdf_b64 = base64.standard_b64encode(file_bytes).decode("utf-8")
+                user_content = [
+                    {
+                        "type": "document",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "application/pdf",
+                            "data": pdf_b64,
+                        },
+                    },
+                    {"type": "text", "text": "Analyse this planning decision notice."},
+                ]
 
             message = client.messages.create(
                 model="claude-sonnet-4-5",
-                max_tokens=4000,
+                max_tokens=8000,
                 system=system_prompt,
-                messages=[{"role": "user", "content": pdf_text}],
+                messages=[{"role": "user", "content": user_content}],
             )
 
             try:
