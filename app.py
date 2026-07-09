@@ -51,13 +51,11 @@ st.markdown("""
     .stApp { background: var(--bg); }
     .block-container { padding-top: 4.2rem; padding-bottom: 3rem; max-width: 880px; }
 
-    /* hide all default Streamlit chrome */
     #MainMenu, footer, header[data-testid="stHeader"],
     [data-testid="stToolbar"], [data-testid="stDecoration"] {
         visibility: hidden; height: 0; position: fixed;
     }
 
-    /* ================= HERO ================= */
     .eyebrow {
         font-family: var(--mono);
         font-size: 0.7rem; font-weight: 600;
@@ -80,7 +78,6 @@ st.markdown("""
         text-wrap: pretty;
     }
 
-    /* ================= SECTION LABELS ================= */
     .section-label {
         font-family: var(--mono);
         font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
@@ -90,7 +87,6 @@ st.markdown("""
     }
     .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
 
-    /* ================= STEP CARDS ================= */
     .step-card {
         background: var(--card); border: 1px solid var(--line);
         border-radius: var(--radius); padding: 1.3rem 1.3rem 1.4rem;
@@ -109,7 +105,6 @@ st.markdown("""
     }
     .step-text { color: var(--ink-2); font-size: 0.87rem; line-height: 1.55; }
 
-    /* ================= UPLOADER ================= */
     [data-testid="stFileUploader"] section {
         background: var(--card);
         border: 1.5px dashed #b7c8de;
@@ -139,10 +134,8 @@ st.markdown("""
     [data-testid="stFileUploader"] section button:hover { background: var(--blue-ink); color: #fff; }
     [data-testid="stFileUploaderFile"] { color: var(--ink-2); }
 
-    /* spinner text */
     [data-testid="stSpinner"] p { color: var(--ink-2); font-size: 0.92rem; }
 
-    /* ================= DECISION BANNER ================= */
     .decision-banner {
         display: flex; align-items: center; gap: 14px;
         background: #f2faf5; border: 1px solid #d3ebdd;
@@ -161,7 +154,6 @@ st.markdown("""
     }
     .decision-banner .d-sub { color: #41704f; font-size: 0.87rem; margin-top: 1px; }
 
-    /* ================= STAT CARDS ================= */
     .stat-card {
         position: relative; overflow: hidden;
         background: var(--card); border: 1px solid var(--line);
@@ -182,7 +174,6 @@ st.markdown("""
         text-transform: uppercase; color: var(--ink-3); margin-top: 9px;
     }
 
-    /* ================= RESULTS TABLE ================= */
     .results-wrap {
         background: var(--card); border: 1px solid var(--line);
         border-radius: var(--radius); overflow: hidden;
@@ -218,7 +209,6 @@ st.markdown("""
     }
     .disc-no { color: #c6cfdc; }
 
-    /* category pills */
     .cat-pill {
         display: inline-flex; align-items: center; gap: 6px;
         padding: 3px 11px; border-radius: 999px;
@@ -228,7 +218,6 @@ st.markdown("""
     }
     .cat-pill .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 
-    /* ================= DOWNLOAD BUTTON ================= */
     .stDownloadButton button {
         background: var(--navy) !important; color: #fff !important;
         border: none !important; border-radius: 11px !important;
@@ -244,7 +233,6 @@ st.markdown("""
     }
     .stDownloadButton button:active { transform: translateY(0); }
 
-    /* ================= FOOTER ================= */
     .footer {
         color: var(--ink-3); font-size: 0.83rem; text-align: center;
         margin-top: 4.5rem; padding-top: 1.6rem;
@@ -258,7 +246,6 @@ st.markdown("""
         letter-spacing: 0.03em; margin-top: 4px; color: #9aa7b8;
     }
 
-    /* alerts */
     [data-testid="stAlert"] { border-radius: var(--radius); }
 </style>
 """, unsafe_allow_html=True)
@@ -284,7 +271,6 @@ CATEGORY_HEX = {
     "ongoing": "#3d85c6", "discharge-required": "#8e7cc3", "time-limit": "#d6b656",
 }
 
-# logical order to group conditions by (feedback: don't leave categories jumbled)
 CATEGORY_ORDER = ["time-limit", "pre-commencement", "discharge-required", "pre-occupation", "ongoing"]
 
 
@@ -354,8 +340,13 @@ uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="c
 
 if uploaded_file is not None:
     try:
-        # read the raw bytes once (used by both the text path and the scanned/vision path)
         file_bytes = uploaded_file.getvalue()
+
+        # Anthropic request limit is ~32MB; base64 inflates ~33%, so cap the raw file
+        if len(file_bytes) > 24_000_000:
+            st.error("This PDF is too large to process (over ~24MB). "
+                     "Try a smaller file, or split it into sections.")
+            st.stop()
 
         with st.spinner("Reading the decision notice — usually 15–30 seconds..."):
             # 1. try fast digital text extraction
