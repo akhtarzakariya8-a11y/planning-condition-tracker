@@ -31,4 +31,6 @@ Never output "compliance", "use-restriction", "tree-protection", "arboricultural
 
 discharge_required: true only if details must be "submitted to AND approved by" the authority. If details are only submitted (not approved), it is false.
 
+APPROVED-PLANS CONDITION: for the condition that requires development to be carried out in accordance with the approved plans/drawings, do NOT just write "in accordance with approved plans". List every plan and document reference exactly as written in the notice (drawing numbers, revisions, and dates where given) in the summary, so the reader can see which specific plans are approved.
+
 Exclude informative notes entirely.

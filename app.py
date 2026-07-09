@@ -293,6 +293,16 @@ CATEGORY_HEX = {
     "ongoing": "#3d85c6", "discharge-required": "#8e7cc3", "time-limit": "#d6b656",
 }
 
+# logical order to group conditions by (feedback: don't leave categories jumbled)
+CATEGORY_ORDER = ["time-limit", "pre-commencement", "discharge-required", "pre-occupation", "ongoing"]
+
+
+def sort_by_category(conditions):
+    return sorted(
+        conditions,
+        key=lambda c: CATEGORY_ORDER.index(c["category"]) if c["category"] in CATEGORY_ORDER else 99,
+    )
+
 
 def build_excel(data):
     wb = openpyxl.Workbook()
@@ -302,7 +312,7 @@ def build_excel(data):
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="1F4E78")
-    for c in data["conditions"]:
+    for c in sort_by_category(data["conditions"]):
         ws.append([c["condition_number"], c["summary"], c["category"],
                    c["deadline"], c["responsible_party"],
                    "Yes" if c["discharge_required"] else "No"])
@@ -328,8 +338,8 @@ def category_pill(cat):
 st.markdown("""
 <div class="eyebrow">AI Planning Condition Tracker</div>
 <h1 class="hero-title">Planning conditions,<br>tracked in seconds.</h1>
-<p class="hero-sub">Upload a UK planning permission decision notice. Get every condition
-read, categorised and exported as a structured tracker spreadsheet — in seconds.</p>
+<p class="hero-sub">A second pair of eyes on your planning conditions. Upload a UK decision notice and get
+every condition read, categorised and exported as a structured tracker spreadsheet — in seconds.</p>
 """, unsafe_allow_html=True)
 
 # ----- HOW IT WORKS -----
@@ -403,7 +413,7 @@ if uploaded_file is not None:
             st.markdown('<div class="section-label">Extracted conditions</div>', unsafe_allow_html=True)
 
             rows_html = ""
-            for c in conditions:
+            for c in sort_by_category(conditions):
                 deadline = c["deadline"] or "—"
                 disc = '<span class="disc-yes">✓</span>' if c["discharge_required"] else '<span class="disc-no">—</span>'
                 rows_html += (
