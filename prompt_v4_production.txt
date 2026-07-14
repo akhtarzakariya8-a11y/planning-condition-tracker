@@ -8,10 +8,14 @@ Output rules — follow exactly:
 
 {
   "decision": "granted" or "refused",
+  "decision_date": "10 November 2025" or null,
+  "time_limit_years": 3 or null,
   "conditions": [ ... ]
 }
 
-- If the notice says "refuses to permit" or "REFUSAL", output: {"decision": "refused", "conditions": []} and nothing else.
+- "decision_date": the Date of Decision exactly as written on the notice, or null if not stated.
+- "time_limit_years": the number of years within which development must begin, taken from the time-limit condition (usually 3), as an integer; null if there is none.
+- If the notice says "refuses to permit" or "REFUSAL", output: {"decision": "refused", "decision_date": <date or null>, "time_limit_years": null, "conditions": []} and nothing else.
 - Otherwise "decision" is "granted" and "conditions" is an array of condition objects.
 
 Each condition object has exactly these fields:
@@ -22,7 +26,10 @@ Each condition object has exactly these fields:
   "category": "time-limit",
   "deadline": "15 June 2029" or null,
   "responsible_party": "applicant" or null,
-  "discharge_required": true or false
+  "discharge_required": true or false,
+  "gate": "blocks-any-commencement",
+  "trigger_quote": "No development shall commence until…" or null,
+  "gate_ambiguous": true or false
 }
 
 category — CRITICAL: the value must be EXACTLY one of these five strings and nothing else:
@@ -30,6 +37,20 @@ category — CRITICAL: the value must be EXACTLY one of these five strings and n
 Never output "compliance", "use-restriction", "tree-protection", "arboricultural-supervision", or any other word. Anything about complying with approved plans, use restrictions, supervision, or protection = "ongoing". The standard "begin within X years" condition = "time-limit".
 
 discharge_required: true only if details must be "submitted to AND approved by" the authority. If details are only submitted (not approved), it is false.
+
+gate — CRITICAL: classify WHEN the condition must be satisfied, based on its OPERATIVE wording (not the reason). The value must be EXACTLY one of these strings:
+- "blocks-any-commencement": must be discharged before ANY development or demolition can lawfully begin. Wording like "no development shall commence/take place until", "development shall not commence until", "no demolition or development shall take place until", "prior to commencement of the development".
+- "blocks-demolition": bites specifically before demolition, e.g. "prior to the commencement of demolition".
+- "blocks-piling": bites specifically before piling, e.g. "no piling shall take place until".
+- "blocks-above-ground": bites before ABOVE-GROUND works only — demolition and groundworks may still proceed. Wording like "prior to above ground works", "prior to commencement of above ground works", "no development above ground shall commence".
+- "before-occupation": "prior to occupation", "prior to first occupation", "no occupation … shall commence until".
+- "before-use": "the use hereby permitted shall not commence until".
+- "ongoing": complied with during or after the works (approved plans, maintenance, retained for the life of the development).
+- "none": the time-limit condition, or anything that does not gate works.
+
+trigger_quote: a short verbatim quote (under 15 words) of the phrase that sets the trigger, e.g. "No development shall commence until…". Use null when gate is "none".
+
+gate_ambiguous: true if the OPERATIVE wording and the stated REASON disagree about the trigger (for example, the operative text says "above ground works" but the Reason says "development must not commence"). When true, set "gate" to the STRICTER (earlier) trigger. Also set true — and use the stricter trigger — when a single condition contains two different triggers (e.g. one part "prior to above ground works" and another "prior to commencement of the development"). Otherwise false.
 
 APPROVED-PLANS CONDITION: for the condition that requires development to be carried out in accordance with the approved plans/drawings, do NOT just write "in accordance with approved plans". List every plan and document reference exactly as written in the notice (drawing numbers, revisions, and dates where given) in the summary, so the reader can see which specific plans are approved.
 

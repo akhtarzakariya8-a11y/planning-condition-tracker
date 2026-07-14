@@ -4,29 +4,31 @@ import pdfplumber
 import json
 import io
 import base64
+import re
+from datetime import datetime
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from dotenv import load_dotenv
-
+ 
 load_dotenv()
 client = anthropic.Anthropic()
-
+ 
 with open("prompt_v4_production.txt") as f:
     system_prompt = f.read()
-
-
+ 
+ 
 # ----- PAGE CONFIG -----
 st.set_page_config(
     page_title="AI Planning Condition Tracker",
     page_icon="📋",
     layout="centered",
 )
-
+ 
 # ----- CUSTOM STYLING -----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
-
+ 
     :root {
         --navy: #122e54;
         --blue: #1d5cb8;
@@ -44,18 +46,18 @@ st.markdown("""
         --shadow-md: 0 1px 3px rgba(18,46,84,0.05), 0 6px 20px -8px rgba(18,46,84,0.08);
         --mono: 'JetBrains Mono', ui-monospace, monospace;
     }
-
+ 
     html, body, [class*="css"], .stMarkdown, .stApp, button, input {
         font-family: 'Instrument Sans', -apple-system, 'Segoe UI', sans-serif;
     }
     .stApp { background: var(--bg); }
     .block-container { padding-top: 4.2rem; padding-bottom: 3rem; max-width: 880px; }
-
+ 
     #MainMenu, footer, header[data-testid="stHeader"],
     [data-testid="stToolbar"], [data-testid="stDecoration"] {
         visibility: hidden; height: 0; position: fixed;
     }
-
+ 
     .eyebrow {
         font-family: var(--mono);
         font-size: 0.7rem; font-weight: 600;
@@ -77,7 +79,7 @@ st.markdown("""
         line-height: 1.65; max-width: 600px; margin: 0;
         text-wrap: pretty;
     }
-
+ 
     .section-label {
         font-family: var(--mono);
         font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
@@ -86,7 +88,7 @@ st.markdown("""
         display: flex; align-items: center; gap: 14px;
     }
     .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-
+ 
     .step-card {
         background: var(--card); border: 1px solid var(--line);
         border-radius: var(--radius); padding: 1.3rem 1.3rem 1.4rem;
@@ -104,7 +106,7 @@ st.markdown("""
         letter-spacing: -0.01em; margin-bottom: 4px;
     }
     .step-text { color: var(--ink-2); font-size: 0.87rem; line-height: 1.55; }
-
+ 
     [data-testid="stFileUploader"] section {
         background: var(--card);
         border: 1.5px dashed #b7c8de;
@@ -133,9 +135,9 @@ st.markdown("""
     }
     [data-testid="stFileUploader"] section button:hover { background: var(--blue-ink); color: #fff; }
     [data-testid="stFileUploaderFile"] { color: var(--ink-2); }
-
+ 
     [data-testid="stSpinner"] p { color: var(--ink-2); font-size: 0.92rem; }
-
+ 
     .decision-banner {
         display: flex; align-items: center; gap: 14px;
         background: #f2faf5; border: 1px solid #d3ebdd;
@@ -153,7 +155,7 @@ st.markdown("""
         letter-spacing: 0.03em; font-family: var(--mono);
     }
     .decision-banner .d-sub { color: #41704f; font-size: 0.87rem; margin-top: 1px; }
-
+ 
     .stat-card {
         position: relative; overflow: hidden;
         background: var(--card); border: 1px solid var(--line);
@@ -173,7 +175,38 @@ st.markdown("""
         font-size: 0.66rem; font-weight: 600; letter-spacing: 0.13em;
         text-transform: uppercase; color: var(--ink-3); margin-top: 9px;
     }
-
+ 
+    /* ----- SAFETY GATE PANEL ----- */
+    .gate-wrap {
+        background: #fffaf2; border: 1px solid #f0dcc0;
+        border-left: 4px solid #d98a1f; border-radius: var(--radius);
+        padding: 1.1rem 1.3rem 1.2rem; margin: 0 0 1.3rem 0;
+    }
+    .gate-title {
+        font-weight: 700; color: #8a4b0a; font-size: 0.98rem;
+        letter-spacing: 0.01em; margin-bottom: 10px;
+    }
+    .gate-beginby {
+        font-family: var(--mono); font-size: 0.8rem; color: #7a5a2a;
+        line-height: 1.5; margin-bottom: 6px;
+    }
+    .gate-beginby b { color: #5a3d12; }
+    .gate-sub {
+        font-family: var(--mono); font-size: 0.66rem; font-weight: 600;
+        letter-spacing: 0.12em; text-transform: uppercase; color: #a5702f;
+        margin: 14px 0 6px;
+    }
+    .gate-item { padding: 6px 0; border-bottom: 1px solid #f2e6d3; font-size: 0.9rem; color: var(--ink); line-height: 1.5; }
+    .gate-item:last-child { border-bottom: none; }
+    .gate-num { font-family: var(--mono); font-weight: 600; color: #8a4b0a; margin-right: 6px; }
+    .gate-quote { font-family: var(--mono); font-size: 0.74rem; color: #9a7a4a; font-style: italic; margin-top: 3px; }
+    .gate-cil {
+        background: #fdf3f3; border: 1px solid #ecd0d0; border-radius: 10px;
+        padding: 0.7rem 0.9rem; margin-top: 14px; font-size: 0.82rem;
+        color: #7a3535; line-height: 1.5;
+    }
+    .gate-caveat { font-size: 0.72rem; color: #a5885a; margin-top: 10px; line-height: 1.45; }
+ 
     .results-wrap {
         background: var(--card); border: 1px solid var(--line);
         border-radius: var(--radius); overflow: hidden;
@@ -208,7 +241,7 @@ st.markdown("""
         font-size: 0.7rem; font-weight: 700;
     }
     .disc-no { color: #c6cfdc; }
-
+ 
     .cat-pill {
         display: inline-flex; align-items: center; gap: 6px;
         padding: 3px 11px; border-radius: 999px;
@@ -217,7 +250,7 @@ st.markdown("""
         white-space: nowrap;
     }
     .cat-pill .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-
+ 
     .stDownloadButton button {
         background: var(--navy) !important; color: #fff !important;
         border: none !important; border-radius: 11px !important;
@@ -232,7 +265,7 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(18,46,84,0.2), 0 10px 24px -6px rgba(18,46,84,0.4) !important;
     }
     .stDownloadButton button:active { transform: translateY(0); }
-
+ 
     .footer {
         color: var(--ink-3); font-size: 0.83rem; text-align: center;
         margin-top: 4.5rem; padding-top: 1.6rem;
@@ -245,12 +278,12 @@ st.markdown("""
         font-family: var(--mono); font-size: 0.68rem;
         letter-spacing: 0.03em; margin-top: 4px; color: #9aa7b8;
     }
-
+ 
     [data-testid="stAlert"] { border-radius: var(--radius); }
 </style>
 """, unsafe_allow_html=True)
-
-
+ 
+ 
 # ----- HELPERS -----
 def strip_fences(text):
     text = text.strip()
@@ -260,8 +293,8 @@ def strip_fences(text):
             lines = lines[:-1]
         text = "\n".join(lines)
     return text.strip()
-
-
+ 
+ 
 CATEGORY_COLOURS = {
     "pre-commencement": "F4CCCC", "pre-occupation": "FCE5CD",
     "ongoing": "CFE2F3", "discharge-required": "D9D2E9", "time-limit": "FFF2CC",
@@ -270,17 +303,92 @@ CATEGORY_HEX = {
     "pre-commencement": "#e06666", "pre-occupation": "#e69138",
     "ongoing": "#3d85c6", "discharge-required": "#8e7cc3", "time-limit": "#d6b656",
 }
-
+ 
 CATEGORY_ORDER = ["time-limit", "pre-commencement", "discharge-required", "pre-occupation", "ongoing"]
-
-
+ 
+ 
 def sort_by_category(conditions):
     return sorted(
         conditions,
         key=lambda c: CATEGORY_ORDER.index(c["category"]) if c["category"] in CATEGORY_ORDER else 99,
     )
-
-
+ 
+ 
+def compute_begin_by(decision_date, years):
+    """Parse the decision date and add the time-limit years. Returns a date or None."""
+    if not decision_date or not years:
+        return None
+    s = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", str(decision_date).strip(), flags=re.IGNORECASE)
+    d = None
+    for fmt in ("%d %B %Y", "%d %b %Y", "%d.%m.%Y", "%d/%m/%Y", "%B %d, %Y", "%Y-%m-%d"):
+        try:
+            d = datetime.strptime(s, fmt).date()
+            break
+        except ValueError:
+            d = None
+    if d is None:
+        return None
+    try:
+        return d.replace(year=d.year + int(years))
+    except ValueError:  # 29 Feb edge case
+        return d.replace(month=2, day=28, year=d.year + int(years))
+ 
+ 
+def fmt_date(d):
+    return d.strftime("%d %B %Y").lstrip("0")
+ 
+ 
+def build_safety_gate_html(data):
+    conditions = data.get("conditions", [])
+    begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
+ 
+    blockers = [c for c in conditions if c.get("gate") in ("blocks-any-commencement", "blocks-demolition")]
+    piling = [c for c in conditions if c.get("gate") == "blocks-piling"]
+    ambiguous = [c for c in conditions if c.get("gate_ambiguous")]
+ 
+    if not (begin_by or blockers or piling or ambiguous):
+        return ""
+ 
+    def item(c):
+        q = c.get("trigger_quote")
+        qhtml = f'<div class="gate-quote">“{q}”</div>' if q else ""
+        return (f'<div class="gate-item"><span class="gate-num">#{c["condition_number"]}</span>'
+                f'{c["summary"]}{qhtml}</div>')
+ 
+    parts = ['<div class="gate-wrap"><div class="gate-title">⚠ Before you start on site</div>']
+ 
+    if begin_by:
+        parts.append(
+            f'<div class="gate-beginby">Development must begin by <b>{fmt_date(begin_by)}</b> '
+            f'or the permission lapses. <span style="opacity:.7;">(computed from the decision date — '
+            f'confirm against the notice)</span></div>'
+        )
+ 
+    if blockers:
+        parts.append('<div class="gate-sub">Must be discharged before you start on site</div>')
+        parts += [item(c) for c in blockers]
+    if piling:
+        parts.append('<div class="gate-sub">Before any piling</div>')
+        parts += [item(c) for c in piling]
+    if ambiguous:
+        parts.append('<div class="gate-sub">⚠ Check these — the wording is ambiguous</div>')
+        parts += [item(c) for c in ambiguous]
+ 
+    parts.append(
+        '<div class="gate-cil"><b>CIL reminder:</b> before any material operation on site, check whether the '
+        'development is CIL-liable and, if so, submit a CIL Commencement Notice to the council and get written '
+        'acknowledgement first. Starting before this can mean losing CIL relief and incurring surcharges. '
+        'This tool does not read CIL notices.</div>'
+    )
+    parts.append(
+        '<div class="gate-caveat">Automated flags, not legal advice — whether a condition is a true '
+        'condition-precedent can be finely balanced. Confirm with your planning consultant or solicitor '
+        'before starting on site.</div>'
+    )
+    parts.append("</div>")
+    return "".join(parts)
+ 
+ 
 def build_excel(data):
     wb = openpyxl.Workbook()
     ws = wb.active
@@ -303,14 +411,14 @@ def build_excel(data):
     buffer = io.BytesIO()
     wb.save(buffer)
     return buffer.getvalue()
-
-
+ 
+ 
 def category_pill(cat):
     hex_c = CATEGORY_HEX.get(cat, "#888")
     return (f'<span class="cat-pill" style="background:{hex_c}16;color:{hex_c};">'
             f'<span class="dot" style="background:{hex_c};"></span>{cat}</span>')
-
-
+ 
+ 
 # ----- HERO -----
 st.markdown("""
 <div class="eyebrow">AI Planning Condition Tracker</div>
@@ -318,7 +426,7 @@ st.markdown("""
 <p class="hero-sub">A second pair of eyes on your planning conditions. Upload a UK decision notice and get
 every condition read, categorised and exported as a structured tracker spreadsheet — in seconds.</p>
 """, unsafe_allow_html=True)
-
+ 
 # ----- HOW IT WORKS -----
 st.markdown('<div class="section-label">How it works</div>', unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
@@ -333,28 +441,28 @@ for col, num, title, text in [
         f'<div class="step-text">{text}</div></div>',
         unsafe_allow_html=True,
     )
-
+ 
 # ----- UPLOAD -----
 st.markdown('<div class="section-label">Upload a decision notice</div>', unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="collapsed")
-
+ 
 if uploaded_file is not None:
     try:
         file_bytes = uploaded_file.getvalue()
-
+ 
         # Anthropic request limit is ~32MB; base64 inflates ~33%, so cap the raw file
         if len(file_bytes) > 24_000_000:
             st.error("This PDF is too large to process (over ~24MB). "
                      "Try a smaller file, or split it into sections.")
             st.stop()
-
+ 
         with st.spinner("Reading the decision notice — usually 15–30 seconds..."):
             # 1. try fast digital text extraction
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 pdf_text = ""
                 for page in pdf.pages:
                     pdf_text += page.extract_text() or ""
-
+ 
             if len(pdf_text.strip()) >= 100:
                 # digital PDF — send the extracted text (fast, cheap)
                 user_content = pdf_text
@@ -372,45 +480,52 @@ if uploaded_file is not None:
                     },
                     {"type": "text", "text": "Analyse this planning decision notice."},
                 ]
-
+ 
             message = client.messages.create(
                 model="claude-sonnet-4-5",
                 max_tokens=8000,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_content}],
             )
-
+ 
             try:
                 data = json.loads(strip_fences(message.content[0].text))
             except json.JSONDecodeError:
                 st.error("Couldn't read the AI's response for this document. "
                          "It may be an unusual format — try another decision notice.")
                 st.stop()
-
+ 
         conditions = data["conditions"]
         decision = data["decision"].upper()
-
+ 
         if len(conditions) == 0:
             st.info(f"**{decision}** — no planning conditions found. This may be a refusal or a document without conditions.")
         else:
             total = len(conditions)
             discharge = sum(1 for c in conditions if c["discharge_required"])
             precom = sum(1 for c in conditions if c["category"] == "pre-commencement")
-
+ 
             st.markdown(
                 f'<div class="decision-banner"><div class="tick">✓</div>'
                 f'<div><div class="d-title">{decision}</div>'
                 f'<div class="d-sub">{total} planning conditions extracted from this notice</div></div></div>',
                 unsafe_allow_html=True,
             )
-
+ 
             s1, s2, s3 = st.columns(3)
             s1.markdown(f'<div class="stat-card" style="--stat-accent:#122e54;"><div class="stat-num">{total}</div><div class="stat-label">Total conditions</div></div>', unsafe_allow_html=True)
             s2.markdown(f'<div class="stat-card" style="--stat-accent:#e06666;"><div class="stat-num">{precom}</div><div class="stat-label">Pre-commencement</div></div>', unsafe_allow_html=True)
             s3.markdown(f'<div class="stat-card" style="--stat-accent:#8e7cc3;"><div class="stat-num">{discharge}</div><div class="stat-label">Need discharge</div></div>', unsafe_allow_html=True)
-
+ 
+            st.write("")
+ 
+            # ----- SAFETY GATE: "Before you start on site" -----
+            gate_html = build_safety_gate_html(data)
+            if gate_html:
+                st.markdown(gate_html, unsafe_allow_html=True)
+ 
             st.markdown('<div class="section-label">Extracted conditions</div>', unsafe_allow_html=True)
-
+ 
             rows_html = ""
             for c in sort_by_category(conditions):
                 deadline = c["deadline"] or "—"
@@ -433,19 +548,19 @@ if uploaded_file is not None:
                 f'<tbody>{rows_html}</tbody></table></div>'
             )
             st.markdown(table_html, unsafe_allow_html=True)
-
+ 
             st.write("")
-
+ 
             excel_bytes = build_excel(data)
             st.download_button("Download Excel tracker  ↓", excel_bytes,
                                file_name="planning_condition_tracker.xlsx",
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                type="primary")
-
+ 
     except Exception:
         st.error("Something went wrong processing this file. Please check it's a valid "
                  "UK planning decision notice PDF and try again.")
-
+ 
 # ----- FOOTER -----
 st.markdown(
     '<div class="footer"><span class="footer-name">Built by Zak Akhtar</span> · '
