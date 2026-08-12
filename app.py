@@ -191,26 +191,20 @@ st.markdown("""
         line-height: 1.5; margin-bottom: 6px;
     }
     .gate-beginby b { color: #5a3d12; }
-    .gate-sub {
-        font-family: var(--mono); font-size: 0.66rem; font-weight: 600;
-        letter-spacing: 0.12em; text-transform: uppercase; color: #a5702f;
-        margin: 14px 0 6px;
-    }
-    .gate-item { padding: 6px 0; border-bottom: 1px solid #f2e6d3; font-size: 0.9rem; color: var(--ink); line-height: 1.5; }
-    .gate-item:last-child { border-bottom: none; }
-    .gate-num { font-family: var(--mono); font-weight: 600; color: #8a4b0a; margin-right: 6px; }
-    .gate-quote { font-family: var(--mono); font-size: 0.74rem; color: #9a7a4a; font-style: italic; margin-top: 3px; }
+    .gate-line { font-size: 0.9rem; color: var(--ink); line-height: 1.55; padding: 5px 0; }
+    .gate-line b { color: #6b3a06; }
+    .gate-nums { font-family: var(--mono); font-size: 0.82rem; font-weight: 600; color: #8a4b0a; }
+    .gate-detail { font-size: 0.8rem; color: #a5885a; margin-top: 10px; }
     .gate-cil {
         background: #fdf3f3; border: 1px solid #ecd0d0; border-radius: 10px;
         padding: 0.7rem 0.9rem; margin-top: 14px; font-size: 0.82rem;
         color: #7a3535; line-height: 1.5;
     }
     .gate-caveat { font-size: 0.72rem; color: #a5885a; margin-top: 10px; line-height: 1.45; }
-    .gate-go { background: #f2faf5; border: 1px solid #d3ebdd; border-radius: 10px; padding: 0.85rem 1rem; margin-top: 14px; }
-    .gate-go-title { font-weight: 700; color: #17663a; font-size: 0.92rem; margin-bottom: 4px; }
-    .gate-go-note { font-size: 0.8rem; color: #41704f; margin-bottom: 8px; line-height: 1.45; }
-    .gate-go .gate-item { border-bottom: 1px solid #e0efe6; }
-    .gate-go .gate-num { color: #17663a; }
+    .gate-go { background: #f2faf5; border: 1px solid #d3ebdd; border-radius: 10px; padding: 0.7rem 0.9rem; margin: 10px 0 4px; }
+    .gate-go .gate-line { padding: 0; color: #1d5c39; }
+    .gate-go .gate-line b { color: #17663a; }
+    .gate-go .gate-nums { color: #17663a; }
 
     .results-wrap {
         background: var(--card); border: 1px solid var(--line);
@@ -376,7 +370,21 @@ def fmt_date(d):
     return d.strftime("%d %B %Y").lstrip("0")
 
 
+def cond_nums(conditions):
+    """Comma-separated condition numbers, e.g. '#3, #4, #5'."""
+    return ", ".join(f"#{c['condition_number']}" for c in sorted(
+        conditions, key=lambda c: c["condition_number"]))
+
+
+def n_conditions(n):
+    return "1 condition" if n == 1 else f"{n} conditions"
+
+
 def build_safety_gate_html(data):
+    """A short summary panel: counts and condition numbers only.
+
+    Deliberately does NOT repeat condition text — the table below carries the detail.
+    """
     conditions = data.get("conditions", [])
     begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
 
@@ -384,10 +392,6 @@ def build_safety_gate_html(data):
 
     if not (begin_by or blockers or piling or ambiguous or startable):
         return ""
-
-    def item(c):
-        return (f'<div class="gate-item"><span class="gate-num">#{c["condition_number"]}</span>'
-                f'{c["summary"]}</div>')
 
     parts = ['<div class="gate-wrap"><div class="gate-title">⚠ Before you start on site</div>']
 
@@ -399,23 +403,30 @@ def build_safety_gate_html(data):
         )
 
     if blockers:
-        parts.append('<div class="gate-sub">Must be discharged before you start on site</div>')
-        parts += [item(c) for c in blockers]
-    if piling:
-        parts.append('<div class="gate-sub">Before any piling</div>')
-        parts += [item(c) for c in piling]
-    if ambiguous:
-        parts.append('<div class="gate-sub">⚠ Check these — the wording is ambiguous</div>')
-        parts += [item(c) for c in ambiguous]
-
-    if startable:
         parts.append(
-            '<div class="gate-go"><div class="gate-go-title">✓ You can break ground &amp; demolish before these</div>'
-            '<div class="gate-go-note">These only block <b>above-ground</b> works — you can lawfully start on site '
-            '(demolition, groundworks) before they\'re discharged.</div>'
+            f'<div class="gate-line"><b>{n_conditions(len(blockers))}</b> must be discharged before you can '
+            f'lawfully start on site: <span class="gate-nums">{cond_nums(blockers)}</span></div>'
         )
-        parts += [item(c) for c in startable]
-        parts.append("</div>")
+    if startable:
+        verb = "blocks" if len(startable) == 1 else "block"
+        parts.append(
+            f'<div class="gate-go"><div class="gate-line"><b>{len(startable)} more</b> only {verb} above-ground '
+            f'works — you can begin demolition and groundworks first: '
+            f'<span class="gate-nums">{cond_nums(startable)}</span></div></div>'
+        )
+    if piling:
+        parts.append(
+            f'<div class="gate-line"><b>{n_conditions(len(piling))}</b> to clear before any piling: '
+            f'<span class="gate-nums">{cond_nums(piling)}</span></div>'
+        )
+    if ambiguous:
+        verb = "needs" if len(ambiguous) == 1 else "need"
+        parts.append(
+            f'<div class="gate-line"><b>{n_conditions(len(ambiguous))}</b> {verb} checking — wording is '
+            f'ambiguous: <span class="gate-nums">{cond_nums(ambiguous)}</span></div>'
+        )
+
+    parts.append('<div class="gate-detail">Full detail is in the conditions table below.</div>')
 
     parts.append(
         '<div class="gate-cil"><b>CIL reminder:</b> before any material operation on site, check whether the '
@@ -471,9 +482,9 @@ def build_excel(data):
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor=fill)
 
-    def line(text, bold=False):
+    def line(text, bold=False, colour=None):
         ws2.append([text])
-        ws2.cell(row=ws2.max_row, column=1).font = Font(bold=bold)
+        ws2.cell(row=ws2.max_row, column=1).font = Font(bold=bold, color=colour)
 
     head("BEFORE YOU START ON SITE")
     line("")
@@ -483,27 +494,23 @@ def build_excel(data):
         line("Development must begin by:  not stated on this notice")
     line("")
 
+    # Summary lines only — counts and condition numbers. Detail lives on the Conditions tab.
     if blockers:
-        head("Must be discharged before you start on site", "C0392B")
-        for c in blockers:
-            line(f"#{c['condition_number']}   {c['summary']}")
-        line("")
-    if piling:
-        head("Before any piling", "B9770E")
-        for c in piling:
-            line(f"#{c['condition_number']}   {c['summary']}")
-        line("")
-    if ambiguous:
-        head("Check these — the wording is ambiguous", "B9770E")
-        for c in ambiguous:
-            line(f"#{c['condition_number']}   {c['summary']}")
-        line("")
-
+        line(f"{n_conditions(len(blockers))} must be discharged before you can lawfully start on site:   "
+             f"{cond_nums(blockers)}", bold=True, colour="C0392B")
     if startable:
-        head("You can start on site before these (above-ground works only)", "17663A")
-        for c in startable:
-            line(f"#{c['condition_number']}   {c['summary']}")
-        line("")
+        verb = "blocks" if len(startable) == 1 else "block"
+        line(f"{len(startable)} more only {verb} above-ground works — you can begin demolition and "
+             f"groundworks first:   {cond_nums(startable)}", colour="17663A")
+    if piling:
+        line(f"{n_conditions(len(piling))} to clear before any piling:   {cond_nums(piling)}", colour="B9770E")
+    if ambiguous:
+        verb = "needs" if len(ambiguous) == 1 else "need"
+        line(f"{n_conditions(len(ambiguous))} {verb} checking — wording is ambiguous:   "
+             f"{cond_nums(ambiguous)}", colour="B9770E")
+    line("")
+    line("Full detail is on the Conditions tab.")
+    line("")
 
     line("CIL reminder: before any material operation on site, check whether the development is CIL-liable and, "
          "if so, submit a CIL Commencement Notice to the council and get written acknowledgement first. Starting "
