@@ -9,26 +9,26 @@ from datetime import datetime
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from dotenv import load_dotenv
- 
+
 load_dotenv()
 client = anthropic.Anthropic()
- 
+
 with open("prompt_v4_production.txt") as f:
     system_prompt = f.read()
- 
- 
+
+
 # ----- PAGE CONFIG -----
 st.set_page_config(
     page_title="AI Planning Condition Tracker",
     page_icon="📋",
     layout="centered",
 )
- 
+
 # ----- CUSTOM STYLING -----
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
- 
+
     :root {
         --navy: #122e54;
         --blue: #1d5cb8;
@@ -46,18 +46,18 @@ st.markdown("""
         --shadow-md: 0 1px 3px rgba(18,46,84,0.05), 0 6px 20px -8px rgba(18,46,84,0.08);
         --mono: 'JetBrains Mono', ui-monospace, monospace;
     }
- 
+
     html, body, [class*="css"], .stMarkdown, .stApp, button, input {
         font-family: 'Instrument Sans', -apple-system, 'Segoe UI', sans-serif;
     }
     .stApp { background: var(--bg); }
     .block-container { padding-top: 4.2rem; padding-bottom: 3rem; max-width: 880px; }
- 
+
     #MainMenu, footer, header[data-testid="stHeader"],
     [data-testid="stToolbar"], [data-testid="stDecoration"] {
         visibility: hidden; height: 0; position: fixed;
     }
- 
+
     .eyebrow {
         font-family: var(--mono);
         font-size: 0.7rem; font-weight: 600;
@@ -79,7 +79,7 @@ st.markdown("""
         line-height: 1.65; max-width: 600px; margin: 0;
         text-wrap: pretty;
     }
- 
+
     .section-label {
         font-family: var(--mono);
         font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
@@ -88,7 +88,7 @@ st.markdown("""
         display: flex; align-items: center; gap: 14px;
     }
     .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
- 
+
     .step-card {
         background: var(--card); border: 1px solid var(--line);
         border-radius: var(--radius); padding: 1.3rem 1.3rem 1.4rem;
@@ -106,7 +106,7 @@ st.markdown("""
         letter-spacing: -0.01em; margin-bottom: 4px;
     }
     .step-text { color: var(--ink-2); font-size: 0.87rem; line-height: 1.55; }
- 
+
     [data-testid="stFileUploader"] section {
         background: var(--card);
         border: 1.5px dashed #b7c8de;
@@ -135,9 +135,9 @@ st.markdown("""
     }
     [data-testid="stFileUploader"] section button:hover { background: var(--blue-ink); color: #fff; }
     [data-testid="stFileUploaderFile"] { color: var(--ink-2); }
- 
+
     [data-testid="stSpinner"] p { color: var(--ink-2); font-size: 0.92rem; }
- 
+
     .decision-banner {
         display: flex; align-items: center; gap: 14px;
         background: #f2faf5; border: 1px solid #d3ebdd;
@@ -155,7 +155,7 @@ st.markdown("""
         letter-spacing: 0.03em; font-family: var(--mono);
     }
     .decision-banner .d-sub { color: #41704f; font-size: 0.87rem; margin-top: 1px; }
- 
+
     .stat-card {
         position: relative; overflow: hidden;
         background: var(--card); border: 1px solid var(--line);
@@ -175,7 +175,7 @@ st.markdown("""
         font-size: 0.66rem; font-weight: 600; letter-spacing: 0.13em;
         text-transform: uppercase; color: var(--ink-3); margin-top: 9px;
     }
- 
+
     /* ----- SAFETY GATE PANEL ----- */
     .gate-wrap {
         background: #fffaf2; border: 1px solid #f0dcc0;
@@ -206,7 +206,12 @@ st.markdown("""
         color: #7a3535; line-height: 1.5;
     }
     .gate-caveat { font-size: 0.72rem; color: #a5885a; margin-top: 10px; line-height: 1.45; }
- 
+    .gate-go { background: #f2faf5; border: 1px solid #d3ebdd; border-radius: 10px; padding: 0.85rem 1rem; margin-top: 14px; }
+    .gate-go-title { font-weight: 700; color: #17663a; font-size: 0.92rem; margin-bottom: 4px; }
+    .gate-go-note { font-size: 0.8rem; color: #41704f; margin-bottom: 8px; line-height: 1.45; }
+    .gate-go .gate-item { border-bottom: 1px solid #e0efe6; }
+    .gate-go .gate-num { color: #17663a; }
+
     .results-wrap {
         background: var(--card); border: 1px solid var(--line);
         border-radius: var(--radius); overflow: hidden;
@@ -241,7 +246,7 @@ st.markdown("""
         font-size: 0.7rem; font-weight: 700;
     }
     .disc-no { color: #c6cfdc; }
- 
+
     .cat-pill {
         display: inline-flex; align-items: center; gap: 6px;
         padding: 3px 11px; border-radius: 999px;
@@ -250,7 +255,7 @@ st.markdown("""
         white-space: nowrap;
     }
     .cat-pill .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
- 
+
     .stDownloadButton button {
         background: var(--navy) !important; color: #fff !important;
         border: none !important; border-radius: 11px !important;
@@ -265,7 +270,7 @@ st.markdown("""
         box-shadow: 0 2px 4px rgba(18,46,84,0.2), 0 10px 24px -6px rgba(18,46,84,0.4) !important;
     }
     .stDownloadButton button:active { transform: translateY(0); }
- 
+
     .footer {
         color: var(--ink-3); font-size: 0.83rem; text-align: center;
         margin-top: 4.5rem; padding-top: 1.6rem;
@@ -278,12 +283,12 @@ st.markdown("""
         font-family: var(--mono); font-size: 0.68rem;
         letter-spacing: 0.03em; margin-top: 4px; color: #9aa7b8;
     }
- 
+
     [data-testid="stAlert"] { border-radius: var(--radius); }
 </style>
 """, unsafe_allow_html=True)
- 
- 
+
+
 # ----- HELPERS -----
 def strip_fences(text):
     text = text.strip()
@@ -293,8 +298,8 @@ def strip_fences(text):
             lines = lines[:-1]
         text = "\n".join(lines)
     return text.strip()
- 
- 
+
+
 CATEGORY_COLOURS = {
     "pre-commencement": "F4CCCC", "pre-occupation": "FCE5CD",
     "ongoing": "CFE2F3", "discharge-required": "D9D2E9", "time-limit": "FFF2CC",
@@ -303,17 +308,50 @@ CATEGORY_HEX = {
     "pre-commencement": "#e06666", "pre-occupation": "#e69138",
     "ongoing": "#3d85c6", "discharge-required": "#8e7cc3", "time-limit": "#d6b656",
 }
- 
+
 CATEGORY_ORDER = ["time-limit", "pre-commencement", "discharge-required", "pre-occupation", "ongoing"]
- 
- 
+
+
 def sort_by_category(conditions):
     return sorted(
         conditions,
         key=lambda c: CATEGORY_ORDER.index(c["category"]) if c["category"] in CATEGORY_ORDER else 99,
     )
- 
- 
+
+
+GATE_LABEL = {
+    "blocks-any-commencement": "Blocks any commencement",
+    "blocks-demolition": "Before demolition",
+    "blocks-piling": "Before piling",
+    "blocks-above-ground": "Above-ground works",
+    "before-occupation": "Before occupation",
+    "before-use": "Before use",
+    "ongoing": "Ongoing",
+    "none": "—",
+}
+
+
+def gate_label(c):
+    lbl = GATE_LABEL.get(c.get("gate"), "—")
+    if c.get("gate_ambiguous"):
+        lbl += " ⚠ check"
+    return lbl
+
+
+def split_by_gate(conditions):
+    """Group conditions into the four Safety Gate buckets.
+
+    A condition flagged gate_ambiguous is never listed as startable, even if its
+    gate says above-ground only — it belongs in the "check these" bucket instead.
+    """
+    blockers = [c for c in conditions if c.get("gate") in ("blocks-any-commencement", "blocks-demolition")]
+    piling = [c for c in conditions if c.get("gate") == "blocks-piling"]
+    ambiguous = [c for c in conditions if c.get("gate_ambiguous")]
+    startable = [c for c in conditions
+                 if c.get("gate") == "blocks-above-ground" and not c.get("gate_ambiguous")]
+    return blockers, piling, ambiguous, startable
+
+
 def compute_begin_by(decision_date, years):
     """Parse the decision date and add the time-limit years. Returns a date or None."""
     if not decision_date or not years:
@@ -332,38 +370,34 @@ def compute_begin_by(decision_date, years):
         return d.replace(year=d.year + int(years))
     except ValueError:  # 29 Feb edge case
         return d.replace(month=2, day=28, year=d.year + int(years))
- 
- 
+
+
 def fmt_date(d):
     return d.strftime("%d %B %Y").lstrip("0")
- 
- 
+
+
 def build_safety_gate_html(data):
     conditions = data.get("conditions", [])
     begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
- 
-    blockers = [c for c in conditions if c.get("gate") in ("blocks-any-commencement", "blocks-demolition")]
-    piling = [c for c in conditions if c.get("gate") == "blocks-piling"]
-    ambiguous = [c for c in conditions if c.get("gate_ambiguous")]
- 
-    if not (begin_by or blockers or piling or ambiguous):
+
+    blockers, piling, ambiguous, startable = split_by_gate(conditions)
+
+    if not (begin_by or blockers or piling or ambiguous or startable):
         return ""
- 
+
     def item(c):
-        q = c.get("trigger_quote")
-        qhtml = f'<div class="gate-quote">“{q}”</div>' if q else ""
         return (f'<div class="gate-item"><span class="gate-num">#{c["condition_number"]}</span>'
-                f'{c["summary"]}{qhtml}</div>')
- 
+                f'{c["summary"]}</div>')
+
     parts = ['<div class="gate-wrap"><div class="gate-title">⚠ Before you start on site</div>']
- 
+
     if begin_by:
         parts.append(
             f'<div class="gate-beginby">Development must begin by <b>{fmt_date(begin_by)}</b> '
             f'or the permission lapses. <span style="opacity:.7;">(computed from the decision date — '
             f'confirm against the notice)</span></div>'
         )
- 
+
     if blockers:
         parts.append('<div class="gate-sub">Must be discharged before you start on site</div>')
         parts += [item(c) for c in blockers]
@@ -373,7 +407,16 @@ def build_safety_gate_html(data):
     if ambiguous:
         parts.append('<div class="gate-sub">⚠ Check these — the wording is ambiguous</div>')
         parts += [item(c) for c in ambiguous]
- 
+
+    if startable:
+        parts.append(
+            '<div class="gate-go"><div class="gate-go-title">✓ You can break ground &amp; demolish before these</div>'
+            '<div class="gate-go-note">These only block <b>above-ground</b> works — you can lawfully start on site '
+            '(demolition, groundworks) before they\'re discharged.</div>'
+        )
+        parts += [item(c) for c in startable]
+        parts.append("</div>")
+
     parts.append(
         '<div class="gate-cil"><b>CIL reminder:</b> before any material operation on site, check whether the '
         'development is CIL-liable and, if so, submit a CIL Commencement Notice to the council and get written '
@@ -387,38 +430,102 @@ def build_safety_gate_html(data):
     )
     parts.append("</div>")
     return "".join(parts)
- 
- 
+
+
 def build_excel(data):
     wb = openpyxl.Workbook()
+
+    # ----- Sheet 1: Conditions -----
     ws = wb.active
     ws.title = "Conditions"
-    ws.append(["#", "Summary", "Category", "Deadline", "Responsible", "Discharge required?"])
+    ws.append(["#", "Summary", "Category", "Commencement gate", "Deadline", "Responsible", "Discharge required?"])
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="1F4E78")
     for c in sort_by_category(data["conditions"]):
-        ws.append([c["condition_number"], c["summary"], c["category"],
+        ws.append([c["condition_number"], c["summary"], c["category"], gate_label(c),
                    c["deadline"], c["responsible_party"],
                    "Yes" if c["discharge_required"] else "No"])
-        ws.cell(row=ws.max_row, column=3).fill = PatternFill(
+        r = ws.max_row
+        ws.cell(row=r, column=3).fill = PatternFill(
             "solid", fgColor=CATEGORY_COLOURS.get(c["category"], "FFFFFF"))
-    for col, w in {"A": 5, "B": 55, "C": 18, "D": 16, "E": 14, "F": 18}.items():
+        # highlight the hard commencement blockers on the gate cell
+        if c.get("gate") in ("blocks-any-commencement", "blocks-demolition"):
+            ws.cell(row=r, column=4).fill = PatternFill("solid", fgColor="F8C9C9")
+            ws.cell(row=r, column=4).font = Font(bold=True, color="8A1C1C")
+    for col, w in {"A": 5, "B": 52, "C": 17, "D": 22, "E": 15, "F": 13, "G": 17}.items():
         ws.column_dimensions[col].width = w
     for row in ws.iter_rows(min_row=2):
         row[1].alignment = Alignment(wrap_text=True, vertical="top")
     ws.freeze_panes = "A2"
+
+    # ----- Sheet 2: Before you start -----
+    ws2 = wb.create_sheet("Before you start")
+    conditions = data.get("conditions", [])
+    begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
+    blockers, piling, ambiguous, startable = split_by_gate(conditions)
+
+    def head(text, fill="1F4E78"):
+        ws2.append([text])
+        cell = ws2.cell(row=ws2.max_row, column=1)
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor=fill)
+
+    def line(text, bold=False):
+        ws2.append([text])
+        ws2.cell(row=ws2.max_row, column=1).font = Font(bold=bold)
+
+    head("BEFORE YOU START ON SITE")
+    line("")
+    if begin_by:
+        line(f"Development must begin by:  {fmt_date(begin_by)}   (computed from the decision date — confirm against the notice)", bold=True)
+    else:
+        line("Development must begin by:  not stated on this notice")
+    line("")
+
+    if blockers:
+        head("Must be discharged before you start on site", "C0392B")
+        for c in blockers:
+            line(f"#{c['condition_number']}   {c['summary']}")
+        line("")
+    if piling:
+        head("Before any piling", "B9770E")
+        for c in piling:
+            line(f"#{c['condition_number']}   {c['summary']}")
+        line("")
+    if ambiguous:
+        head("Check these — the wording is ambiguous", "B9770E")
+        for c in ambiguous:
+            line(f"#{c['condition_number']}   {c['summary']}")
+        line("")
+
+    if startable:
+        head("You can start on site before these (above-ground works only)", "17663A")
+        for c in startable:
+            line(f"#{c['condition_number']}   {c['summary']}")
+        line("")
+
+    line("CIL reminder: before any material operation on site, check whether the development is CIL-liable and, "
+         "if so, submit a CIL Commencement Notice to the council and get written acknowledgement first. Starting "
+         "before this can mean losing CIL relief and incurring surcharges. This tool does not read CIL notices.")
+    line("")
+    line("Automated flags, not legal advice — whether a condition is a true condition-precedent can be finely "
+         "balanced. Confirm with your planning consultant or solicitor before starting on site.")
+    ws2.column_dimensions["A"].width = 110
+    for row in ws2.iter_rows(min_row=1):
+        row[0].alignment = Alignment(wrap_text=True, vertical="top")
+
     buffer = io.BytesIO()
     wb.save(buffer)
     return buffer.getvalue()
- 
- 
+
+
 def category_pill(cat):
     hex_c = CATEGORY_HEX.get(cat, "#888")
     return (f'<span class="cat-pill" style="background:{hex_c}16;color:{hex_c};">'
             f'<span class="dot" style="background:{hex_c};"></span>{cat}</span>')
- 
- 
+
+
 # ----- HERO -----
 st.markdown("""
 <div class="eyebrow">AI Planning Condition Tracker</div>
@@ -426,7 +533,7 @@ st.markdown("""
 <p class="hero-sub">A second pair of eyes on your planning conditions. Upload a UK decision notice and get
 every condition read, categorised and exported as a structured tracker spreadsheet — in seconds.</p>
 """, unsafe_allow_html=True)
- 
+
 # ----- HOW IT WORKS -----
 st.markdown('<div class="section-label">How it works</div>', unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
@@ -441,28 +548,28 @@ for col, num, title, text in [
         f'<div class="step-text">{text}</div></div>',
         unsafe_allow_html=True,
     )
- 
+
 # ----- UPLOAD -----
 st.markdown('<div class="section-label">Upload a decision notice</div>', unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="collapsed")
- 
+
 if uploaded_file is not None:
     try:
         file_bytes = uploaded_file.getvalue()
- 
+
         # Anthropic request limit is ~32MB; base64 inflates ~33%, so cap the raw file
         if len(file_bytes) > 24_000_000:
             st.error("This PDF is too large to process (over ~24MB). "
                      "Try a smaller file, or split it into sections.")
             st.stop()
- 
+
         with st.spinner("Reading the decision notice — usually 15–30 seconds..."):
             # 1. try fast digital text extraction
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 pdf_text = ""
                 for page in pdf.pages:
                     pdf_text += page.extract_text() or ""
- 
+
             if len(pdf_text.strip()) >= 100:
                 # digital PDF — send the extracted text (fast, cheap)
                 user_content = pdf_text
@@ -480,52 +587,52 @@ if uploaded_file is not None:
                     },
                     {"type": "text", "text": "Analyse this planning decision notice."},
                 ]
- 
+
             message = client.messages.create(
                 model="claude-sonnet-4-5",
                 max_tokens=8000,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_content}],
             )
- 
+
             try:
                 data = json.loads(strip_fences(message.content[0].text))
             except json.JSONDecodeError:
                 st.error("Couldn't read the AI's response for this document. "
                          "It may be an unusual format — try another decision notice.")
                 st.stop()
- 
+
         conditions = data["conditions"]
         decision = data["decision"].upper()
- 
+
         if len(conditions) == 0:
             st.info(f"**{decision}** — no planning conditions found. This may be a refusal or a document without conditions.")
         else:
             total = len(conditions)
             discharge = sum(1 for c in conditions if c["discharge_required"])
             precom = sum(1 for c in conditions if c["category"] == "pre-commencement")
- 
+
             st.markdown(
                 f'<div class="decision-banner"><div class="tick">✓</div>'
                 f'<div><div class="d-title">{decision}</div>'
                 f'<div class="d-sub">{total} planning conditions extracted from this notice</div></div></div>',
                 unsafe_allow_html=True,
             )
- 
+
             s1, s2, s3 = st.columns(3)
             s1.markdown(f'<div class="stat-card" style="--stat-accent:#122e54;"><div class="stat-num">{total}</div><div class="stat-label">Total conditions</div></div>', unsafe_allow_html=True)
             s2.markdown(f'<div class="stat-card" style="--stat-accent:#e06666;"><div class="stat-num">{precom}</div><div class="stat-label">Pre-commencement</div></div>', unsafe_allow_html=True)
             s3.markdown(f'<div class="stat-card" style="--stat-accent:#8e7cc3;"><div class="stat-num">{discharge}</div><div class="stat-label">Need discharge</div></div>', unsafe_allow_html=True)
- 
+
             st.write("")
- 
+
             # ----- SAFETY GATE: "Before you start on site" -----
             gate_html = build_safety_gate_html(data)
             if gate_html:
                 st.markdown(gate_html, unsafe_allow_html=True)
- 
+
             st.markdown('<div class="section-label">Extracted conditions</div>', unsafe_allow_html=True)
- 
+
             rows_html = ""
             for c in sort_by_category(conditions):
                 deadline = c["deadline"] or "—"
@@ -548,19 +655,19 @@ if uploaded_file is not None:
                 f'<tbody>{rows_html}</tbody></table></div>'
             )
             st.markdown(table_html, unsafe_allow_html=True)
- 
+
             st.write("")
- 
+
             excel_bytes = build_excel(data)
             st.download_button("Download Excel tracker  ↓", excel_bytes,
                                file_name="planning_condition_tracker.xlsx",
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                type="primary")
- 
+
     except Exception:
         st.error("Something went wrong processing this file. Please check it's a valid "
                  "UK planning decision notice PDF and try again.")
- 
+
 # ----- FOOTER -----
 st.markdown(
     '<div class="footer"><span class="footer-name">Built by Zak Akhtar</span> · '
