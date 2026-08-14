@@ -191,6 +191,12 @@ st.markdown("""
         line-height: 1.5; margin-bottom: 6px;
     }
     .gate-beginby b { color: #5a3d12; }
+    .gate-lapsed {
+        background: #fdf3f3; border: 1px solid #e8c4c4; border-radius: 10px;
+        padding: 0.7rem 0.9rem; margin-bottom: 10px;
+        font-size: 0.87rem; color: #8a2020; line-height: 1.5;
+    }
+    .gate-lapsed b { color: #6d1414; }
     .gate-line { font-size: 0.9rem; color: var(--ink); line-height: 1.55; padding: 5px 0; }
     .gate-line b { color: #6b3a06; }
     .gate-nums { font-family: var(--mono); font-size: 0.82rem; font-weight: 600; color: #8a4b0a; }
@@ -205,6 +211,34 @@ st.markdown("""
     .gate-go .gate-line { padding: 0; color: #1d5c39; }
     .gate-go .gate-line b { color: #17663a; }
     .gate-go .gate-nums { color: #17663a; }
+
+    /* ----- DISCHARGE PLAN ----- */
+    .plan-wrap {
+        background: var(--card); border: 1px solid var(--line);
+        border-left: 4px solid var(--blue); border-radius: var(--radius);
+        padding: 1.1rem 1.3rem 1.2rem; box-shadow: var(--shadow-sm);
+    }
+    .plan-lead { font-size: 0.9rem; color: var(--ink-2); line-height: 1.6; margin-bottom: 10px; }
+    .plan-lead b { color: var(--ink); }
+    .plan-row {
+        display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
+        padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: 0.88rem;
+    }
+    .plan-row:last-of-type { border-bottom: none; }
+    .plan-stage { color: var(--ink); font-weight: 600; min-width: 210px; }
+    .plan-count { font-family: var(--mono); font-size: 0.76rem; color: var(--ink-3); white-space: nowrap; }
+    .plan-nums { font-family: var(--mono); font-size: 0.78rem; color: var(--blue); }
+    .plan-total {
+        background: var(--blue-soft); border-radius: 10px; padding: 0.7rem 0.9rem;
+        margin-top: 12px; font-size: 0.93rem; color: var(--blue-ink); font-weight: 600;
+    }
+    .plan-note { font-size: 0.79rem; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
+    .plan-deemed {
+        background: #f2faf5; border: 1px solid #d3ebdd; border-radius: 10px;
+        padding: 0.7rem 0.9rem; margin-top: 12px; font-size: 0.83rem;
+        color: #2f6a47; line-height: 1.5;
+    }
+    .plan-caveat { font-size: 0.72rem; color: var(--ink-3); margin-top: 10px; line-height: 1.45; }
 
     .results-wrap {
         background: var(--card); border: 1px solid var(--line);
@@ -352,7 +386,9 @@ def compute_begin_by(decision_date, years):
         return None
     s = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", str(decision_date).strip(), flags=re.IGNORECASE)
     d = None
-    for fmt in ("%d %B %Y", "%d %b %Y", "%d.%m.%Y", "%d/%m/%Y", "%B %d, %Y", "%Y-%m-%d"):
+    # Four-digit-year formats first: %y would happily match a two-digit fragment.
+    for fmt in ("%d %B %Y", "%d %b %Y", "%d.%m.%Y", "%d/%m/%Y", "%d-%m-%Y", "%B %d, %Y", "%Y-%m-%d",
+                "%d %B %y", "%d %b %y", "%d.%m.%y", "%d/%m/%y", "%d-%m-%y"):
         try:
             d = datetime.strptime(s, fmt).date()
             break
@@ -385,6 +421,9 @@ def build_safety_gate_html(data):
 
     Deliberately does NOT repeat condition text — the table below carries the detail.
     """
+    if doc_type(data) not in GATE_DOC_TYPES:
+        return ""  # nothing to start: a refusal, or conditions already discharged
+
     conditions = data.get("conditions", [])
     begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
 
@@ -395,7 +434,15 @@ def build_safety_gate_html(data):
 
     parts = ['<div class="gate-wrap"><div class="gate-title">⚠ Before you start on site</div>']
 
-    if begin_by:
+    if begin_by and begin_by < datetime.now().date():
+        parts.append(
+            f'<div class="gate-lapsed">⚠ <b>This start deadline has already passed.</b> Development had '
+            f'to begin by <b>{fmt_date(begin_by)}</b>. Unless a material operation lawfully started on '
+            f'site before then, this permission has expired and cannot be implemented. '
+            f'<span style="opacity:.75;">(computed from the decision date — confirm against the '
+            f'notice)</span></div>'
+        )
+    elif begin_by:
         parts.append(
             f'<div class="gate-beginby">Development must begin by <b>{fmt_date(begin_by)}</b> '
             f'or the permission lapses. <span style="opacity:.7;">(computed from the decision date — '
@@ -428,16 +475,209 @@ def build_safety_gate_html(data):
 
     parts.append('<div class="gate-detail">Full detail is in the conditions table below.</div>')
 
-    parts.append(
-        '<div class="gate-cil"><b>CIL reminder:</b> before any material operation on site, check whether the '
-        'development is CIL-liable and, if so, submit a CIL Commencement Notice to the council and get written '
-        'acknowledgement first. Starting before this can mean losing CIL relief and incurring surcharges. '
-        'This tool does not read CIL notices.</div>'
-    )
+    if doc_type(data) in CIL_DOC_TYPES:
+        parts.append(
+            '<div class="gate-cil"><b>CIL reminder:</b> before any material operation on site, check whether the '
+            'development is CIL-liable and, if so, submit a CIL Commencement Notice to the council and get written '
+            'acknowledgement first. Starting before this can mean losing CIL relief and incurring surcharges. '
+            'This tool does not read CIL notices.</div>'
+        )
     parts.append(
         '<div class="gate-caveat">Automated flags, not legal advice — whether a condition is a true '
         'condition-precedent can be finely balanced. Confirm with your planning consultant or solicitor '
         'before starting on site.</div>'
+    )
+    parts.append("</div>")
+    return "".join(parts)
+
+
+# ----- DISCHARGE FEES -----
+# England statutory fees, charged PER APPLICATION (request), not per condition. The fee line reads
+# "Approval of details and/or confirmation that ONE OR MORE conditions have been complied with".
+# Source: Planning Portal, Application Fees England, 1 April 2026 schedule.
+FEE_OTHER = 309         # any other development, per request
+FEE_HOUSEHOLDER = 89    # householder, per request
+FEE_OTHER_LATER = 435
+FEE_HOUSEHOLDER_LATER = 125
+FEE_RISE_DATE = "8 December 2026"
+
+# Per-nation fee scales. Wales: Planning Portal "Application Fees Wales – 1 December 2025"
+# (£242 any other development, £123 householder; no further rise announced for 2026).
+# Scotland and Northern Ireland run separate systems and are deliberately NOT priced here.
+FEES = {
+    "england": {"other": FEE_OTHER, "householder": FEE_HOUSEHOLDER,
+                "later": (FEE_OTHER_LATER, FEE_HOUSEHOLDER_LATER), "later_date": FEE_RISE_DATE},
+    "wales": {"other": 242, "householder": 123, "later": None, "later_date": None},
+}
+JURISDICTION_LABEL = {
+    "england": "England", "wales": "Wales",
+    "scotland": "Scotland", "northern-ireland": "Northern Ireland",
+}
+
+# Which documents impose conditions the applicant still has to discharge. A refusal grants nothing,
+# and a discharge-approval notice records conditions that have ALREADY been cleared.
+PLAN_DOC_TYPES = ("full-grant", "appeal-decision", "listed-building-consent")
+# ...and of those, the ones where a fee is actually payable. Discharging conditions on a listed
+# building consent is free: the fee line covers approvals "following grant of planning permission",
+# and the schedule lists LBC conditions under concessions.
+FEE_DOC_TYPES = ("full-grant", "appeal-decision")
+# The Safety Gate only makes sense where something can lawfully be started.
+GATE_DOC_TYPES = ("full-grant", "appeal-decision", "listed-building-consent")
+# CIL is charged on development granted planning permission, not on listed building consent.
+CIL_DOC_TYPES = ("full-grant", "appeal-decision")
+
+# Stage batches. The LAST entry is the catch-all — it also absorbs any unrecognised gate value.
+DISCHARGE_BATCHES = [
+    ("Before you start (pre-commencement)",
+     ("blocks-any-commencement", "blocks-demolition", "blocks-piling", "blocks-above-ground")),
+    ("Before occupation", ("before-occupation", "before-use")),
+    ("Other / any time", ("ongoing", "none")),
+]
+
+
+def doc_type(data):
+    """Document type, defaulting to full-grant when the field is absent."""
+    return data.get("document_type") or "full-grant"
+
+
+def jurisdiction(data):
+    """Which nation's fee scale applies.
+
+    An absent key means a legacy extraction from before the field existed — assume England, which
+    is what the tool did previously. An explicit null means the model could not tell, and we must
+    NOT price it.
+    """
+    if "jurisdiction" not in data:
+        return "england"
+    return data.get("jurisdiction") or "unknown"
+
+
+def build_discharge_plan(data):
+    """Batch the discharge-required conditions by stage and price the applications.
+
+    "applies" is False for documents that impose no outstanding obligations — a refusal, or a
+    discharge-approval notice where the conditions listed have ALREADY been cleared.
+    """
+    dt = doc_type(data)
+    conditions = [c for c in data.get("conditions", []) if c.get("discharge_required")]
+    known = {g for _, gates in DISCHARGE_BATCHES for g in gates}
+
+    batches = []
+    for i, (label, gates) in enumerate(DISCHARGE_BATCHES):
+        catch_all = i == len(DISCHARGE_BATCHES) - 1
+        members = [c for c in conditions
+                   if c.get("gate") in gates or (catch_all and c.get("gate") not in known)]
+        if members:
+            batches.append((label, members))
+
+    householder = data.get("is_householder")
+    juris = jurisdiction(data)
+    scale = FEES.get(juris)              # None for Scotland, NI, or an unknown jurisdiction
+    fee_payable = dt in FEE_DOC_TYPES
+
+    fee = None
+    if fee_payable and scale and householder is True:
+        fee = scale["householder"]
+    elif fee_payable and scale and householder is False:
+        fee = scale["other"]
+
+    return {
+        "total": len(conditions),
+        "batches": batches,
+        "applications": len(batches),
+        "applies": dt in PLAN_DOC_TYPES,
+        "fee_payable": fee_payable,
+        "jurisdiction": juris,
+        "scale": scale,                  # None when we don't hold that nation's fees
+        "fee": fee,                      # None when free, unpriced, or householder status unclear
+        "householder": householder,
+        "cost": len(batches) * fee if fee else None,
+    }
+
+
+def build_discharge_plan_html(data):
+    plan = build_discharge_plan(data)
+    if not plan["applies"] or not plan["total"]:
+        return ""
+
+    apps = plan["applications"]
+    app_word = f'{apps} application{"" if apps == 1 else "s"}'
+    scale = plan["scale"]
+    juris_name = JURISDICTION_LABEL.get(plan["jurisdiction"])
+    where = f" is from {juris_name}" if juris_name else "'s nation is unclear"
+
+    if not plan["fee_payable"]:
+        fee_lead = ('There is <b>no council fee</b> for discharging conditions on a listed building '
+                    'consent, but you still have to apply. A sensible way to batch these is by stage:')
+    elif scale is None:
+        fee_lead = ('The fee is charged <b>per application</b>, not per condition, so bundle them. This '
+                    'tool only holds the England and Wales fee scales, so it cannot price this one — '
+                    'check the figure with the authority. A sensible way to batch these is by stage:')
+    else:
+        fee_lead = (f'The council fee is <b>£{plan["fee"] or scale["other"]} per application</b> — not per '
+                    f'condition, so bundle them. A sensible way to batch these is by stage:')
+
+    needs = "needs" if plan["total"] == 1 else "need"
+    parts = ['<div class="plan-wrap">']
+    parts.append(
+        f'<div class="plan-lead">You have <b>{n_conditions(plan["total"])}</b> that {needs} formal discharge '
+        f'(submitted to <b>and</b> approved by the council). {fee_lead}</div>'
+    )
+    for label, members in plan["batches"]:
+        parts.append(
+            f'<div class="plan-row"><span class="plan-stage">{label}</span>'
+            f'<span class="plan-count">{n_conditions(len(members))}</span>'
+            f'<span class="plan-nums">{cond_nums(members)}</span></div>'
+        )
+
+    if not plan["fee_payable"]:
+        parts.append(f'<div class="plan-total">≈ {app_word} to submit — no council fee.</div>')
+        parts.append('<div class="plan-note">Conditions on a listed building consent carry no '
+                     'application fee. Conditions on a linked planning permission do.</div>')
+    elif scale is None:
+        parts.append(f'<div class="plan-total">≈ {app_word} to submit.</div>')
+        parts.append(
+            f'<div class="plan-note">No fee shown — this notice{where}, and this tool only holds the '
+            f'England and Wales fee scales. The per-application principle still applies, so bundling '
+            f'still saves money.</div>'
+        )
+    elif plan["fee"] is not None:
+        scheme = "householder" if plan["householder"] else "non-householder"
+        rise = ""
+        if scale["later"]:
+            rise = (f' Fees rise to £{scale["later"][0]} (£{scale["later"][1]} householder) on '
+                    f'{scale["later_date"]}.')
+        parts.append(
+            f'<div class="plan-total">≈ {app_word} × £{plan["fee"]} = ~£{plan["cost"]:,} '
+            f'in council fees.</div>'
+        )
+        parts.append(
+            f'<div class="plan-note">Priced at the <b>{scheme}</b> rate for {juris_name}.{rise}</div>'
+        )
+    else:
+        # householder status unclear — show both rather than guess
+        rise = ""
+        if scale["later"]:
+            rise = f' Fees rise to £{scale["later"][0]} / £{scale["later"][1]} on {scale["later_date"]}.'
+        parts.append(
+            f'<div class="plan-total">≈ {app_word} — about £{apps * scale["other"]:,} at the standard '
+            f'rate, or £{apps * scale["householder"]:,} if this is a householder scheme.</div>'
+        )
+        parts.append(
+            f'<div class="plan-note">We couldn\'t tell which fee category this scheme falls into, so both '
+            f'{juris_name} rates are shown (£{scale["other"]} vs £{scale["householder"]} per '
+            f'application).{rise}</div>'
+        )
+    parts.append(
+        '<div class="plan-deemed"><b>Deemed discharge:</b> the council has 8 weeks to decide. If it misses '
+        'that — and the condition isn\'t one of the excluded types — you may be able to proceed as if the '
+        'condition were discharged. A useful lever if they go quiet.</div>'
+    )
+    parts.append(
+        '<div class="plan-caveat">Batching is guidance, not a rule — you can combine or split further, and '
+        'timing depends on your programme. Fees are the England statutory rate and change over time; confirm '
+        'the current figure before relying on it. Not legal or planning advice — confirm with your planning '
+        'consultant.</div>'
     )
     parts.append("</div>")
     return "".join(parts)
@@ -471,6 +711,12 @@ def build_excel(data):
     ws.freeze_panes = "A2"
 
     # ----- Sheet 2: Before you start -----
+    # Only for documents that actually permit works to start.
+    if doc_type(data) not in GATE_DOC_TYPES:
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        return buffer.getvalue()
+
     ws2 = wb.create_sheet("Before you start")
     conditions = data.get("conditions", [])
     begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
@@ -488,7 +734,12 @@ def build_excel(data):
 
     head("BEFORE YOU START ON SITE")
     line("")
-    if begin_by:
+    if begin_by and begin_by < datetime.now().date():
+        line(f"THIS START DEADLINE HAS ALREADY PASSED — development had to begin by {fmt_date(begin_by)}. "
+             f"Unless a material operation lawfully started on site before then, this permission has "
+             f"expired and cannot be implemented. (computed from the decision date — confirm against "
+             f"the notice)", bold=True, colour="C0392B")
+    elif begin_by:
         line(f"Development must begin by:  {fmt_date(begin_by)}   (computed from the decision date — confirm against the notice)", bold=True)
     else:
         line("Development must begin by:  not stated on this notice")
@@ -520,6 +771,88 @@ def build_excel(data):
          "balanced. Confirm with your planning consultant or solicitor before starting on site.")
     ws2.column_dimensions["A"].width = 110
     for row in ws2.iter_rows(min_row=1):
+        row[0].alignment = Alignment(wrap_text=True, vertical="top")
+
+    # ----- Sheet 3: Discharge plan -----
+    plan = build_discharge_plan(data)
+    if not plan["applies"]:
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        return buffer.getvalue()
+
+    ws3 = wb.create_sheet("Discharge plan")
+
+    def head3(text, fill="1F4E78"):
+        ws3.append([text])
+        cell = ws3.cell(row=ws3.max_row, column=1)
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor=fill)
+
+    def line3(text, bold=False, colour=None):
+        ws3.append([text])
+        ws3.cell(row=ws3.max_row, column=1).font = Font(bold=bold, color=colour)
+
+    head3("DISCHARGE PLAN")
+    line3("")
+    if not plan["total"]:
+        line3("No conditions on this notice require formal discharge by the council.")
+    else:
+        apps = plan["applications"]
+        app_word = f"{apps} application{'' if apps == 1 else 's'}"
+        line3(f"{n_conditions(plan['total'])} {'needs' if plan['total'] == 1 else 'need'} formal discharge "
+              f"(submitted to AND approved by the council).")
+        line3("")
+        scale = plan["scale"]
+        juris_name = JURISDICTION_LABEL.get(plan["jurisdiction"])
+        if not plan["fee_payable"]:
+            line3("There is no council fee for discharging conditions on a listed building consent, "
+                  "but you still have to apply.", bold=True)
+        elif scale is None:
+            line3("The fee is charged per application, not per condition — so bundle them. This tool "
+                  "only holds the England and Wales fee scales, so it cannot price this notice; check "
+                  "the figure with the authority.", bold=True)
+        else:
+            line3(f"The council fee is £{plan['fee'] or scale['other']} per application — not per "
+                  f"condition. So bundle them.", bold=True)
+        line3("A sensible way to batch these is by stage:")
+        line3("")
+        for label, members in plan["batches"]:
+            line3(f"   {label}:   {n_conditions(len(members))} — {cond_nums(members)}")
+        line3("")
+        rise = ""
+        if scale and scale["later"]:
+            rise = (f" Fees rise to £{scale['later'][0]} / £{scale['later'][1]} on "
+                    f"{scale['later_date']}.")
+        if not plan["fee_payable"]:
+            line3(f"≈ {app_word} to submit — no council fee.", bold=True, colour="17663A")
+            line3("Conditions on a listed building consent carry no application fee. Conditions on a "
+                  "linked planning permission do.")
+        elif scale is None:
+            line3(f"≈ {app_word} to submit.", bold=True, colour="1F4E78")
+            line3(f"(No fee shown — this notice is from {juris_name or 'an unclear jurisdiction'}, and "
+                  f"this tool holds the England and Wales scales only. The per-application principle "
+                  f"still applies, so bundling still saves money.)")
+        elif plan["fee"] is not None:
+            scheme = "householder" if plan["householder"] else "non-householder"
+            line3(f"≈ {app_word} × £{plan['fee']} = ~£{plan['cost']:,} in council fees.",
+                  bold=True, colour="1F4E78")
+            line3(f"(Priced at the {scheme} rate for {juris_name}.{rise})")
+        else:
+            line3(f"≈ {app_word} — about £{apps * scale['other']:,} at the standard rate, or "
+                  f"£{apps * scale['householder']:,} if this is a householder scheme.",
+                  bold=True, colour="1F4E78")
+            line3(f"(Fee category unclear from this notice, so both {juris_name} rates are shown: "
+                  f"£{scale['other']} vs £{scale['householder']} per application.{rise})")
+        line3("")
+        line3("Deemed discharge: the council has 8 weeks to decide. If it misses that — and the condition "
+              "isn't one of the excluded types — you may be able to proceed as if the condition were "
+              "discharged. A useful lever if they go quiet.", colour="17663A")
+    line3("")
+    line3("Batching is guidance, not a rule — you can combine or split further, and timing depends on your "
+          "programme. Fees are the England statutory rate and change over time; confirm the current figure "
+          "before relying on it. Not legal or planning advice — confirm with your planning consultant.")
+    ws3.column_dimensions["A"].width = 110
+    for row in ws3.iter_rows(min_row=1):
         row[0].alignment = Alignment(wrap_text=True, vertical="top")
 
     buffer = io.BytesIO()
@@ -662,6 +995,12 @@ if uploaded_file is not None:
                 f'<tbody>{rows_html}</tbody></table></div>'
             )
             st.markdown(table_html, unsafe_allow_html=True)
+
+            # ----- DISCHARGE PLAN -----
+            plan_html = build_discharge_plan_html(data)
+            if plan_html:
+                st.markdown('<div class="section-label">Discharge plan</div>', unsafe_allow_html=True)
+                st.markdown(plan_html, unsafe_allow_html=True)
 
             st.write("")
 

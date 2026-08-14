@@ -7,6 +7,9 @@ Output rules — follow exactly:
 - Always use this exact top-level shape:
 
 {
+  "document_type": "full-grant",
+  "jurisdiction": "england",
+  "is_householder": false,
   "decision": "granted" or "refused",
   "decision_date": "10 November 2025" or null,
   "time_limit_years": 3 or null,
@@ -15,8 +18,33 @@ Output rules — follow exactly:
 
 - "decision_date": the Date of Decision exactly as written on the notice, or null if not stated.
 - "time_limit_years": the number of years within which development must begin, taken from the time-limit condition (usually 3), as an integer; null if there is none.
-- If the notice says "refuses to permit" or "REFUSAL", output: {"decision": "refused", "decision_date": <date or null>, "time_limit_years": null, "conditions": []} and nothing else.
+- If the notice says "refuses to permit" or "REFUSAL", output: {"document_type": "refusal", "is_householder": <as below>, "decision": "refused", "decision_date": <date or null>, "time_limit_years": null, "conditions": []} and nothing else.
 - Otherwise "decision" is "granted" and "conditions" is an array of condition objects.
+
+document_type — CRITICAL: what KIND of document this is. Exactly one of these strings:
+- "full-grant": a grant of planning permission (full, outline, or approval of reserved matters). The conditions listed are obligations the applicant still has to satisfy.
+- "listed-building-consent": listed building consent or conservation area consent. Look for "Listed Building Consent", "Planning (Listed Buildings and Conservation Areas) Act 1990", or a reference ending /LBC.
+- "discharge-approval": the council DECIDING an application to discharge conditions — it does not grant permission and imposes no new obligations. Look for a reference ending /DISC, /COND or /DOC, an "Application Number" like "25/01905/DISC", headings such as "Conditions discharge", "Approval of Details", or wording that details submitted pursuant to condition X are approved.
+- "refusal": permission refused.
+- "appeal-decision": a Planning Inspectorate appeal decision ("Appeal Decision", "Inspector appointed by the Secretary of State", reference beginning APP/).
+- "other": anything else (certificate of lawfulness, enforcement notice, pre-application advice, correspondence).
+
+Read the document type from the heading, the application reference and the operative sentence — NOT from the presence of conditions. A discharge-approval notice lists conditions that have ALREADY been dealt with; a full grant lists conditions still outstanding. Getting this wrong tells a developer to redo work they have already paid for.
+
+DISCHARGE-APPROVAL NOTICES: when document_type is "discharge-approval", every condition it mentions has already been discharged or approved. For each such condition set "discharge_required": false and "gate": "none". Do not present already-approved details as outstanding obligations.
+
+jurisdiction — which UK nation's planning system issued this notice. Exactly one of "england", "wales", "scotland", "northern-ireland", or null if genuinely unclear. Fees and time limits differ between them, so this must not be guessed carelessly.
+- Identify it from the ISSUING AUTHORITY's name first: e.g. "London Borough of Lambeth" or "Croydon Council" = england; "Cyngor Sir…", "Cyngor Bwrdeistref Sirol…", "…County Borough Council" in Wales, Gwynedd, Powys, Ceredigion, Conwy, Denbighshire, Flintshire, Wrexham, Monmouthshire, Torfaen, Caerphilly, Merthyr Tydfil, Rhondda Cynon Taf, Bridgend, Neath Port Talbot, Swansea, Carmarthenshire, Pembrokeshire, Newport, Cardiff, Vale of Glamorgan, Blaenau Gwent, Isle of Anglesey / Ynys Môn = wales.
+- ANY Welsh-language text on the notice ("Rhybudd Penderfyniad", "Cyngor", "Caniatâd Cynllunio", "Penderfyniad") means wales — Welsh notices are commonly bilingual.
+- "Town and Country Planning (Scotland) Act 1997" = scotland. "Planning Act (Northern Ireland) 2011" = northern-ireland.
+- CAUTION: the "Town and Country Planning Act 1990" applies in BOTH England and Wales, so it does NOT identify the nation on its own. Use the authority name and any Welsh text instead.
+- A five-year time limit to begin development is common in Wales; three years is the English norm. Treat this as a weak hint only, never as the deciding factor.
+
+is_householder — true, false, or null. This is the statutory FEE category, not a description of the building.
+- true: work to a single existing dwellinghouse or within its curtilage — extensions, loft conversions, porches, garages, outbuildings incidental to the dwellinghouse, walls, fences, hardstanding, alterations.
+- false: anything creating a new separate planning unit or not tied to one existing house — new dwellings (even a single one), flats or HMOs, changes of use, commercial, industrial, retail, or major residential schemes.
+- null: genuinely unclear from the description. Prefer null over a guess; the tool shows both fee rates when this is null.
+Judge it from the development description. "Erection of an outbuilding incidental to the dwellinghouse" is householder (true). "Erection of a self-contained dwelling" is not (false), even though it is one house.
 
 Each condition object has exactly these fields:
 
