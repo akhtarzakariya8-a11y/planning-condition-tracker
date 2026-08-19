@@ -347,25 +347,6 @@ def sort_by_category(conditions):
     )
 
 
-GATE_LABEL = {
-    "blocks-any-commencement": "Blocks any commencement",
-    "blocks-demolition": "Before demolition",
-    "blocks-piling": "Before piling",
-    "blocks-above-ground": "Above-ground works",
-    "before-occupation": "Before occupation",
-    "before-use": "Before use",
-    "ongoing": "Ongoing",
-    "none": "—",
-}
-
-
-def gate_label(c):
-    lbl = GATE_LABEL.get(c.get("gate"), "—")
-    if c.get("gate_ambiguous"):
-        lbl += " ⚠ check"
-    return lbl
-
-
 def split_by_gate(conditions):
     """Group conditions into the four Safety Gate buckets.
 
@@ -689,22 +670,17 @@ def build_excel(data):
     # ----- Sheet 1: Conditions -----
     ws = wb.active
     ws.title = "Conditions"
-    ws.append(["#", "Summary", "Category", "Commencement gate", "Deadline", "Responsible", "Discharge required?"])
+    ws.append(["#", "Summary", "Category", "Deadline", "Responsible", "Discharge required?"])
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="1F4E78")
     for c in sort_by_category(data["conditions"]):
-        ws.append([c["condition_number"], c["summary"], c["category"], gate_label(c),
+        ws.append([c["condition_number"], c["summary"], c["category"],
                    c["deadline"], c["responsible_party"],
                    "Yes" if c["discharge_required"] else "No"])
-        r = ws.max_row
-        ws.cell(row=r, column=3).fill = PatternFill(
+        ws.cell(row=ws.max_row, column=3).fill = PatternFill(
             "solid", fgColor=CATEGORY_COLOURS.get(c["category"], "FFFFFF"))
-        # highlight the hard commencement blockers on the gate cell
-        if c.get("gate") in ("blocks-any-commencement", "blocks-demolition"):
-            ws.cell(row=r, column=4).fill = PatternFill("solid", fgColor="F8C9C9")
-            ws.cell(row=r, column=4).font = Font(bold=True, color="8A1C1C")
-    for col, w in {"A": 5, "B": 52, "C": 17, "D": 22, "E": 15, "F": 13, "G": 17}.items():
+    for col, w in {"A": 5, "B": 55, "C": 18, "D": 16, "E": 14, "F": 18}.items():
         ws.column_dimensions[col].width = w
     for row in ws.iter_rows(min_row=2):
         row[1].alignment = Alignment(wrap_text=True, vertical="top")
