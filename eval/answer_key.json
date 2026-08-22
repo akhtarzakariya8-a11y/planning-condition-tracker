@@ -1,0 +1,84 @@
+{
+  "_README": [
+    "Hand-made answer key. THIS FILE IS THE SOURCE OF TRUTH — edit it when you disagree with it,",
+    "not the prompt. Seeded by Claude from the Lambeth notice and Zak's spec; review before trusting.",
+    "",
+    "asserted  = values you are confident are correct. These are SCORED.",
+    "            specialists values are ARRAYS and compared as sets, so order does not matter.",
+    "            specialist_is_empty lists conditions that need no external specialist at all.",
+    "contested = conditions where two competent consultants would disagree. Reported, NOT scored.",
+    "            Move an entry out of contested into asserted once you have decided the right answer."
+  ],
+  "21_04939_FUL--3474437.pdf": {
+    "asserted": {
+      "document_type": "full-grant",
+      "jurisdiction": "england",
+      "is_householder": false,
+      "decision": "granted",
+      "time_limit_years": 3,
+      "condition_count": 38,
+      "begin_by": "2028-11-10",
+      "gates": {
+        "1": "none",
+        "13": "blocks-any-commencement",
+        "16": "blocks-piling",
+        "35": "blocks-demolition"
+      },
+      "gate_ambiguous": [
+        13,
+        33
+      ],
+      "specialists": {
+        "11": [
+          "Air quality consultant"
+        ],
+        "13": [
+          "Fire engineer"
+        ],
+        "14": [
+          "Flood risk consultant"
+        ],
+        "15": [
+          "Drainage / SuDS engineer"
+        ],
+        "16": [
+          "Structural / geotechnical engineer"
+        ],
+        "18": [
+          "Acoustic consultant"
+        ],
+        "21": [
+          "Archaeologist"
+        ],
+        "22": [
+          "Archaeologist"
+        ],
+        "23": [
+          "Archaeologist",
+          "Structural / geotechnical engineer"
+        ]
+      },
+      "specialist_is_empty": [
+        1,
+        2,
+        3,
+        4,
+        7,
+        8,
+        12,
+        20,
+        26,
+        34,
+        37
+      ]
+    },
+    "contested": {
+      "18": "gate: flips between before-use and blocks-any-commencement across runs. Decide which.",
+      "19": "specialist: Noise Management Plan is operational, but an acoustician often writes it.",
+      "25": "specialist: biodiverse green roofs — Landscape architect or Ecologist?",
+      "32": "specialist: water consumption calcs — in-house, or part of the sustainability package?",
+      "11": "gate_ambiguous: flagged ambiguous in some runs, not others. Decide.",
+      "33": "gate_ambiguous and specialist both drift. Decide."
+    }
+  }
+}

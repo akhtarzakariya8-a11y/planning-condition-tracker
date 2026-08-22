@@ -57,7 +57,8 @@ Each condition object has exactly these fields:
   "discharge_required": true or false,
   "gate": "blocks-any-commencement",
   "trigger_quote": "No development shall commence until…" or null,
-  "gate_ambiguous": true or false
+  "gate_ambiguous": true or false,
+  "specialist_needed": ["Fire engineer"]
 }
 
 category — CRITICAL: the value must be EXACTLY one of these five strings and nothing else:
@@ -83,6 +84,24 @@ gate_ambiguous: set to true whenever the trigger is not clean-cut. ALWAYS read t
    WORKED EXAMPLE: a Fire Statement condition worded "Prior to the commencement of above ground works, an updated Fire Statement shall be submitted…" whose Reason states "Development must not commence until this condition is discharged" → gate = "blocks-any-commencement", gate_ambiguous = true.
 2) MIXED triggers in one condition (e.g. one part "prior to above ground works" and another "prior to commencement of the development"): set gate_ambiguous = true and use the STRICTER (earlier) trigger for "gate".
 Otherwise gate_ambiguous is false.
+
+specialist_needed: an ARRAY of the EXTERNAL technical specialists whose input is needed to PRODUCE the details this condition asks for. Judge it from WHAT the condition requires, not from who approves it — the council approving something does not make it specialist work.
+
+- Always an array. Use [] (empty array) when no external specialist is needed. Never null, never a bare string.
+- Usually exactly one discipline.
+- List TWO (rarely more) when the condition genuinely needs separate disciplines working together, and do NOT pick a winner between them. A condition requiring foundation design to protect archaeological remains needs BOTH ["Archaeologist", "Structural / geotechnical engineer"], because the archaeology sets the constraint and the engineer designs to it. Only do this where each discipline is genuinely required — not to hedge between two labels that describe the same work.
+
+Use one of these labels EXACTLY when it fits, so they group cleanly:
+"Fire engineer", "Acoustic consultant", "Air quality consultant", "Arboriculturalist", "Ecologist", "Drainage / SuDS engineer", "Flood risk consultant", "Structural / geotechnical engineer", "Archaeologist", "Energy & sustainability consultant", "Contamination / geo-environmental consultant", "Transport / highways consultant", "Heritage consultant", "Landscape architect", "Security (Secured by Design) consultant".
+If a specialist is clearly required but none of those fit, use a short sensible label of your own.
+
+Use [] when the details can reasonably be produced in-house by the developer, QS or architect. BE CONSERVATIVE — [] is the right answer more often than not. Examples that are []: schedules or samples of materials and finishes, boundary treatments and enclosures, refuse and recycling storage, cycle parking, waste or construction management plans, servicing and delivery arrangements, hours of working, general management plans, obscure glazing, and anything that is simply "carried out in accordance with the approved plans".
+
+The test is whether a developer would have to COMMISSION someone with a specific technical qualification to write the document. A materials schedule does not need a specialist. A ground contamination remediation strategy does.
+
+Two overlaps that are commonly confused:
+- Landscape architect vs Ecologist. Planting schedules, soft landscaping, tree species and green infrastructure design = "Landscape architect". Anything requiring BIODIVERSITY assessment — demonstrating biodiversity net gain, habitat creation, protected species, bat or bird boxes, ecological surveys or mitigation — needs an "Ecologist", even when it is delivered through planting or a green roof. Where a condition needs both, choose the one doing the technical assessment.
+- Flood risk consultant vs Drainage / SuDS engineer. A Flood Risk Assessment = "Flood risk consultant". Designing the surface water drainage system, attenuation or SuDS features = "Drainage / SuDS engineer".
 
 APPROVED-PLANS CONDITION: for the condition that requires development to be carried out in accordance with the approved plans/drawings, do NOT just write "in accordance with approved plans". List every plan and document reference exactly as written in the notice (drawing numbers, revisions, and dates where given) in the summary, so the reader can see which specific plans are approved.
 

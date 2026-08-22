@@ -240,6 +240,23 @@ st.markdown("""
     }
     .plan-caveat { font-size: 0.72rem; color: var(--ink-3); margin-top: 10px; line-height: 1.45; }
 
+    /* ----- SPECIALISTS ----- */
+    .spec-wrap {
+        background: var(--card); border: 1px solid var(--line);
+        border-left: 4px solid #6a4fb3; border-radius: var(--radius);
+        padding: 1.1rem 1.3rem 1.2rem; box-shadow: var(--shadow-sm);
+    }
+    .spec-lead { font-size: 0.9rem; color: var(--ink-2); line-height: 1.6; margin-bottom: 10px; }
+    .spec-lead b { color: var(--ink); }
+    .spec-row {
+        display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
+        padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: 0.88rem;
+    }
+    .spec-row:last-of-type { border-bottom: none; }
+    .spec-name { color: var(--ink); font-weight: 600; min-width: 240px; }
+    .spec-nums { font-family: var(--mono); font-size: 0.78rem; color: #6a4fb3; }
+    .spec-caveat { font-size: 0.72rem; color: var(--ink-3); margin-top: 12px; line-height: 1.45; }
+
     .results-wrap {
         background: var(--card); border: 1px solid var(--line);
         border-radius: var(--radius); overflow: hidden;
@@ -664,6 +681,64 @@ def build_discharge_plan_html(data):
     return "".join(parts)
 
 
+def specialists_for(condition):
+    """Disciplines needed for one condition.
+
+    The field is an array — a condition can genuinely need two disciplines at once. Older
+    extractions stored a single string or null, so both are still accepted.
+    """
+    raw = condition.get("specialist_needed")
+    if not raw:
+        return []
+    if isinstance(raw, str):
+        raw = [raw]
+    return [s.strip() for s in raw if isinstance(s, str) and s.strip()]
+
+
+def build_specialists(data):
+    """Map each external discipline to the conditions that need it.
+
+    Ordered by how many conditions they cover, so the biggest commissions read first. A condition
+    needing two disciplines is listed under both, so the counts sum to more than the number of
+    conditions — that is correct, they are separate commissions.
+    """
+    if doc_type(data) not in PLAN_DOC_TYPES:
+        return []
+    grouped = {}
+    for c in sorted(data.get("conditions", []), key=lambda x: x["condition_number"]):
+        for name in specialists_for(c):
+            grouped.setdefault(name, []).append(c["condition_number"])
+    return sorted(grouped.items(), key=lambda kv: (-len(kv[1]), kv[0]))
+
+
+def build_specialists_html(data):
+    specialists = build_specialists(data)
+    if not specialists:
+        return ""
+
+    n = len(specialists)
+    parts = ['<div class="spec-wrap">']
+    parts.append(
+        f'<div class="spec-lead">You will likely need to bring in <b>{n} external '
+        f'specialist{"" if n == 1 else "s"}</b> for this scheme. The notice never says so — each '
+        f'discipline below is implied by what its conditions actually ask you to produce.</div>'
+    )
+    for name, nums in specialists:
+        label = "condition" if len(nums) == 1 else "conditions"
+        joined = ", ".join(f"#{x}" for x in nums)
+        parts.append(
+            f'<div class="spec-row"><span class="spec-name">{name}</span>'
+            f'<span class="spec-nums">{label} {joined}</span></div>'
+        )
+    parts.append(
+        '<div class="spec-caveat">A guide to resourcing, not a definitive list — some conditions can '
+        'be handled in-house, and one consultant often covers several disciplines. Confirm with your '
+        'team. Not legal or planning advice.</div>'
+    )
+    parts.append("</div>")
+    return "".join(parts)
+
+
 def build_excel(data):
     wb = openpyxl.Workbook()
 
@@ -831,6 +906,26 @@ def build_excel(data):
     for row in ws3.iter_rows(min_row=1):
         row[0].alignment = Alignment(wrap_text=True, vertical="top")
 
+    # ----- Sheet 4: Specialists -----
+    specialists = build_specialists(data)
+    if specialists:
+        ws4 = wb.create_sheet("Specialists")
+        ws4.append(["Specialist", "Conditions", "Count"])
+        for cell in ws4[1]:
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor="4B3B7A")
+        for name, nums in specialists:
+            ws4.append([name, ", ".join(f"#{x}" for x in nums), len(nums)])
+        for col, w in {"A": 42, "B": 46, "C": 8}.items():
+            ws4.column_dimensions[col].width = w
+        for row in ws4.iter_rows(min_row=2):
+            row[1].alignment = Alignment(wrap_text=True, vertical="top")
+        ws4.freeze_panes = "A2"
+        ws4.append([])
+        ws4.append(["A guide to resourcing, not a definitive list — some conditions can be handled "
+                    "in-house, and one consultant often covers several disciplines. Confirm with your "
+                    "team. Not legal or planning advice."])
+
     buffer = io.BytesIO()
     wb.save(buffer)
     return buffer.getvalue()
@@ -907,6 +1002,9 @@ if uploaded_file is not None:
             message = client.messages.create(
                 model="claude-sonnet-4-5",
                 max_tokens=8000,
+                # Extraction and classification, not creative writing: always take the most likely
+                # reading so the same notice gives the same answer twice.
+                temperature=0,
                 system=system_prompt,
                 messages=[{"role": "user", "content": user_content}],
             )
@@ -977,6 +1075,13 @@ if uploaded_file is not None:
             if plan_html:
                 st.markdown('<div class="section-label">Discharge plan</div>', unsafe_allow_html=True)
                 st.markdown(plan_html, unsafe_allow_html=True)
+
+            # ----- SPECIALISTS TO COMMISSION -----
+            spec_html = build_specialists_html(data)
+            if spec_html:
+                st.markdown('<div class="section-label">Specialists to commission</div>',
+                            unsafe_allow_html=True)
+                st.markdown(spec_html, unsafe_allow_html=True)
 
             st.write("")
 
