@@ -13,12 +13,13 @@ Output rules — follow exactly:
   "decision": "granted" or "refused",
   "decision_date": "10 November 2025" or null,
   "time_limit_years": 3 or null,
+  "flags": [ ... ],
   "conditions": [ ... ]
 }
 
 - "decision_date": the Date of Decision exactly as written on the notice, or null if not stated.
 - "time_limit_years": the number of years within which development must begin, taken from the time-limit condition (usually 3), as an integer; null if there is none.
-- If the notice says "refuses to permit" or "REFUSAL", output: {"document_type": "refusal", "is_householder": <as below>, "decision": "refused", "decision_date": <date or null>, "time_limit_years": null, "conditions": []} and nothing else.
+- If the notice says "refuses to permit" or "REFUSAL", output: {"document_type": "refusal", "is_householder": <as below>, "decision": "refused", "decision_date": <date or null>, "time_limit_years": null, "flags": [], "conditions": []} and nothing else.
 - Otherwise "decision" is "granted" and "conditions" is an array of condition objects.
 
 document_type — CRITICAL: what KIND of document this is. Exactly one of these strings:
@@ -45,6 +46,23 @@ is_householder — true, false, or null. This is the statutory FEE category, not
 - false: anything creating a new separate planning unit or not tied to one existing house — new dwellings (even a single one), flats or HMOs, changes of use, commercial, industrial, retail, or major residential schemes.
 - null: genuinely unclear from the description. Prefer null over a guess; the tool shows both fee rates when this is null.
 Judge it from the development description. "Erection of an outbuilding incidental to the dwellinghouse" is householder (true). "Erection of a self-contained dwelling" is not (false), even though it is one house.
+
+flags — errors and inconsistencies IN THE COUNCIL'S OWN NOTICE. Each entry:
+{ "type": "typo" | "duplicate" | "missing-drawing" | "internal-conflict" | "other",
+  "condition": <condition number, or null if it is not about one condition>,
+  "detail": "one sentence naming the concrete evidence" }
+
+PRECISION MATTERS FAR MORE THAN RECALL. A false alarm destroys the user's trust in every other flag on the page, while a missed issue costs nothing — they were never expecting the tool to find it. When you are not certain, DO NOT FLAG. An empty array is a perfectly good and very common answer, and most notices deserve one.
+
+Before emitting any flag, ask: "could a competent planner read this and say nothing is wrong?" If yes, drop it.
+
+- "typo": an unmistakable spelling or date error, e.g. a year written "20221", or "Noevmber". The wrong text must appear in the detail. Do NOT flag British spellings, abbreviations, legal boilerplate, inconsistent capitalisation, or unusual but valid phrasing.
+- "duplicate": two conditions that impose effectively the SAME obligation in near-identical wording. Name both numbers in the detail. Describe them ACCURATELY: say "near-identical" and name what differs (e.g. "conditions 7 and 8 are near-identical Waste Management Strategy conditions, differing only in that 7 covers the residential bin stores and 8 the church hall"). Only call two conditions "identical" if the wording really is word for word. Near-identical conditions applying to different parts of the same scheme ARE worth flagging, because they can usually be discharged in one submission. Conditions that merely share a TOPIC but impose different obligations, or that bite at different stages, are NOT duplicates and must not be flagged.
+- "missing-drawing": a drawing or document reference cited in a condition that does NOT appear in the approved-plans list. Quote the reference exactly. Only flag when you have actually checked the approved-plans list and the reference is genuinely absent. If the notice has no approved-plans condition at all, never flag this.
+- "internal-conflict": two statements in the notice that cannot both be true — different figures for the same thing, or mutually exclusive requirements. Quote both. A condition being stricter than another is not a conflict.
+- "other": any other clear, specific, verifiable inconsistency. Use sparingly.
+
+NEVER flag: a condition being onerous, vague or hard to comply with; anything you would describe with "may", "might", "possibly", "appears to" or "could be"; missing information you merely expected to see; or the wording-versus-reason mismatches already captured by gate_ambiguous on each condition.
 
 Each condition object has exactly these fields:
 

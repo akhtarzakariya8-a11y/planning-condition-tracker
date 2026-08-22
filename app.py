@@ -212,6 +212,29 @@ st.markdown("""
     .gate-go .gate-line b { color: #17663a; }
     .gate-go .gate-nums { color: #17663a; }
 
+    /* ----- CONSISTENCY FLAGS ----- */
+    .flags-wrap {
+        background: #fffdf5; border: 1px solid #ecdfae;
+        border-left: 4px solid #c9a227; border-radius: var(--radius);
+        padding: 1rem 1.2rem 1.05rem; margin: 0 0 1.3rem 0;
+    }
+    .flags-title { font-weight: 700; color: #7a5c0a; font-size: 0.95rem; margin-bottom: 4px; }
+    .flags-lead { font-size: 0.83rem; color: #8a6d20; margin-bottom: 8px; line-height: 1.5; }
+    .flag-row {
+        display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline;
+        padding: 7px 0; border-bottom: 1px solid #f2e9cf; font-size: 0.88rem; color: var(--ink);
+        line-height: 1.5;
+    }
+    .flag-row:last-of-type { border-bottom: none; }
+    .flag-tag {
+        font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
+        letter-spacing: 0.08em; text-transform: uppercase;
+        background: #f3e7bf; color: #7a5c0a;
+        padding: 2px 7px; border-radius: 999px; white-space: nowrap;
+    }
+    .flag-cond { font-family: var(--mono); font-size: 0.78rem; font-weight: 600; color: #8a6d20; }
+    .flags-caveat { font-size: 0.72rem; color: #a5885a; margin-top: 10px; line-height: 1.45; }
+
     /* ----- DISCHARGE PLAN ----- */
     .plan-wrap {
         background: var(--card); border: 1px solid var(--line);
@@ -695,6 +718,40 @@ def specialists_for(condition):
     return [s.strip() for s in raw if isinstance(s, str) and s.strip()]
 
 
+FLAG_LABEL = {
+    "typo": "typo", "duplicate": "duplicate", "missing-drawing": "missing drawing",
+    "internal-conflict": "conflict", "other": "check",
+}
+
+
+def get_flags(data):
+    """Consistency flags raised against the notice itself. Always a list."""
+    flags = data.get("flags")
+    return [f for f in flags if isinstance(f, dict) and f.get("detail")] if isinstance(flags, list) else []
+
+
+def build_flags_html(data):
+    flags = get_flags(data)
+    if not flags:
+        return ""   # a clean notice shows nothing at all
+
+    n = len(flags)
+    parts = ['<div class="flags-wrap">',
+             '<div class="flags-title">⚠ Things to check in the notice</div>',
+             f'<div class="flags-lead">{n} possible {"error" if n == 1 else "errors"} in the '
+             f'council\'s own document — worth querying before you rely on the wording.</div>']
+    for f in flags:
+        tag = FLAG_LABEL.get(f.get("type"), "check")
+        cond = f.get("condition")
+        cond_html = f'<span class="flag-cond">#{cond}</span>' if cond is not None else ""
+        parts.append(f'<div class="flag-row"><span class="flag-tag">{tag}</span>{cond_html}'
+                     f'<span>{f["detail"]}</span></div>')
+    parts.append('<div class="flags-caveat">Automated flags — the tool may miss some issues or '
+                 'occasionally over-flag. Always read against the source notice.</div>')
+    parts.append("</div>")
+    return "".join(parts)
+
+
 def build_specialists(data):
     """Map each external discipline to the conditions that need it.
 
@@ -760,6 +817,27 @@ def build_excel(data):
     for row in ws.iter_rows(min_row=2):
         row[1].alignment = Alignment(wrap_text=True, vertical="top")
     ws.freeze_panes = "A2"
+
+    # ----- Things to check (only when the notice actually has problems) -----
+    flags = get_flags(data)
+    if flags:
+        wsf = wb.create_sheet("Things to check")
+        wsf.append(["Type", "Condition", "Detail"])
+        for cell in wsf[1]:
+            cell.font = Font(bold=True, color="FFFFFF")
+            cell.fill = PatternFill("solid", fgColor="8A6D20")
+        for f in flags:
+            cond = f.get("condition")
+            wsf.append([FLAG_LABEL.get(f.get("type"), "check"),
+                        f"#{cond}" if cond is not None else "—", f["detail"]])
+        for col, w in {"A": 17, "B": 11, "C": 78}.items():
+            wsf.column_dimensions[col].width = w
+        for row in wsf.iter_rows(min_row=2):
+            row[2].alignment = Alignment(wrap_text=True, vertical="top")
+        wsf.freeze_panes = "A2"
+        wsf.append([])
+        wsf.append(["Automated flags — the tool may miss some issues or occasionally over-flag. "
+                    "Always read against the source notice."])
 
     # ----- Sheet 2: Before you start -----
     # Only for documents that actually permit works to start.
@@ -1045,6 +1123,11 @@ if uploaded_file is not None:
             if gate_html:
                 st.markdown(gate_html, unsafe_allow_html=True)
 
+            # ----- THINGS TO CHECK IN THE NOTICE -----
+            flags_html = build_flags_html(data)
+            if flags_html:
+                st.markdown(flags_html, unsafe_allow_html=True)
+
             st.markdown('<div class="section-label">Extracted conditions</div>', unsafe_allow_html=True)
 
             rows_html = ""
@@ -1091,6 +1174,24 @@ if uploaded_file is not None:
                                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                                type="primary")
 
+    # Order matters: AuthenticationError and RateLimitError are subclasses of APIStatusError.
+    except anthropic.AuthenticationError:
+        st.error("This app can't reach the AI service — its API key is missing or invalid. "
+                 "That's a problem with the app, not with your file.")
+    except anthropic.RateLimitError:
+        st.error("The AI service is busy at the moment. Please wait a few seconds and try again — "
+                 "there's nothing wrong with your file.")
+    except anthropic.APIStatusError as exc:
+        detail = str(getattr(exc, "message", "") or exc).lower()
+        if "credit balance" in detail or "billing" in detail or "quota" in detail:
+            st.error("This app has run out of API credit, so it can't analyse notices right now. "
+                     "That's a problem with the app, not with your file.")
+        else:
+            st.error("The AI service returned an error, so this notice couldn't be analysed. "
+                     "That's a problem with the service, not with your file — please try again shortly.")
+    except anthropic.APIConnectionError:
+        st.error("Couldn't reach the AI service — it may be a network problem. "
+                 "Please try again in a moment.")
     except Exception:
         st.error("Something went wrong processing this file. Please check it's a valid "
                  "UK planning decision notice PDF and try again.")

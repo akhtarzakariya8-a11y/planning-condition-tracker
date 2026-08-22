@@ -7,7 +7,12 @@
     "            specialists values are ARRAYS and compared as sets, so order does not matter.",
     "            specialist_is_empty lists conditions that need no external specialist at all.",
     "contested = conditions where two competent consultants would disagree. Reported, NOT scored.",
-    "            Move an entry out of contested into asserted once you have decided the right answer."
+    "            Move an entry out of contested into asserted once you have decided the right answer.",
+    "",
+    "flags.count       = exact number of consistency flags expected.",
+    "flags.must_include = flags that must be present; matched on type and a substring of detail.",
+    "A clean notice asserting count 0 is the FALSE-POSITIVE GUARD — the checker's whole value",
+    "depends on not crying wolf, so those entries matter more than the ones that find things."
   ],
   "21_04939_FUL--3474437.pdf": {
     "asserted": {
@@ -70,7 +75,21 @@
         26,
         34,
         37
-      ]
+      ],
+      "flags": {
+        "count": 2,
+        "must_include": [
+          {
+            "type": "typo",
+            "condition": 17,
+            "detail_contains": "20221"
+          },
+          {
+            "type": "duplicate",
+            "detail_contains": "7 and 8"
+          }
+        ]
+      }
     },
     "contested": {
       "18": "gate: flips between before-use and blocks-any-commencement across runs. Decide which.",
@@ -80,5 +99,45 @@
       "11": "gate_ambiguous: flagged ambiguous in some runs, not others. Decide.",
       "33": "gate_ambiguous and specialist both drift. Decide."
     }
+  },
+  "25_AP_3061-DECISION_NOTICE_-_LBC_-_GRANT-4184773.pdf": {
+    "asserted": {
+      "flags": {
+        "count": 0
+      }
+    },
+    "contested": {}
+  },
+  "26_01199_FUL--3568317.pdf": {
+    "asserted": {
+      "flags": {
+        "count": 0
+      }
+    },
+    "contested": {}
+  },
+  "26_01232_FUL--3569585.pdf": {
+    "asserted": {
+      "flags": {
+        "count": 0
+      }
+    },
+    "contested": {}
+  },
+  "26_01309_FUL--3573081.pdf": {
+    "asserted": {
+      "flags": {
+        "count": 0
+      }
+    },
+    "contested": {}
+  },
+  "25_01905_DISC-APPROVED__DISC__CON_DISCHARGE_-_DEC_NOT-4319058.pdf": {
+    "asserted": {
+      "flags": {
+        "count": 0
+      }
+    },
+    "contested": {}
   }
 }

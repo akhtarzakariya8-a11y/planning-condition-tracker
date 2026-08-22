@@ -80,6 +80,21 @@ def score(data, asserted, contested):
         want = sorted(n for n in asserted["gate_ambiguous"] if n not in skip)
         check("gate_ambiguous set", got, want)
 
+    if "flags" in asserted:
+        want_flags = asserted["flags"]
+        got_flags = app.get_flags(data)
+        check("flag count", len(got_flags), want_flags["count"])
+        for spec in want_flags.get("must_include", []):
+            hit = any(
+                f.get("type") == spec["type"]
+                and spec["detail_contains"].lower() in (f.get("detail") or "").lower()
+                and (spec.get("condition") is None or f.get("condition") == spec["condition"])
+                for f in got_flags
+            )
+            checks.append(hit)
+            if not hit:
+                fails.append(f"missing flag: {spec['type']} containing {spec['detail_contains']!r}")
+
     for num, want in asserted.get("specialists", {}).items():
         if int(num) in skip:
             continue
@@ -102,6 +117,7 @@ def fingerprint(data):
     fp = {f"top.{k}": data.get(k) for k in
           ("document_type", "jurisdiction", "is_householder", "decision", "time_limit_years")}
     fp["top.condition_count"] = len(data.get("conditions", []))
+    fp["top.flags"] = sorted(f"{f.get('type')}:{f.get('condition')}" for f in app.get_flags(data))
     for c in data.get("conditions", []):
         n = c["condition_number"]
         fp[f"#{n}.gate"] = c.get("gate")
