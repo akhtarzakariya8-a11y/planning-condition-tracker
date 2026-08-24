@@ -10,7 +10,7 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from dotenv import load_dotenv
 
-from theme.ct_theme import inject_theme, eyebrow, tag, banner, note
+from theme.ct_theme import inject_theme, label, pill, tile, banner, note, C
 
 load_dotenv()
 client = anthropic.Anthropic()
@@ -30,45 +30,47 @@ inject_theme()
 # Layout only — every colour and type decision comes from theme/tokens.css.
 st.markdown("""
 <style>
-  .block-container { max-width: 1120px; }
-  .ct-panel      { padding: var(--ct-s4); margin: 0 0 var(--ct-s4) 0; }
+  .block-container { max-width: 1180px; }
+  .ct-panel      { padding: var(--ct-s5); margin: 0 0 var(--ct-s5) 0; }
   .ct-panel-hd   { margin-bottom: var(--ct-s3); }
-  .ct-line       { padding: 10px 0; border-bottom: 1px solid var(--ct-border-soft); }
+  .ct-line       { padding: 11px 0; border-bottom: 1px solid var(--ct-border-soft); }
   .ct-line:last-of-type { border-bottom: none; }
-  .ct-line-txt   { font: 400 var(--ct-body-size)/1.6 var(--ct-font-body); color: var(--ct-body); }
-  .ct-nums       { font-family: var(--ct-font-mono); font-size: 11.5px; letter-spacing:.2px;
-                   color: var(--ct-faint); margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .ct-kv         { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:baseline; }
-  .ct-kv-k       { font: 500 var(--ct-body-size)/1.5 var(--ct-font-body); color: var(--ct-ink);
-                   min-width: 232px; }
-  .ct-total      { font: 600 20px/1.3 var(--ct-font-display); color: var(--ct-ink);
-                   font-variant-numeric: tabular-nums; margin-top: var(--ct-s3); }
-  .ct-stat       { padding: 18px 20px; }
-  .ct-stat-num   { font: 700 31px/1 var(--ct-font-display); color: var(--ct-ink);
-                   font-variant-numeric: tabular-nums; margin-top: 8px; }
-  .ct-step-n     { font-family: var(--ct-font-mono); font-size: 9.5px; letter-spacing: 1.8px;
-                   color: var(--ct-accent); }
+  .ct-line-txt   { font: 400 var(--ct-body-size)/1.65 var(--ct-font-body); color: var(--ct-body); }
+  .ct-nums       { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ct-faint);
+                   margin-top: 5px; letter-spacing: .2px; }
+  .ct-kv         { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; }
+  .ct-kv-k       { font: 600 var(--ct-body-size)/1.5 var(--ct-font-body); color: var(--ct-ink);
+                   min-width: 236px; }
+  .ct-total      { font: var(--ct-h2); color: var(--ct-ink);
+                   font-variant-numeric: tabular-nums; margin-top: var(--ct-s4); }
+  .ct-expired    { display:flex; gap:10px; align-items:flex-start;
+                   padding: 11px 14px; border-radius: var(--ct-r-md);
+                   background: var(--ct-overdue-tint); border: 1px solid #e6c9c5;
+                   font: 400 13px/1.5 var(--ct-font-body); color: var(--ct-overdue);
+                   margin-bottom: var(--ct-s4); }
+  .ct-expired b  { font-weight: 700; }
+  .ct-step-n     { font: 700 var(--ct-label-size)/1 var(--ct-font-body);
+                   letter-spacing: var(--ct-label-track); color: var(--ct-accent); }
   .ct-tbl        { width:100%; border-collapse: collapse; }
   .ct-tbl thead th {
-      font-family: var(--ct-font-mono); font-size: 9.5px; letter-spacing: 1.8px;
-      text-transform: uppercase; color: var(--ct-fainter); font-weight: 400;
-      text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--ct-border);
-      white-space: nowrap; }
+      font:700 10.5px/1 var(--ct-font-body); letter-spacing:.9px; text-transform:uppercase;
+      color:var(--ct-faint); text-align:left; padding:13px 18px;
+      border-bottom:1px solid var(--ct-border); white-space:nowrap; }
   .ct-tbl tbody td {
-      padding: 16px 18px; vertical-align: top;
+      padding: 13px 18px; vertical-align: top;
       border-bottom: 1px solid var(--ct-border-soft);
-      font: 500 14px/1.55 var(--ct-font-body); color: var(--ct-ink); }
+      font: 600 14px/1.55 var(--ct-font-body); color: var(--ct-ink); }
   .ct-tbl tbody tr:last-child td { border-bottom: none; }
   .ct-tbl tbody tr:hover td { background: var(--ct-surface-hover); }
-  .ct-tbl .num   { font-family: var(--ct-font-mono); font-size: 12px; color: var(--ct-faint);
-                   font-variant-numeric: tabular-nums; }
+  .ct-tbl .num   { font-variant-numeric: tabular-nums; font-weight:600; color: var(--ct-faint); }
   .ct-tbl .sec   { font: 400 12.5px/1.5 var(--ct-font-body); color: var(--ct-muted);
                    white-space: nowrap; }
-  .ct-flagrow    { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:baseline;
-                   padding: 10px 0; border-bottom:1px solid var(--ct-border-soft); }
+  .ct-quiet      { font: 500 12.5px/1 var(--ct-font-body); color: var(--ct-faint); }
+  .ct-flagrow    { display:flex; flex-wrap:wrap; gap:9px 12px; align-items:baseline;
+                   padding: 11px 0; border-bottom:1px solid var(--ct-border-soft); }
   .ct-flagrow:last-of-type { border-bottom:none; }
   .ct-panel .ct-note { margin-top: var(--ct-s2); }
-  .ct-panel .ct-note:first-of-type { margin-top: var(--ct-s4); }
+  .ct-panel .ct-note:first-of-type { margin-top: var(--ct-s5); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -166,46 +168,47 @@ def build_safety_gate_html(data):
         return ""
 
     parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', eyebrow("BEFORE YOU START ON SITE"), '</div>']
+             '<div class="ct-panel-hd">', label("BEFORE YOU START ON SITE"), '</div>']
 
     if begin_by and begin_by < datetime.now().date():
-        parts.append(banner(
-            f"This start deadline has already passed — development had to begin by "
-            f"{fmt_date(begin_by)}. Unless a material operation lawfully started on site before then, "
-            f"this permission has expired and cannot be implemented.", "block"))
+        parts.append(
+            f'<div class="ct-expired"><span>⚠</span><span><b>This start deadline has already '
+            f'passed.</b> Development had to begin by <b>{fmt_date(begin_by)}</b>. Unless a material '
+            f'operation lawfully started on site before then, this permission has expired and cannot '
+            f'be implemented.</span></div>'
+        )
     elif begin_by:
         parts.append(
-            f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">Development must begin by '
-            f'<span class="ct-num" style="color:var(--ct-ink);font-weight:500">{fmt_date(begin_by)}</span> '
-            f'or the permission lapses. <span style="color:var(--ct-faint)">(computed from the decision '
-            f'date — confirm against the notice)</span></div>'
+            f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s4)">Development must begin by '
+            f'<b style="font-variant-numeric:tabular-nums">{fmt_date(begin_by)}</b> or the permission '
+            f'lapses. <span style="color:var(--ct-faint)">(computed from the decision date — confirm '
+            f'against the notice)</span></div>'
         )
 
-    def line(pill_cls, text, conditions):
-        return (f'<div class="ct-line">'
-                f'<span class="ct-pill {pill_cls}">{text}</span>'
+    def line(status, text, conditions):
+        return (f'<div class="ct-line">{pill(text, status)}'
                 f'<div class="ct-nums">{cond_nums(conditions)}</div></div>')
 
     if blockers:
-        parts.append(line("ct-pill--block",
+        parts.append(line("overdue",
                           f"{n_conditions(len(blockers))} must be discharged before you can lawfully "
                           f"start on site", blockers))
     if startable:
         verb = "blocks" if len(startable) == 1 else "block"
-        parts.append(line("ct-pill--cleared",
+        parts.append(line("discharged",
                           f"{len(startable)} more only {verb} above-ground works — you can begin "
                           f"demolition and groundworks first", startable))
     if piling:
-        parts.append(line("ct-pill--check",
+        parts.append(line("action",
                           f"{n_conditions(len(piling))} to clear before any piling", piling))
     if ambiguous:
         verb = "needs" if len(ambiguous) == 1 else "need"
-        parts.append(line("ct-pill--check",
+        parts.append(line("action",
                           f"{n_conditions(len(ambiguous))} {verb} checking — wording is ambiguous",
                           ambiguous))
 
-    parts.append('<div class="ct-nums" style="margin-top:var(--ct-s3)">FULL DETAIL IN THE '
-                 'CONDITIONS TABLE BELOW</div>')
+    parts.append(f'<div style="margin-top:var(--ct-s4)">'
+                 f'{label("FULL DETAIL IN THE CONDITIONS TABLE BELOW")}</div>')
 
     if doc_type(data) in CIL_DOC_TYPES:
         parts.append(note(
@@ -292,12 +295,12 @@ def build_discharge_plan(data):
     known = {g for _, gates in DISCHARGE_BATCHES for g in gates}
 
     batches = []
-    for i, (label, gates) in enumerate(DISCHARGE_BATCHES):
+    for i, (stage, gates) in enumerate(DISCHARGE_BATCHES):
         catch_all = i == len(DISCHARGE_BATCHES) - 1
         members = [c for c in conditions
                    if c.get("gate") in gates or (catch_all and c.get("gate") not in known)]
         if members:
-            batches.append((label, members))
+            batches.append((stage, members))
 
     householder = data.get("is_householder")
     juris = jurisdiction(data)
@@ -348,17 +351,16 @@ def build_discharge_plan_html(data):
 
     needs = "needs" if plan["total"] == 1 else "need"
     parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', eyebrow("DISCHARGE PLAN"), '</div>',
+             '<div class="ct-panel-hd">', label("DISCHARGE PLAN"), '</div>',
              f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">You have '
              f'<b>{n_conditions(plan["total"])}</b> that {needs} formal discharge (submitted to '
              f'<b>and</b> approved by the council). {fee_lead}</div>']
-    for label, members in plan["batches"]:
+    for stage, members in plan["batches"]:
         parts.append(
             f'<div class="ct-line"><div class="ct-kv">'
-            f'<span class="ct-kv-k">{label}</span>'
-            f'<span class="ct-pill ct-pill--due">{n_conditions(len(members))}</span>'
-            f'<span class="ct-num" style="font-size:11.5px;color:var(--ct-faint)">'
-            f'{cond_nums(members)}</span></div></div>'
+            f'<span class="ct-kv-k">{stage}</span>'
+            f'{pill(n_conditions(len(members)), "submitted")}'
+            f'<span class="ct-nums" style="margin-top:0">{cond_nums(members)}</span></div></div>'
         )
 
     if not plan["fee_payable"]:
@@ -436,17 +438,17 @@ def build_flags_html(data):
     n = len(flags)
     n = len(flags)
     parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', eyebrow("THINGS TO CHECK IN THE NOTICE"), '</div>',
+             '<div class="ct-panel-hd">', label("THINGS TO CHECK IN THE NOTICE"), '</div>',
              f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s2)">{n} possible '
              f'{"error" if n == 1 else "errors"} in the council\'s own document — worth querying '
              f'before you rely on the wording.</div>']
     for f in flags:
-        label = FLAG_LABEL.get(f.get("type"), "check").upper()
+        kind = FLAG_LABEL.get(f.get("type"), "check").upper()
         cond = f.get("condition")
-        cond_html = (f'<span class="ct-num" style="font-size:11.5px;color:var(--ct-faint)">'
-                     f'#{cond}</span>') if cond is not None else ""
-        parts.append(f'<div class="ct-flagrow">{tag(label)}{cond_html}'
-                     f'<span class="ct-line-txt" style="flex:1;min-width:240px">{f["detail"]}</span>'
+        cond_html = (f'<span class="ct-quiet" style="font-variant-numeric:tabular-nums">#{cond}'
+                     f'</span>') if cond is not None else ""
+        parts.append(f'<div class="ct-flagrow">{pill(kind, "action")}{cond_html}'
+                     f'<span class="ct-line-txt" style="flex:1;min-width:250px">{f["detail"]}</span>'
                      f'</div>')
     parts.append(note("Automated flags — the tool may miss some issues or occasionally over-flag. "
                       "Always read against the source notice."))
@@ -477,7 +479,7 @@ def build_specialists_html(data):
 
     n = len(specialists)
     parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', eyebrow("SPECIALISTS TO COMMISSION"), '</div>',
+             '<div class="ct-panel-hd">', label("SPECIALISTS TO COMMISSION"), '</div>',
              f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">You will likely need to '
              f'bring in <b>{n} external specialist{"" if n == 1 else "s"}</b> for this scheme. The '
              f'notice never says so — each discipline below is implied by what its conditions '
@@ -487,8 +489,8 @@ def build_specialists_html(data):
         parts.append(
             f'<div class="ct-line"><div class="ct-kv">'
             f'<span class="ct-kv-k">{name}</span>'
-            f'<span class="ct-pill ct-pill--due">{n_conditions(len(nums))}</span>'
-            f'<span class="ct-num" style="font-size:11.5px;color:var(--ct-faint)">{joined}</span>'
+            f'{pill(n_conditions(len(nums)), "submitted")}'
+            f'<span class="ct-nums" style="margin-top:0">{joined}</span>'
             f'</div></div>'
         )
     parts.append(note(
@@ -648,8 +650,8 @@ def build_excel(data):
                   f"condition. So bundle them.", bold=True)
         line3("A sensible way to batch these is by stage:")
         line3("")
-        for label, members in plan["batches"]:
-            line3(f"   {label}:   {n_conditions(len(members))} — {cond_nums(members)}")
+        for stage, members in plan["batches"]:
+            line3(f"   {stage}:   {n_conditions(len(members))} — {cond_nums(members)}")
         line3("")
         rise = ""
         if scale and scale["later"]:
@@ -712,24 +714,23 @@ def build_excel(data):
     return buffer.getvalue()
 
 
-# Category -> safety-gate severity. Colour in this theme only ever means severity, so the old
-# decorative per-category palette is gone.
+# Category -> the editorial status set. Colour means status here, so only categories implying
+# outstanding work get a pill; time-limit and ongoing need no action and stay quiet.
 CATEGORY_PILL = {
-    "pre-commencement": "ct-pill--block",
-    "discharge-required": "ct-pill--check",
-    "pre-occupation": "ct-pill--due",
-    "time-limit": "ct-pill--due",
-    "ongoing": "ct-pill--ongoing",
+    "pre-commencement": "overdue",
+    "discharge-required": "action",
+    "pre-occupation": "submitted",
 }
 
 
 def category_pill(cat):
-    return f'<span class="ct-pill {CATEGORY_PILL.get(cat, "ct-pill--due")}">{cat}</span>'
+    status = CATEGORY_PILL.get(cat)
+    return pill(cat, status) if status else f'<span class="ct-quiet">{cat}</span>'
 
 
 # ----- HERO -----
 st.markdown(
-    f'{eyebrow("AI PLANNING CONDITION TRACKER")}'
+    f'{label("AI PLANNING CONDITION TRACKER")}'
     f'<h1 class="ct-h1" style="margin:10px 0 12px">Planning conditions, tracked in seconds.</h1>'
     f'<p class="ct-body" style="max-width:640px;margin:0">A second pair of eyes on your planning '
     f'conditions. Upload a UK decision notice and get every condition read, categorised and exported '
@@ -738,7 +739,7 @@ st.markdown(
 )
 
 # ----- HOW IT WORKS -----
-st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{eyebrow("HOW IT WORKS")}</div>',
+st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{label("HOW IT WORKS")}</div>',
             unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 for col, num, title, text in [
@@ -747,15 +748,16 @@ for col, num, title, text in [
     (c3, "03", "Export", "Download your structured tracker"),
 ]:
     col.markdown(
-        f'<div class="ct-card ct-stat" style="height:100%">'
+        f'<div class="ct-card" style="height:100%;padding:18px 20px">'
         f'<div class="ct-step-n">{num}</div>'
-        f'<div class="ct-h3" style="margin:10px 0 4px">{title}</div>'
+        f'<div style="font:600 17px/1.3 var(--ct-font-display);color:var(--ct-ink);'
+        f'margin:9px 0 5px">{title}</div>'
         f'<div class="ct-muted">{text}</div></div>',
         unsafe_allow_html=True,
     )
 
 # ----- UPLOAD -----
-st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{eyebrow("UPLOAD A DECISION NOTICE")}</div>',
+st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{label("UPLOAD A DECISION NOTICE")}</div>',
             unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="collapsed")
 
@@ -821,21 +823,17 @@ if uploaded_file is not None:
             discharge = sum(1 for c in conditions if c["discharge_required"])
             precom = sum(1 for c in conditions if c["category"] == "pre-commencement")
 
-            st.markdown(banner(f"{decision} — {total} planning conditions extracted from this "
-                               f"notice", "ok"), unsafe_allow_html=True)
+            st.markdown(banner(f"{decision} — {total} planning conditions extracted from this notice",
+                               f"{discharge} need discharge"), unsafe_allow_html=True)
             st.markdown('<div style="height:var(--ct-s4)"></div>', unsafe_allow_html=True)
 
             s1, s2, s3 = st.columns(3)
-            for col, value, label in [
-                (s1, total, "TOTAL CONDITIONS"),
-                (s2, precom, "PRE-COMMENCEMENT"),
-                (s3, discharge, "NEED DISCHARGE"),
+            for col, value, text, dot, danger in [
+                (s1, total, "Total conditions", C["submitted"], False),
+                (s2, precom, "Pre-commencement", C["overdue"], True),
+                (s3, discharge, "Need discharge", C["action"], False),
             ]:
-                col.markdown(
-                    f'<div class="ct-card ct-stat">{eyebrow(label)}'
-                    f'<div class="ct-stat-num">{value}</div></div>',
-                    unsafe_allow_html=True,
-                )
+                col.markdown(tile(text, value, dot=dot, danger=danger), unsafe_allow_html=True)
 
             st.write("")
 
@@ -850,14 +848,14 @@ if uploaded_file is not None:
                 st.markdown(flags_html, unsafe_allow_html=True)
 
             st.markdown(f'<div style="margin:var(--ct-s5) 0 var(--ct-s3)">'
-                        f'{eyebrow("EXTRACTED CONDITIONS")}</div>', unsafe_allow_html=True)
+                        f'{label("EXTRACTED CONDITIONS")}</div>', unsafe_allow_html=True)
 
             rows_html = ""
             for c in sort_by_category(conditions):
                 deadline = c["deadline"] or "—"
-                disc = ('<span class="ct-num" style="color:var(--ct-ink)">YES</span>'
+                disc = ('<span class="ct-quiet" style="color:var(--ct-ink)">Yes</span>'
                         if c["discharge_required"]
-                        else '<span class="ct-num" style="color:var(--ct-fainter)">—</span>')
+                        else '<span class="ct-quiet">—</span>')
                 rows_html += (
                     f'<tr>'
                     f'<td class="num">{c["condition_number"]}</td>'

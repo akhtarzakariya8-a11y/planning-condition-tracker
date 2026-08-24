@@ -1,8 +1,20 @@
-# Native Streamlit widget tokens. The real theme lives in theme/tokens.css —
-# these only exist so Streamlit's own chrome matches it before CSS loads.
+# Streamlit native tokens — editorial theme.
+# Copy to .streamlit/config.toml at your app root.
+
 [theme]
-primaryColor = "#2A54D6"
-backgroundColor = "#EEF1F5"
-secondaryBackgroundColor = "#FCFDFE"
-textColor = "#161A22"
+base = "light"
+primaryColor = "#2e6e4e"
+backgroundColor = "#fffdf9"
+secondaryBackgroundColor = "#f4f1ea"
+textColor = "#1c1a17"
 font = "sans serif"
+
+[theme.sidebar]
+backgroundColor = "#21201b"
+textColor = "#e9e4d8"
+primaryColor = "#7db894"
+
+[server]
+# 24MB, not the theme's default 40: base64 inflates a PDF by ~33% and the
+# Anthropic request limit is ~32MB, so app.py rejects anything larger anyway.
+maxUploadSize = 24
