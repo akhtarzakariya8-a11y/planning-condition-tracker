@@ -1,6 +1,8 @@
+# Native Streamlit widget tokens. The real theme lives in theme/tokens.css —
+# these only exist so Streamlit's own chrome matches it before CSS loads.
 [theme]
-primaryColor = "#1F4E78"
-backgroundColor = "#ffffff"
-secondaryBackgroundColor = "#f4f8fd"
-textColor = "#1a2634"
+primaryColor = "#2A54D6"
+backgroundColor = "#EEF1F5"
+secondaryBackgroundColor = "#FCFDFE"
+textColor = "#161A22"
 font = "sans serif"

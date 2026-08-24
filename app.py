@@ -10,6 +10,8 @@ import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment
 from dotenv import load_dotenv
 
+from theme.ct_theme import inject_theme, eyebrow, tag, banner, note
+
 load_dotenv()
 client = anthropic.Anthropic()
 
@@ -17,342 +19,56 @@ with open("prompt_v4_production.txt") as f:
     system_prompt = f.read()
 
 
-# ----- PAGE CONFIG -----
+# ----- PAGE CONFIG + THEME -----
 st.set_page_config(
     page_title="AI Planning Condition Tracker",
     page_icon="📋",
-    layout="centered",
+    layout="wide",
 )
+inject_theme()
 
-# ----- CUSTOM STYLING -----
+# Layout only — every colour and type decision comes from theme/tokens.css.
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap');
-
-    :root {
-        --navy: #122e54;
-        --blue: #1d5cb8;
-        --blue-ink: #163f7d;
-        --blue-soft: #ecf2fa;
-        --ink: #16202f;
-        --ink-2: #4a586e;
-        --ink-3: #8593a7;
-        --line: #e6ebf2;
-        --line-soft: #eef2f7;
-        --bg: #f8fafc;
-        --card: #ffffff;
-        --radius: 14px;
-        --shadow-sm: 0 1px 2px rgba(18,46,84,0.05);
-        --shadow-md: 0 1px 3px rgba(18,46,84,0.05), 0 6px 20px -8px rgba(18,46,84,0.08);
-        --mono: 'JetBrains Mono', ui-monospace, monospace;
-    }
-
-    html, body, [class*="css"], .stMarkdown, .stApp, button, input {
-        font-family: 'Instrument Sans', -apple-system, 'Segoe UI', sans-serif;
-    }
-    .stApp { background: var(--bg); }
-    .block-container { padding-top: 4.2rem; padding-bottom: 3rem; max-width: 880px; }
-
-    #MainMenu, footer, header[data-testid="stHeader"],
-    [data-testid="stToolbar"], [data-testid="stDecoration"] {
-        visibility: hidden; height: 0; position: fixed;
-    }
-
-    .eyebrow {
-        font-family: var(--mono);
-        font-size: 0.7rem; font-weight: 600;
-        letter-spacing: 0.18em; text-transform: uppercase;
-        color: var(--blue); margin-bottom: 20px;
-        display: flex; align-items: center; gap: 10px;
-    }
-    .eyebrow::before {
-        content: ""; width: 22px; height: 1.5px; background: var(--blue);
-        display: inline-block;
-    }
-    .hero-title {
-        font-size: 3rem; font-weight: 700; letter-spacing: -0.04em;
-        line-height: 1.05; color: var(--ink); margin: 0 0 18px 0;
-        text-wrap: balance;
-    }
-    .hero-sub {
-        font-size: 1.1rem; font-weight: 400; color: var(--ink-2);
-        line-height: 1.65; max-width: 600px; margin: 0;
-        text-wrap: pretty;
-    }
-
-    .section-label {
-        font-family: var(--mono);
-        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
-        text-transform: uppercase; color: var(--ink-3);
-        margin: 3.4rem 0 1.1rem 0;
-        display: flex; align-items: center; gap: 14px;
-    }
-    .section-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
-
-    .step-card {
-        background: var(--card); border: 1px solid var(--line);
-        border-radius: var(--radius); padding: 1.3rem 1.3rem 1.4rem;
-        height: 100%; box-shadow: var(--shadow-sm);
-        transition: box-shadow 0.2s, transform 0.2s;
-    }
-    .step-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-    .step-num {
-        font-family: var(--mono); font-size: 0.7rem; font-weight: 600;
-        letter-spacing: 0.1em; color: var(--blue);
-        display: block; margin-bottom: 14px;
-    }
-    .step-title {
-        color: var(--ink); font-size: 1rem; font-weight: 600;
-        letter-spacing: -0.01em; margin-bottom: 4px;
-    }
-    .step-text { color: var(--ink-2); font-size: 0.87rem; line-height: 1.55; }
-
-    [data-testid="stFileUploader"] section {
-        background: var(--card);
-        border: 1.5px dashed #b7c8de;
-        border-radius: 16px;
-        padding: 2.6rem 2rem;
-        box-shadow: var(--shadow-sm);
-        transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-    }
-    [data-testid="stFileUploader"] section:hover {
-        border-color: var(--blue);
-        background: #fcfdff;
-        box-shadow: 0 1px 3px rgba(18,46,84,0.05), 0 8px 28px -10px rgba(29,92,184,0.18);
-    }
-    [data-testid="stFileUploader"] section > div:first-child svg,
-    [data-testid="stFileUploaderDropzoneInstructions"] svg {
-        color: var(--blue); fill: var(--blue);
-    }
-    [data-testid="stFileUploaderDropzoneInstructions"] div span {
-        color: var(--ink); font-weight: 500;
-    }
-    [data-testid="stFileUploaderDropzoneInstructions"] div small { color: var(--ink-3); }
-    [data-testid="stFileUploader"] section button {
-        background: var(--navy); color: #fff; border: none;
-        border-radius: 9px; font-weight: 600; padding: 0.45rem 1.1rem;
-        transition: background 0.15s;
-    }
-    [data-testid="stFileUploader"] section button:hover { background: var(--blue-ink); color: #fff; }
-    [data-testid="stFileUploaderFile"] { color: var(--ink-2); }
-
-    [data-testid="stSpinner"] p { color: var(--ink-2); font-size: 0.92rem; }
-
-    .decision-banner {
-        display: flex; align-items: center; gap: 14px;
-        background: #f2faf5; border: 1px solid #d3ebdd;
-        border-radius: var(--radius); padding: 1rem 1.3rem;
-        margin: 0 0 1.2rem 0;
-    }
-    .decision-banner .tick {
-        width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
-        background: #17934f; color: #fff; display: flex;
-        align-items: center; justify-content: center;
-        font-size: 0.9rem; font-weight: 700;
-    }
-    .decision-banner .d-title {
-        color: #124a2c; font-weight: 700; font-size: 0.95rem;
-        letter-spacing: 0.03em; font-family: var(--mono);
-    }
-    .decision-banner .d-sub { color: #41704f; font-size: 0.87rem; margin-top: 1px; }
-
-    .stat-card {
-        position: relative; overflow: hidden;
-        background: var(--card); border: 1px solid var(--line);
-        border-radius: var(--radius); padding: 1.2rem 1.3rem 1.15rem;
-        box-shadow: var(--shadow-sm);
-    }
-    .stat-card::before {
-        content: ""; position: absolute; top: 0; left: 0; right: 0;
-        height: 3px; background: var(--stat-accent, var(--navy));
-    }
-    .stat-num {
-        font-size: 2.2rem; font-weight: 700; letter-spacing: -0.045em;
-        color: var(--ink); line-height: 1;
-    }
-    .stat-label {
-        font-family: var(--mono);
-        font-size: 0.66rem; font-weight: 600; letter-spacing: 0.13em;
-        text-transform: uppercase; color: var(--ink-3); margin-top: 9px;
-    }
-
-    /* ----- SAFETY GATE PANEL ----- */
-    .gate-wrap {
-        background: #fffaf2; border: 1px solid #f0dcc0;
-        border-left: 4px solid #d98a1f; border-radius: var(--radius);
-        padding: 1.1rem 1.3rem 1.2rem; margin: 0 0 1.3rem 0;
-    }
-    .gate-title {
-        font-weight: 700; color: #8a4b0a; font-size: 0.98rem;
-        letter-spacing: 0.01em; margin-bottom: 10px;
-    }
-    .gate-beginby {
-        font-family: var(--mono); font-size: 0.8rem; color: #7a5a2a;
-        line-height: 1.5; margin-bottom: 6px;
-    }
-    .gate-beginby b { color: #5a3d12; }
-    .gate-lapsed {
-        background: #fdf3f3; border: 1px solid #e8c4c4; border-radius: 10px;
-        padding: 0.7rem 0.9rem; margin-bottom: 10px;
-        font-size: 0.87rem; color: #8a2020; line-height: 1.5;
-    }
-    .gate-lapsed b { color: #6d1414; }
-    .gate-line { font-size: 0.9rem; color: var(--ink); line-height: 1.55; padding: 5px 0; }
-    .gate-line b { color: #6b3a06; }
-    .gate-nums { font-family: var(--mono); font-size: 0.82rem; font-weight: 600; color: #8a4b0a; }
-    .gate-detail { font-size: 0.8rem; color: #a5885a; margin-top: 10px; }
-    .gate-cil {
-        background: #fdf3f3; border: 1px solid #ecd0d0; border-radius: 10px;
-        padding: 0.7rem 0.9rem; margin-top: 14px; font-size: 0.82rem;
-        color: #7a3535; line-height: 1.5;
-    }
-    .gate-caveat { font-size: 0.72rem; color: #a5885a; margin-top: 10px; line-height: 1.45; }
-    .gate-go { background: #f2faf5; border: 1px solid #d3ebdd; border-radius: 10px; padding: 0.7rem 0.9rem; margin: 10px 0 4px; }
-    .gate-go .gate-line { padding: 0; color: #1d5c39; }
-    .gate-go .gate-line b { color: #17663a; }
-    .gate-go .gate-nums { color: #17663a; }
-
-    /* ----- CONSISTENCY FLAGS ----- */
-    .flags-wrap {
-        background: #fffdf5; border: 1px solid #ecdfae;
-        border-left: 4px solid #c9a227; border-radius: var(--radius);
-        padding: 1rem 1.2rem 1.05rem; margin: 0 0 1.3rem 0;
-    }
-    .flags-title { font-weight: 700; color: #7a5c0a; font-size: 0.95rem; margin-bottom: 4px; }
-    .flags-lead { font-size: 0.83rem; color: #8a6d20; margin-bottom: 8px; line-height: 1.5; }
-    .flag-row {
-        display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline;
-        padding: 7px 0; border-bottom: 1px solid #f2e9cf; font-size: 0.88rem; color: var(--ink);
-        line-height: 1.5;
-    }
-    .flag-row:last-of-type { border-bottom: none; }
-    .flag-tag {
-        font-family: var(--mono); font-size: 0.62rem; font-weight: 600;
-        letter-spacing: 0.08em; text-transform: uppercase;
-        background: #f3e7bf; color: #7a5c0a;
-        padding: 2px 7px; border-radius: 999px; white-space: nowrap;
-    }
-    .flag-cond { font-family: var(--mono); font-size: 0.78rem; font-weight: 600; color: #8a6d20; }
-    .flags-caveat { font-size: 0.72rem; color: #a5885a; margin-top: 10px; line-height: 1.45; }
-
-    /* ----- DISCHARGE PLAN ----- */
-    .plan-wrap {
-        background: var(--card); border: 1px solid var(--line);
-        border-left: 4px solid var(--blue); border-radius: var(--radius);
-        padding: 1.1rem 1.3rem 1.2rem; box-shadow: var(--shadow-sm);
-    }
-    .plan-lead { font-size: 0.9rem; color: var(--ink-2); line-height: 1.6; margin-bottom: 10px; }
-    .plan-lead b { color: var(--ink); }
-    .plan-row {
-        display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
-        padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: 0.88rem;
-    }
-    .plan-row:last-of-type { border-bottom: none; }
-    .plan-stage { color: var(--ink); font-weight: 600; min-width: 210px; }
-    .plan-count { font-family: var(--mono); font-size: 0.76rem; color: var(--ink-3); white-space: nowrap; }
-    .plan-nums { font-family: var(--mono); font-size: 0.78rem; color: var(--blue); }
-    .plan-total {
-        background: var(--blue-soft); border-radius: 10px; padding: 0.7rem 0.9rem;
-        margin-top: 12px; font-size: 0.93rem; color: var(--blue-ink); font-weight: 600;
-    }
-    .plan-note { font-size: 0.79rem; color: var(--ink-3); margin-top: 8px; line-height: 1.5; }
-    .plan-deemed {
-        background: #f2faf5; border: 1px solid #d3ebdd; border-radius: 10px;
-        padding: 0.7rem 0.9rem; margin-top: 12px; font-size: 0.83rem;
-        color: #2f6a47; line-height: 1.5;
-    }
-    .plan-caveat { font-size: 0.72rem; color: var(--ink-3); margin-top: 10px; line-height: 1.45; }
-
-    /* ----- SPECIALISTS ----- */
-    .spec-wrap {
-        background: var(--card); border: 1px solid var(--line);
-        border-left: 4px solid #6a4fb3; border-radius: var(--radius);
-        padding: 1.1rem 1.3rem 1.2rem; box-shadow: var(--shadow-sm);
-    }
-    .spec-lead { font-size: 0.9rem; color: var(--ink-2); line-height: 1.6; margin-bottom: 10px; }
-    .spec-lead b { color: var(--ink); }
-    .spec-row {
-        display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline;
-        padding: 7px 0; border-bottom: 1px solid var(--line-soft); font-size: 0.88rem;
-    }
-    .spec-row:last-of-type { border-bottom: none; }
-    .spec-name { color: var(--ink); font-weight: 600; min-width: 240px; }
-    .spec-nums { font-family: var(--mono); font-size: 0.78rem; color: #6a4fb3; }
-    .spec-caveat { font-size: 0.72rem; color: var(--ink-3); margin-top: 12px; line-height: 1.45; }
-
-    .results-wrap {
-        background: var(--card); border: 1px solid var(--line);
-        border-radius: var(--radius); overflow: hidden;
-        box-shadow: var(--shadow-md);
-    }
-    .results-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-    .results-table thead th {
-        background: #fbfcfe; color: var(--ink-3);
-        border-bottom: 1px solid var(--line);
-        text-align: left; font-family: var(--mono);
-        font-size: 0.66rem; font-weight: 600;
-        letter-spacing: 0.12em; text-transform: uppercase;
-        padding: 13px 16px; white-space: nowrap;
-    }
-    .results-table tbody td {
-        padding: 14px 16px; vertical-align: top;
-        border-bottom: 1px solid var(--line-soft); color: var(--ink);
-        line-height: 1.55;
-    }
-    .results-table tbody tr:last-child td { border-bottom: none; }
-    .results-table tbody tr { transition: background 0.12s; }
-    .results-table tbody tr:hover td { background: #fafcff; }
-    .cond-num {
-        font-family: var(--mono); font-size: 0.78rem;
-        color: var(--ink-3); text-align: center;
-    }
-    .deadline-cell { font-size: 0.84rem; color: var(--ink-2); white-space: nowrap; }
-    .disc-yes {
-        display: inline-flex; align-items: center; justify-content: center;
-        width: 22px; height: 22px; border-radius: 50%;
-        background: #e8f6ee; color: #17934f;
-        font-size: 0.7rem; font-weight: 700;
-    }
-    .disc-no { color: #c6cfdc; }
-
-    .cat-pill {
-        display: inline-flex; align-items: center; gap: 6px;
-        padding: 3px 11px; border-radius: 999px;
-        font-family: var(--mono);
-        font-size: 0.7rem; font-weight: 600; letter-spacing: 0.02em;
-        white-space: nowrap;
-    }
-    .cat-pill .dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-
-    .stDownloadButton button {
-        background: var(--navy) !important; color: #fff !important;
-        border: none !important; border-radius: 11px !important;
-        padding: 0.7rem 1.7rem !important; font-weight: 600 !important;
-        font-size: 0.95rem !important; letter-spacing: -0.01em !important;
-        box-shadow: 0 1px 2px rgba(18,46,84,0.2), 0 6px 18px -6px rgba(18,46,84,0.35) !important;
-        transition: background 0.15s, transform 0.12s, box-shadow 0.2s !important;
-    }
-    .stDownloadButton button:hover {
-        background: var(--blue-ink) !important;
-        transform: translateY(-1px);
-        box-shadow: 0 2px 4px rgba(18,46,84,0.2), 0 10px 24px -6px rgba(18,46,84,0.4) !important;
-    }
-    .stDownloadButton button:active { transform: translateY(0); }
-
-    .footer {
-        color: var(--ink-3); font-size: 0.83rem; text-align: center;
-        margin-top: 4.5rem; padding-top: 1.6rem;
-        border-top: 1px solid var(--line); line-height: 1.8;
-    }
-    .footer .footer-name { color: var(--ink-2); font-weight: 600; }
-    .footer a { color: var(--blue); text-decoration: none; font-weight: 600; }
-    .footer a:hover { text-decoration: underline; }
-    .footer .disclaimer {
-        font-family: var(--mono); font-size: 0.68rem;
-        letter-spacing: 0.03em; margin-top: 4px; color: #9aa7b8;
-    }
-
-    [data-testid="stAlert"] { border-radius: var(--radius); }
+  .block-container { max-width: 1120px; }
+  .ct-panel      { padding: var(--ct-s4); margin: 0 0 var(--ct-s4) 0; }
+  .ct-panel-hd   { margin-bottom: var(--ct-s3); }
+  .ct-line       { padding: 10px 0; border-bottom: 1px solid var(--ct-border-soft); }
+  .ct-line:last-of-type { border-bottom: none; }
+  .ct-line-txt   { font: 400 var(--ct-body-size)/1.6 var(--ct-font-body); color: var(--ct-body); }
+  .ct-nums       { font-family: var(--ct-font-mono); font-size: 11.5px; letter-spacing:.2px;
+                   color: var(--ct-faint); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .ct-kv         { display:flex; flex-wrap:wrap; gap:6px 14px; align-items:baseline; }
+  .ct-kv-k       { font: 500 var(--ct-body-size)/1.5 var(--ct-font-body); color: var(--ct-ink);
+                   min-width: 232px; }
+  .ct-total      { font: 600 20px/1.3 var(--ct-font-display); color: var(--ct-ink);
+                   font-variant-numeric: tabular-nums; margin-top: var(--ct-s3); }
+  .ct-stat       { padding: 18px 20px; }
+  .ct-stat-num   { font: 700 31px/1 var(--ct-font-display); color: var(--ct-ink);
+                   font-variant-numeric: tabular-nums; margin-top: 8px; }
+  .ct-step-n     { font-family: var(--ct-font-mono); font-size: 9.5px; letter-spacing: 1.8px;
+                   color: var(--ct-accent); }
+  .ct-tbl        { width:100%; border-collapse: collapse; }
+  .ct-tbl thead th {
+      font-family: var(--ct-font-mono); font-size: 9.5px; letter-spacing: 1.8px;
+      text-transform: uppercase; color: var(--ct-fainter); font-weight: 400;
+      text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--ct-border);
+      white-space: nowrap; }
+  .ct-tbl tbody td {
+      padding: 16px 18px; vertical-align: top;
+      border-bottom: 1px solid var(--ct-border-soft);
+      font: 500 14px/1.55 var(--ct-font-body); color: var(--ct-ink); }
+  .ct-tbl tbody tr:last-child td { border-bottom: none; }
+  .ct-tbl tbody tr:hover td { background: var(--ct-surface-hover); }
+  .ct-tbl .num   { font-family: var(--ct-font-mono); font-size: 12px; color: var(--ct-faint);
+                   font-variant-numeric: tabular-nums; }
+  .ct-tbl .sec   { font: 400 12.5px/1.5 var(--ct-font-body); color: var(--ct-muted);
+                   white-space: nowrap; }
+  .ct-flagrow    { display:flex; flex-wrap:wrap; gap:8px 12px; align-items:baseline;
+                   padding: 10px 0; border-bottom:1px solid var(--ct-border-soft); }
+  .ct-flagrow:last-of-type { border-bottom:none; }
+  .ct-panel .ct-note { margin-top: var(--ct-s2); }
+  .ct-panel .ct-note:first-of-type { margin-top: var(--ct-s4); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -371,10 +87,6 @@ def strip_fences(text):
 CATEGORY_COLOURS = {
     "pre-commencement": "F4CCCC", "pre-occupation": "FCE5CD",
     "ongoing": "CFE2F3", "discharge-required": "D9D2E9", "time-limit": "FFF2CC",
-}
-CATEGORY_HEX = {
-    "pre-commencement": "#e06666", "pre-occupation": "#e69138",
-    "ongoing": "#3d85c6", "discharge-required": "#8e7cc3", "time-limit": "#d6b656",
 }
 
 CATEGORY_ORDER = ["time-limit", "pre-commencement", "discharge-required", "pre-occupation", "ongoing"]
@@ -453,61 +165,57 @@ def build_safety_gate_html(data):
     if not (begin_by or blockers or piling or ambiguous or startable):
         return ""
 
-    parts = ['<div class="gate-wrap"><div class="gate-title">⚠ Before you start on site</div>']
+    parts = ['<div class="ct-card ct-panel">',
+             '<div class="ct-panel-hd">', eyebrow("BEFORE YOU START ON SITE"), '</div>']
 
     if begin_by and begin_by < datetime.now().date():
-        parts.append(
-            f'<div class="gate-lapsed">⚠ <b>This start deadline has already passed.</b> Development had '
-            f'to begin by <b>{fmt_date(begin_by)}</b>. Unless a material operation lawfully started on '
-            f'site before then, this permission has expired and cannot be implemented. '
-            f'<span style="opacity:.75;">(computed from the decision date — confirm against the '
-            f'notice)</span></div>'
-        )
+        parts.append(banner(
+            f"This start deadline has already passed — development had to begin by "
+            f"{fmt_date(begin_by)}. Unless a material operation lawfully started on site before then, "
+            f"this permission has expired and cannot be implemented.", "block"))
     elif begin_by:
         parts.append(
-            f'<div class="gate-beginby">Development must begin by <b>{fmt_date(begin_by)}</b> '
-            f'or the permission lapses. <span style="opacity:.7;">(computed from the decision date — '
-            f'confirm against the notice)</span></div>'
+            f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">Development must begin by '
+            f'<span class="ct-num" style="color:var(--ct-ink);font-weight:500">{fmt_date(begin_by)}</span> '
+            f'or the permission lapses. <span style="color:var(--ct-faint)">(computed from the decision '
+            f'date — confirm against the notice)</span></div>'
         )
+
+    def line(pill_cls, text, conditions):
+        return (f'<div class="ct-line">'
+                f'<span class="ct-pill {pill_cls}">{text}</span>'
+                f'<div class="ct-nums">{cond_nums(conditions)}</div></div>')
 
     if blockers:
-        parts.append(
-            f'<div class="gate-line"><b>{n_conditions(len(blockers))}</b> must be discharged before you can '
-            f'lawfully start on site: <span class="gate-nums">{cond_nums(blockers)}</span></div>'
-        )
+        parts.append(line("ct-pill--block",
+                          f"{n_conditions(len(blockers))} must be discharged before you can lawfully "
+                          f"start on site", blockers))
     if startable:
         verb = "blocks" if len(startable) == 1 else "block"
-        parts.append(
-            f'<div class="gate-go"><div class="gate-line"><b>{len(startable)} more</b> only {verb} above-ground '
-            f'works — you can begin demolition and groundworks first: '
-            f'<span class="gate-nums">{cond_nums(startable)}</span></div></div>'
-        )
+        parts.append(line("ct-pill--cleared",
+                          f"{len(startable)} more only {verb} above-ground works — you can begin "
+                          f"demolition and groundworks first", startable))
     if piling:
-        parts.append(
-            f'<div class="gate-line"><b>{n_conditions(len(piling))}</b> to clear before any piling: '
-            f'<span class="gate-nums">{cond_nums(piling)}</span></div>'
-        )
+        parts.append(line("ct-pill--check",
+                          f"{n_conditions(len(piling))} to clear before any piling", piling))
     if ambiguous:
         verb = "needs" if len(ambiguous) == 1 else "need"
-        parts.append(
-            f'<div class="gate-line"><b>{n_conditions(len(ambiguous))}</b> {verb} checking — wording is '
-            f'ambiguous: <span class="gate-nums">{cond_nums(ambiguous)}</span></div>'
-        )
+        parts.append(line("ct-pill--check",
+                          f"{n_conditions(len(ambiguous))} {verb} checking — wording is ambiguous",
+                          ambiguous))
 
-    parts.append('<div class="gate-detail">Full detail is in the conditions table below.</div>')
+    parts.append('<div class="ct-nums" style="margin-top:var(--ct-s3)">FULL DETAIL IN THE '
+                 'CONDITIONS TABLE BELOW</div>')
 
     if doc_type(data) in CIL_DOC_TYPES:
-        parts.append(
-            '<div class="gate-cil"><b>CIL reminder:</b> before any material operation on site, check whether the '
-            'development is CIL-liable and, if so, submit a CIL Commencement Notice to the council and get written '
-            'acknowledgement first. Starting before this can mean losing CIL relief and incurring surcharges. '
-            'This tool does not read CIL notices.</div>'
-        )
-    parts.append(
-        '<div class="gate-caveat">Automated flags, not legal advice — whether a condition is a true '
-        'condition-precedent can be finely balanced. Confirm with your planning consultant or solicitor '
-        'before starting on site.</div>'
-    )
+        parts.append(note(
+            "<b>CIL reminder:</b> before any material operation on site, check whether the development "
+            "is CIL-liable and, if so, submit a CIL Commencement Notice to the council and get written "
+            "acknowledgement first. Starting before this can mean losing CIL relief and incurring "
+            "surcharges. This tool does not read CIL notices."))
+    parts.append(note(
+        "Automated flags, not legal advice — whether a condition is a true condition-precedent can be "
+        "finely balanced. Confirm with your planning consultant or solicitor before starting on site."))
     parts.append("</div>")
     return "".join(parts)
 
@@ -639,67 +347,57 @@ def build_discharge_plan_html(data):
                     f'condition, so bundle them. A sensible way to batch these is by stage:')
 
     needs = "needs" if plan["total"] == 1 else "need"
-    parts = ['<div class="plan-wrap">']
-    parts.append(
-        f'<div class="plan-lead">You have <b>{n_conditions(plan["total"])}</b> that {needs} formal discharge '
-        f'(submitted to <b>and</b> approved by the council). {fee_lead}</div>'
-    )
+    parts = ['<div class="ct-card ct-panel">',
+             '<div class="ct-panel-hd">', eyebrow("DISCHARGE PLAN"), '</div>',
+             f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">You have '
+             f'<b>{n_conditions(plan["total"])}</b> that {needs} formal discharge (submitted to '
+             f'<b>and</b> approved by the council). {fee_lead}</div>']
     for label, members in plan["batches"]:
         parts.append(
-            f'<div class="plan-row"><span class="plan-stage">{label}</span>'
-            f'<span class="plan-count">{n_conditions(len(members))}</span>'
-            f'<span class="plan-nums">{cond_nums(members)}</span></div>'
+            f'<div class="ct-line"><div class="ct-kv">'
+            f'<span class="ct-kv-k">{label}</span>'
+            f'<span class="ct-pill ct-pill--due">{n_conditions(len(members))}</span>'
+            f'<span class="ct-num" style="font-size:11.5px;color:var(--ct-faint)">'
+            f'{cond_nums(members)}</span></div></div>'
         )
 
     if not plan["fee_payable"]:
-        parts.append(f'<div class="plan-total">≈ {app_word} to submit — no council fee.</div>')
-        parts.append('<div class="plan-note">Conditions on a listed building consent carry no '
-                     'application fee. Conditions on a linked planning permission do.</div>')
+        parts.append(f'<div class="ct-total">\u2248 {app_word} to submit \u2014 no council fee.</div>')
+        parts.append(note("Conditions on a listed building consent carry no application fee. "
+                          "Conditions on a linked planning permission do."))
     elif scale is None:
-        parts.append(f'<div class="plan-total">≈ {app_word} to submit.</div>')
-        parts.append(
-            f'<div class="plan-note">No fee shown — this notice{where}, and this tool only holds the '
-            f'England and Wales fee scales. The per-application principle still applies, so bundling '
-            f'still saves money.</div>'
-        )
+        parts.append(f'<div class="ct-total">\u2248 {app_word} to submit.</div>')
+        parts.append(note(
+            f"No fee shown — this notice{where}, and this tool only holds the England and Wales fee "
+            f"scales. The per-application principle still applies, so bundling still saves money."))
     elif plan["fee"] is not None:
         scheme = "householder" if plan["householder"] else "non-householder"
         rise = ""
         if scale["later"]:
             rise = (f' Fees rise to £{scale["later"][0]} (£{scale["later"][1]} householder) on '
                     f'{scale["later_date"]}.')
-        parts.append(
-            f'<div class="plan-total">≈ {app_word} × £{plan["fee"]} = ~£{plan["cost"]:,} '
-            f'in council fees.</div>'
-        )
-        parts.append(
-            f'<div class="plan-note">Priced at the <b>{scheme}</b> rate for {juris_name}.{rise}</div>'
-        )
+        parts.append(f'<div class="ct-total">\u2248 {app_word} \u00d7 £{plan["fee"]} = '
+                     f'~£{plan["cost"]:,} in council fees.</div>')
+        parts.append(note(f"Priced at the <b>{scheme}</b> rate for {juris_name}.{rise}"))
     else:
-        # householder status unclear — show both rather than guess
         rise = ""
         if scale["later"]:
             rise = f' Fees rise to £{scale["later"][0]} / £{scale["later"][1]} on {scale["later_date"]}.'
-        parts.append(
-            f'<div class="plan-total">≈ {app_word} — about £{apps * scale["other"]:,} at the standard '
-            f'rate, or £{apps * scale["householder"]:,} if this is a householder scheme.</div>'
-        )
-        parts.append(
-            f'<div class="plan-note">We couldn\'t tell which fee category this scheme falls into, so both '
-            f'{juris_name} rates are shown (£{scale["other"]} vs £{scale["householder"]} per '
-            f'application).{rise}</div>'
-        )
-    parts.append(
-        '<div class="plan-deemed"><b>Deemed discharge:</b> the council has 8 weeks to decide. If it misses '
-        'that — and the condition isn\'t one of the excluded types — you may be able to proceed as if the '
-        'condition were discharged. A useful lever if they go quiet.</div>'
-    )
-    parts.append(
-        '<div class="plan-caveat">Batching is guidance, not a rule — you can combine or split further, and '
-        'timing depends on your programme. Fees are the England statutory rate and change over time; confirm '
-        'the current figure before relying on it. Not legal or planning advice — confirm with your planning '
-        'consultant.</div>'
-    )
+        parts.append(f'<div class="ct-total">\u2248 {app_word} \u2014 about '
+                     f'£{apps * scale["other"]:,} at the standard rate, or '
+                     f'£{apps * scale["householder"]:,} if this is a householder scheme.</div>')
+        parts.append(note(
+            f"We couldn't tell which fee category this scheme falls into, so both {juris_name} rates "
+            f"are shown (£{scale['other']} vs £{scale['householder']} per application).{rise}"))
+
+    parts.append(note(
+        "<b>Deemed discharge:</b> the council has 8 weeks to decide. If it misses that — and the "
+        "condition isn't one of the excluded types — you may be able to proceed as if the condition "
+        "were discharged. A useful lever if they go quiet."))
+    parts.append(note(
+        "Batching is guidance, not a rule — you can combine or split further, and timing depends on "
+        "your programme. Fees are the statutory rate and change over time; confirm the current figure "
+        "before relying on it. Not legal or planning advice — confirm with your planning consultant."))
     parts.append("</div>")
     return "".join(parts)
 
@@ -736,18 +434,22 @@ def build_flags_html(data):
         return ""   # a clean notice shows nothing at all
 
     n = len(flags)
-    parts = ['<div class="flags-wrap">',
-             '<div class="flags-title">⚠ Things to check in the notice</div>',
-             f'<div class="flags-lead">{n} possible {"error" if n == 1 else "errors"} in the '
-             f'council\'s own document — worth querying before you rely on the wording.</div>']
+    n = len(flags)
+    parts = ['<div class="ct-card ct-panel">',
+             '<div class="ct-panel-hd">', eyebrow("THINGS TO CHECK IN THE NOTICE"), '</div>',
+             f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s2)">{n} possible '
+             f'{"error" if n == 1 else "errors"} in the council\'s own document — worth querying '
+             f'before you rely on the wording.</div>']
     for f in flags:
-        tag = FLAG_LABEL.get(f.get("type"), "check")
+        label = FLAG_LABEL.get(f.get("type"), "check").upper()
         cond = f.get("condition")
-        cond_html = f'<span class="flag-cond">#{cond}</span>' if cond is not None else ""
-        parts.append(f'<div class="flag-row"><span class="flag-tag">{tag}</span>{cond_html}'
-                     f'<span>{f["detail"]}</span></div>')
-    parts.append('<div class="flags-caveat">Automated flags — the tool may miss some issues or '
-                 'occasionally over-flag. Always read against the source notice.</div>')
+        cond_html = (f'<span class="ct-num" style="font-size:11.5px;color:var(--ct-faint)">'
+                     f'#{cond}</span>') if cond is not None else ""
+        parts.append(f'<div class="ct-flagrow">{tag(label)}{cond_html}'
+                     f'<span class="ct-line-txt" style="flex:1;min-width:240px">{f["detail"]}</span>'
+                     f'</div>')
+    parts.append(note("Automated flags — the tool may miss some issues or occasionally over-flag. "
+                      "Always read against the source notice."))
     parts.append("</div>")
     return "".join(parts)
 
@@ -774,24 +476,25 @@ def build_specialists_html(data):
         return ""
 
     n = len(specialists)
-    parts = ['<div class="spec-wrap">']
-    parts.append(
-        f'<div class="spec-lead">You will likely need to bring in <b>{n} external '
-        f'specialist{"" if n == 1 else "s"}</b> for this scheme. The notice never says so — each '
-        f'discipline below is implied by what its conditions actually ask you to produce.</div>'
-    )
+    parts = ['<div class="ct-card ct-panel">',
+             '<div class="ct-panel-hd">', eyebrow("SPECIALISTS TO COMMISSION"), '</div>',
+             f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">You will likely need to '
+             f'bring in <b>{n} external specialist{"" if n == 1 else "s"}</b> for this scheme. The '
+             f'notice never says so — each discipline below is implied by what its conditions '
+             f'actually ask you to produce.</div>']
     for name, nums in specialists:
-        label = "condition" if len(nums) == 1 else "conditions"
         joined = ", ".join(f"#{x}" for x in nums)
         parts.append(
-            f'<div class="spec-row"><span class="spec-name">{name}</span>'
-            f'<span class="spec-nums">{label} {joined}</span></div>'
+            f'<div class="ct-line"><div class="ct-kv">'
+            f'<span class="ct-kv-k">{name}</span>'
+            f'<span class="ct-pill ct-pill--due">{n_conditions(len(nums))}</span>'
+            f'<span class="ct-num" style="font-size:11.5px;color:var(--ct-faint)">{joined}</span>'
+            f'</div></div>'
         )
-    parts.append(
-        '<div class="spec-caveat">A guide to resourcing, not a definitive list — some conditions can '
-        'be handled in-house, and one consultant often covers several disciplines. Confirm with your '
-        'team. Not legal or planning advice.</div>'
-    )
+    parts.append(note(
+        "A guide to resourcing, not a definitive list — some conditions can be handled in-house, and "
+        "one consultant often covers several disciplines. Confirm with your team. Not legal or "
+        "planning advice."))
     parts.append("</div>")
     return "".join(parts)
 
@@ -1009,22 +712,34 @@ def build_excel(data):
     return buffer.getvalue()
 
 
+# Category -> safety-gate severity. Colour in this theme only ever means severity, so the old
+# decorative per-category palette is gone.
+CATEGORY_PILL = {
+    "pre-commencement": "ct-pill--block",
+    "discharge-required": "ct-pill--check",
+    "pre-occupation": "ct-pill--due",
+    "time-limit": "ct-pill--due",
+    "ongoing": "ct-pill--ongoing",
+}
+
+
 def category_pill(cat):
-    hex_c = CATEGORY_HEX.get(cat, "#888")
-    return (f'<span class="cat-pill" style="background:{hex_c}16;color:{hex_c};">'
-            f'<span class="dot" style="background:{hex_c};"></span>{cat}</span>')
+    return f'<span class="ct-pill {CATEGORY_PILL.get(cat, "ct-pill--due")}">{cat}</span>'
 
 
 # ----- HERO -----
-st.markdown("""
-<div class="eyebrow">AI Planning Condition Tracker</div>
-<h1 class="hero-title">Planning conditions,<br>tracked in seconds.</h1>
-<p class="hero-sub">A second pair of eyes on your planning conditions. Upload a UK decision notice and get
-every condition read, categorised and exported as a structured tracker spreadsheet — in seconds.</p>
-""", unsafe_allow_html=True)
+st.markdown(
+    f'{eyebrow("AI PLANNING CONDITION TRACKER")}'
+    f'<h1 class="ct-h1" style="margin:10px 0 12px">Planning conditions, tracked in seconds.</h1>'
+    f'<p class="ct-body" style="max-width:640px;margin:0">A second pair of eyes on your planning '
+    f'conditions. Upload a UK decision notice and get every condition read, categorised and exported '
+    f'as a structured tracker spreadsheet — in seconds.</p>',
+    unsafe_allow_html=True,
+)
 
 # ----- HOW IT WORKS -----
-st.markdown('<div class="section-label">How it works</div>', unsafe_allow_html=True)
+st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{eyebrow("HOW IT WORKS")}</div>',
+            unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 for col, num, title, text in [
     (c1, "01", "Upload", "Drop in a decision notice PDF"),
@@ -1032,14 +747,16 @@ for col, num, title, text in [
     (c3, "03", "Export", "Download your structured tracker"),
 ]:
     col.markdown(
-        f'<div class="step-card"><span class="step-num">{num}</span>'
-        f'<div class="step-title">{title}</div>'
-        f'<div class="step-text">{text}</div></div>',
+        f'<div class="ct-card ct-stat" style="height:100%">'
+        f'<div class="ct-step-n">{num}</div>'
+        f'<div class="ct-h3" style="margin:10px 0 4px">{title}</div>'
+        f'<div class="ct-muted">{text}</div></div>',
         unsafe_allow_html=True,
     )
 
 # ----- UPLOAD -----
-st.markdown('<div class="section-label">Upload a decision notice</div>', unsafe_allow_html=True)
+st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{eyebrow("UPLOAD A DECISION NOTICE")}</div>',
+            unsafe_allow_html=True)
 uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="collapsed")
 
 if uploaded_file is not None:
@@ -1104,17 +821,21 @@ if uploaded_file is not None:
             discharge = sum(1 for c in conditions if c["discharge_required"])
             precom = sum(1 for c in conditions if c["category"] == "pre-commencement")
 
-            st.markdown(
-                f'<div class="decision-banner"><div class="tick">✓</div>'
-                f'<div><div class="d-title">{decision}</div>'
-                f'<div class="d-sub">{total} planning conditions extracted from this notice</div></div></div>',
-                unsafe_allow_html=True,
-            )
+            st.markdown(banner(f"{decision} — {total} planning conditions extracted from this "
+                               f"notice", "ok"), unsafe_allow_html=True)
+            st.markdown('<div style="height:var(--ct-s4)"></div>', unsafe_allow_html=True)
 
             s1, s2, s3 = st.columns(3)
-            s1.markdown(f'<div class="stat-card" style="--stat-accent:#122e54;"><div class="stat-num">{total}</div><div class="stat-label">Total conditions</div></div>', unsafe_allow_html=True)
-            s2.markdown(f'<div class="stat-card" style="--stat-accent:#e06666;"><div class="stat-num">{precom}</div><div class="stat-label">Pre-commencement</div></div>', unsafe_allow_html=True)
-            s3.markdown(f'<div class="stat-card" style="--stat-accent:#8e7cc3;"><div class="stat-num">{discharge}</div><div class="stat-label">Need discharge</div></div>', unsafe_allow_html=True)
+            for col, value, label in [
+                (s1, total, "TOTAL CONDITIONS"),
+                (s2, precom, "PRE-COMMENCEMENT"),
+                (s3, discharge, "NEED DISCHARGE"),
+            ]:
+                col.markdown(
+                    f'<div class="ct-card ct-stat">{eyebrow(label)}'
+                    f'<div class="ct-stat-num">{value}</div></div>',
+                    unsafe_allow_html=True,
+                )
 
             st.write("")
 
@@ -1128,27 +849,30 @@ if uploaded_file is not None:
             if flags_html:
                 st.markdown(flags_html, unsafe_allow_html=True)
 
-            st.markdown('<div class="section-label">Extracted conditions</div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="margin:var(--ct-s5) 0 var(--ct-s3)">'
+                        f'{eyebrow("EXTRACTED CONDITIONS")}</div>', unsafe_allow_html=True)
 
             rows_html = ""
             for c in sort_by_category(conditions):
                 deadline = c["deadline"] or "—"
-                disc = '<span class="disc-yes">✓</span>' if c["discharge_required"] else '<span class="disc-no">—</span>'
+                disc = ('<span class="ct-num" style="color:var(--ct-ink)">YES</span>'
+                        if c["discharge_required"]
+                        else '<span class="ct-num" style="color:var(--ct-fainter)">—</span>')
                 rows_html += (
                     f'<tr>'
-                    f'<td class="cond-num">{c["condition_number"]}</td>'
+                    f'<td class="num">{c["condition_number"]}</td>'
                     f'<td>{c["summary"]}</td>'
                     f'<td>{category_pill(c["category"])}</td>'
-                    f'<td class="deadline-cell">{deadline}</td>'
-                    f'<td style="text-align:center;">{disc}</td>'
+                    f'<td class="sec">{deadline}</td>'
+                    f'<td class="sec" style="text-align:center">{disc}</td>'
                     f'</tr>'
                 )
             table_html = (
-                '<div class="results-wrap"><table class="results-table">'
+                '<div class="ct-card" style="overflow:hidden"><table class="ct-tbl">'
                 '<thead><tr>'
-                '<th style="width:44px;">#</th><th>Summary</th>'
-                '<th>Category</th><th>Deadline</th>'
-                '<th style="text-align:center;">Discharge</th></tr></thead>'
+                '<th style="width:56px">#</th><th>Summary</th>'
+                '<th style="width:180px">Category</th><th style="width:130px">Deadline</th>'
+                '<th style="width:110px;text-align:center">Discharge</th></tr></thead>'
                 f'<tbody>{rows_html}</tbody></table></div>'
             )
             st.markdown(table_html, unsafe_allow_html=True)
@@ -1156,14 +880,12 @@ if uploaded_file is not None:
             # ----- DISCHARGE PLAN -----
             plan_html = build_discharge_plan_html(data)
             if plan_html:
-                st.markdown('<div class="section-label">Discharge plan</div>', unsafe_allow_html=True)
+                st.markdown('<div style="height:var(--ct-s5)"></div>', unsafe_allow_html=True)
                 st.markdown(plan_html, unsafe_allow_html=True)
 
             # ----- SPECIALISTS TO COMMISSION -----
             spec_html = build_specialists_html(data)
             if spec_html:
-                st.markdown('<div class="section-label">Specialists to commission</div>',
-                            unsafe_allow_html=True)
                 st.markdown(spec_html, unsafe_allow_html=True)
 
             st.write("")
@@ -1198,8 +920,8 @@ if uploaded_file is not None:
 
 # ----- FOOTER -----
 st.markdown(
-    '<div class="footer"><span class="footer-name">Built by Zak Akhtar</span> · '
-    '<a href="https://github.com/akhtarzakariya8-a11y/planning-condition-tracker">GitHub</a>'
-    '<div class="disclaimer">A tool for UK planning decision notices. Always check outputs against the source document.</div></div>',
+    f'<hr style="margin:var(--ct-s6) 0 var(--ct-s4)">'
+    f'{note("Built by Zak Akhtar · <a href=\'https://github.com/akhtarzakariya8-a11y/planning-condition-tracker\'>GitHub</a>")}'
+    f'{note("A tool for UK planning decision notices. Always check outputs against the source document.")}',
     unsafe_allow_html=True,
 )
