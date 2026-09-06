@@ -4,7 +4,9 @@ import pdfplumber
 import json
 import io
 import base64
+import difflib
 import html
+import itertools
 import re
 from datetime import datetime
 import openpyxl
@@ -492,10 +494,55 @@ FLAG_LABEL = {
 }
 
 
+# Two conditions are duplicates when their verbatim wording is this similar. On the Lambeth
+# notice the real duplicate pair scores 0.944 and the next-closest pair 0.786, so the gap is
+# wide; the tree conditions that the model kept mislabelling score 0.464.
+DUPLICATE_SIMILARITY = 0.90
+DUPLICATE_MIN_CHARS = 60
+
+
+def _norm_quote(text):
+    return re.sub(r"[^a-z0-9 ]", "", re.sub(r"\s+", " ", (text or "").lower())).strip()
+
+
+def detect_duplicates(conditions):
+    """Find conditions whose operative wording is near-identical.
+
+    Computed here rather than asked of the model. "Are these two conditions the same" is a
+    comparison, and the model kept rationalising related-but-different conditions into duplicates
+    — flagging three distinct tree conditions as one repeated. Comparison is what code is good at:
+    this is deterministic, explainable, and cannot drift between runs.
+    """
+    quoted = [(c["condition_number"], _norm_quote(c.get("source_quote")))
+              for c in conditions if (c.get("source_quote") or "").strip()]
+    found = []
+    for (a, qa), (b, qb) in itertools.combinations(quoted, 2):
+        # very short clauses match each other by coincidence
+        if len(qa) < DUPLICATE_MIN_CHARS or len(qb) < DUPLICATE_MIN_CHARS:
+            continue
+        ratio = difflib.SequenceMatcher(None, qa, qb).ratio()
+        if ratio >= DUPLICATE_SIMILARITY:
+            found.append({
+                "type": "duplicate",
+                "condition": a,
+                "detail": (f"Conditions {a} and {b} are near-identical — their operative wording is "
+                           f"{round(ratio * 100)}% the same. They can usually be discharged in one "
+                           f"submission."),
+            })
+    return found
+
+
 def get_flags(data):
-    """Consistency flags raised against the notice itself. Always a list."""
+    """Consistency flags raised against the notice itself. Always a list.
+
+    The model reports typos, missing drawings and internal conflicts; duplicates are computed
+    from the verbatim quotes instead.
+    """
     flags = data.get("flags")
-    return [f for f in flags if isinstance(f, dict) and f.get("detail")] if isinstance(flags, list) else []
+    model_flags = ([f for f in flags if isinstance(f, dict) and f.get("detail")]
+                   if isinstance(flags, list) else [])
+    model_flags = [f for f in model_flags if f.get("type") != "duplicate"]
+    return model_flags + detect_duplicates(data.get("conditions", []))
 
 
 def build_flags_html(data):

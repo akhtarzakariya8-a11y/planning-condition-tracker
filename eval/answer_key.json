@@ -12,7 +12,13 @@
     "flags.count       = exact number of consistency flags expected.",
     "flags.must_include = flags that must be present; matched on type and a substring of detail.",
     "A clean notice asserting count 0 is the FALSE-POSITIVE GUARD — the checker's whole value",
-    "depends on not crying wolf, so those entries matter more than the ones that find things."
+    "depends on not crying wolf, so those entries matter more than the ones that find things.",
+    "",
+    "",
+    "Duplicates are NOT asked of the model. They are computed in app.detect_duplicates() by",
+    "comparing the verbatim source_quote of every pair of conditions, flagging above 0.90",
+    "similarity. That is deterministic and cannot drift; the model kept rationalising related",
+    "conditions into duplicates. flags.count therefore includes computed duplicates."
   ],
   "21_04939_FUL--3474437.pdf": {
     "asserted": {

@@ -48,7 +48,8 @@ is_householder — true, false, or null. This is the statutory FEE category, not
 Judge it from the development description. "Erection of an outbuilding incidental to the dwellinghouse" is householder (true). "Erection of a self-contained dwelling" is not (false), even though it is one house.
 
 flags — errors and inconsistencies IN THE COUNCIL'S OWN NOTICE. Each entry:
-{ "type": "typo" | "duplicate" | "missing-drawing" | "internal-conflict" | "other",
+NEVER report duplicated conditions here. The tool detects those itself by comparing the verbatim source_quote of every condition, which is more reliable than judging it by eye. Do not use a "duplicate" type at all.
+{ "type": "typo" | "missing-drawing" | "internal-conflict" | "other",
   "condition": <condition number, or null if it is not about one condition>,
   "detail": "one sentence naming the concrete evidence" }
 
@@ -58,8 +59,6 @@ Before emitting any flag, ask: "could a competent planner read this and say noth
 
 - "typo": an unmistakable spelling or date error, e.g. a year written "20221", or "Noevmber". The wrong text must appear in the detail. Do NOT flag British spellings, abbreviations, legal boilerplate, inconsistent capitalisation, or unusual but valid phrasing.
   The SAME date written in two different FORMATS is not an error — "11.06.2026", "11th June 2026" and "11/06/2026" are the same day. Only flag a date that is genuinely impossible or malformed, such as a five-digit year or a month that does not exist.
-- "duplicate": two conditions that impose effectively the SAME obligation in near-identical wording. Name both numbers in the detail. Describe them ACCURATELY: say "near-identical" and name what differs (e.g. "conditions 7 and 8 are near-identical Waste Management Strategy conditions, differing only in that 7 covers the residential bin stores and 8 the church hall"). Only call two conditions "identical" if the wording really is word for word. Near-identical conditions applying to different parts of the same scheme ARE worth flagging, because they can usually be discharged in one submission. Conditions that merely share a TOPIC but impose different obligations, or that bite at different stages, are NOT duplicates and must not be flagged.
-  THE TEST IS THE DELIVERABLE. Flag a duplicate ONLY when both conditions demand the SAME deliverable — the same named document, drawing, strategy or approval — and differ only in which part of the scheme it covers. Two conditions each requiring a "Waste Management Strategy", one for the flats and one for the hall, ARE duplicates. Two conditions requiring DIFFERENT deliverables are NOT duplicates, however closely related their subject: arboricultural supervision versus protective fencing, a method statement versus a monitoring report, a survey versus the remediation it leads to. If you cannot name one deliverable that both conditions demand, do not flag.
 - "missing-drawing": a drawing or document reference cited in a condition that does NOT appear in the approved-plans list. Quote the reference exactly. Only flag when you have actually checked the approved-plans list and the reference is genuinely absent. If the notice has no approved-plans condition at all, never flag this.
 - "internal-conflict": two statements in the notice that cannot both be true — different figures for the same thing, or mutually exclusive requirements. Quote both. A condition being stricter than another is not a conflict.
 - "other": any other clear, specific, verifiable inconsistency. Use sparingly.
