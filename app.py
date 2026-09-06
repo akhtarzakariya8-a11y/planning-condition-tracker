@@ -923,24 +923,34 @@ if uploaded_file is not None:
                     {"type": "text", "text": "Analyse this planning decision notice."},
                 ]
 
-            message = analyse_notice(user_content, MAX_TOKENS)
+            # Two things can go wrong, and both are worth one retry rather than an apology.
+            #   Truncation: verbatim source quotes roughly double the conditions array, so a very
+            #     large notice can hit the ceiling and return JSON cut off mid-array.
+            #   Malformed JSON: clause text contains quotation marks, and the model occasionally
+            #     emits one unescaped. This is intermittent, so the same call usually succeeds
+            #     second time — telling the user their notice is "unusual" would be wrong.
+            data = None
+            truncated = False
+            for budget in (MAX_TOKENS, MAX_TOKENS_RETRY):
+                message = analyse_notice(user_content, budget)
+                if message.stop_reason == "max_tokens":
+                    truncated = True
+                    continue  # never parse a response that was cut off
+                truncated = False
+                try:
+                    data = json.loads(strip_fences(message.content[0].text))
+                    break
+                except json.JSONDecodeError:
+                    continue
 
-            # Verbatim source quotes roughly double the size of the conditions array, so a very
-            # large notice can hit the output ceiling and return JSON cut off mid-array. Retry once
-            # with more room before giving up — a truncated response is never worth parsing.
-            if message.stop_reason == "max_tokens":
-                message = analyse_notice(user_content, MAX_TOKENS_RETRY)
-
-            if message.stop_reason == "max_tokens":
-                st.error("This notice was large enough to hit the response limit, even on a second "
-                         "attempt with more room. Try splitting it into sections, or get in touch.")
-                st.stop()
-
-            try:
-                data = json.loads(strip_fences(message.content[0].text))
-            except json.JSONDecodeError:
-                st.error("Couldn't read the AI's response for this document. "
-                         "It may be an unusual format — try another decision notice.")
+            if data is None:
+                if truncated:
+                    st.error("This notice was large enough to hit the response limit, even on a "
+                             "second attempt with more room. Try splitting it into sections, or "
+                             "get in touch.")
+                else:
+                    st.error("Couldn't read the AI's response for this document, twice. "
+                             "It may be an unusual format — try another decision notice.")
                 st.stop()
 
         data[FROM_SCAN_KEY] = from_scan

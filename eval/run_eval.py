@@ -41,13 +41,19 @@ def analyse(path):
         ]
     # Call through app.analyse_notice so the harness always tests the model config the app
     # actually ships — this file had its own max_tokens once, and silently truncated.
-    msg = app.analyse_notice(content, app.MAX_TOKENS)
-    if msg.stop_reason == "max_tokens":
-        msg = app.analyse_notice(content, app.MAX_TOKENS_RETRY)
-    if msg.stop_reason == "max_tokens":
-        raise RuntimeError(f"{os.path.basename(path)}: truncated even at "
-                           f"{app.MAX_TOKENS_RETRY} tokens")
-    return json.loads(app.strip_fences(msg.content[0].text))
+    # Mirrors app.py: retry once on truncation OR malformed JSON. Verbatim clauses contain
+    # quotation marks and the model occasionally emits one unescaped, which is intermittent.
+    last = None
+    for budget in (app.MAX_TOKENS, app.MAX_TOKENS_RETRY):
+        msg = app.analyse_notice(content, budget)
+        if msg.stop_reason == "max_tokens":
+            last = "truncated"
+            continue
+        try:
+            return json.loads(app.strip_fences(msg.content[0].text))
+        except json.JSONDecodeError as exc:
+            last = f"malformed JSON ({exc})"
+    raise RuntimeError(f"{os.path.basename(path)}: {last} after two attempts")
 
 
 def score(data, asserted, contested):

@@ -145,5 +145,20 @@
       }
     },
     "contested": {}
+  },
+  "24_3095_F-DECISION_NOTICE-1130692.pdf": {
+    "_note": "Royal Borough of Greenwich, ref 24/3095/F. 27 pages, 42 conditions — the largest notice in the set, kept as the truncation regression test. Document-level facts are hand-verified; per-condition gates and specialists are deliberately NOT asserted here because they have not been checked against the notice by hand, and asserting model output as truth would make the key worthless.",
+    "asserted": {
+      "document_type": "full-grant",
+      "jurisdiction": "england",
+      "decision": "granted",
+      "time_limit_years": 3,
+      "condition_count": 42,
+      "begin_by": "2028-04-07",
+      "flags": {
+        "count": 0
+      }
+    },
+    "contested": {}
   }
 }
