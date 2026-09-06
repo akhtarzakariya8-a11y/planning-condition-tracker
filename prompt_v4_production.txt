@@ -57,7 +57,9 @@ PRECISION MATTERS FAR MORE THAN RECALL. A false alarm destroys the user's trust 
 Before emitting any flag, ask: "could a competent planner read this and say nothing is wrong?" If yes, drop it.
 
 - "typo": an unmistakable spelling or date error, e.g. a year written "20221", or "Noevmber". The wrong text must appear in the detail. Do NOT flag British spellings, abbreviations, legal boilerplate, inconsistent capitalisation, or unusual but valid phrasing.
+  The SAME date written in two different FORMATS is not an error — "11.06.2026", "11th June 2026" and "11/06/2026" are the same day. Only flag a date that is genuinely impossible or malformed, such as a five-digit year or a month that does not exist.
 - "duplicate": two conditions that impose effectively the SAME obligation in near-identical wording. Name both numbers in the detail. Describe them ACCURATELY: say "near-identical" and name what differs (e.g. "conditions 7 and 8 are near-identical Waste Management Strategy conditions, differing only in that 7 covers the residential bin stores and 8 the church hall"). Only call two conditions "identical" if the wording really is word for word. Near-identical conditions applying to different parts of the same scheme ARE worth flagging, because they can usually be discharged in one submission. Conditions that merely share a TOPIC but impose different obligations, or that bite at different stages, are NOT duplicates and must not be flagged.
+  THE TEST IS THE DELIVERABLE. Flag a duplicate ONLY when both conditions demand the SAME deliverable — the same named document, drawing, strategy or approval — and differ only in which part of the scheme it covers. Two conditions each requiring a "Waste Management Strategy", one for the flats and one for the hall, ARE duplicates. Two conditions requiring DIFFERENT deliverables are NOT duplicates, however closely related their subject: arboricultural supervision versus protective fencing, a method statement versus a monitoring report, a survey versus the remediation it leads to. If you cannot name one deliverable that both conditions demand, do not flag.
 - "missing-drawing": a drawing or document reference cited in a condition that does NOT appear in the approved-plans list. Quote the reference exactly. Only flag when you have actually checked the approved-plans list and the reference is genuinely absent. If the notice has no approved-plans condition at all, never flag this.
 - "internal-conflict": two statements in the notice that cannot both be true — different figures for the same thing, or mutually exclusive requirements. Quote both. A condition being stricter than another is not a conflict.
 - "other": any other clear, specific, verifiable inconsistency. Use sparingly.
@@ -76,7 +78,8 @@ Each condition object has exactly these fields:
   "gate": "blocks-any-commencement",
   "trigger_quote": "No development shall commence until…" or null,
   "gate_ambiguous": true or false,
-  "specialist_needed": ["Fire engineer"]
+  "specialist_needed": ["Fire engineer"],
+  "source_quote": "No development shall commence until..."
 }
 
 category — CRITICAL: the value must be EXACTLY one of these five strings and nothing else:
@@ -120,6 +123,17 @@ The test is whether a developer would have to COMMISSION someone with a specific
 Two overlaps that are commonly confused:
 - Landscape architect vs Ecologist. Planting schedules, soft landscaping, tree species and green infrastructure design = "Landscape architect". Anything requiring BIODIVERSITY assessment — demonstrating biodiversity net gain, habitat creation, protected species, bat or bird boxes, ecological surveys or mitigation — needs an "Ecologist", even when it is delivered through planting or a green roof. Where a condition needs both, choose the one doing the technical assessment.
 - Flood risk consultant vs Drainage / SuDS engineer. A Flood Risk Assessment = "Flood risk consultant". Designing the surface water drainage system, attenuation or SuDS features = "Drainage / SuDS engineer".
+
+source_quote — the OPERATIVE wording of the condition, copied VERBATIM from the notice. This is shown to the user so they can check your extraction against the council's own words, so it must be an exact copy.
+
+- Copy exactly: same words, same spelling, same punctuation, same capitalisation as the notice — INCLUDING any typo or error. Do not paraphrase, summarise, correct, re-order, expand abbreviations or tidy it in any way. If the notice says "20221", write "20221".
+- Quote the OPERATIVE requirement only — the sentence(s) stating what must be done. NOT the "Reason:" clause, and not the whole condition block.
+- Keep it tight. If the operative wording runs longer than about 60 words, quote the key operative sentence and mark omitted middle text with a single … character. Never alter the words you do quote.
+- Where the notice breaks a line or lays wording out as a list, join it with a single SPACE. Do NOT insert commas, semicolons, bullets or any other punctuation that is not printed in the notice. Adding punctuation is still altering the quote.
+- Do not wrap the quote in quotation marks of your own, and do not prefix it with the condition number.
+- If you genuinely cannot isolate a verbatim operative sentence — for example a scanned notice where the text is garbled — set source_quote to null. Never invent or reconstruct wording.
+
+A reworded quote is worse than no quote: it breaks the one thing this field exists for.
 
 APPROVED-PLANS CONDITION: for the condition that requires development to be carried out in accordance with the approved plans/drawings, do NOT just write "in accordance with approved plans". List every plan and document reference exactly as written in the notice (drawing numbers, revisions, and dates where given) in the summary, so the reader can see which specific plans are approved.
 

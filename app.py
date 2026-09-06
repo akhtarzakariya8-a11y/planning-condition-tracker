@@ -4,6 +4,7 @@ import pdfplumber
 import json
 import io
 import base64
+import html
 import re
 from datetime import datetime
 import openpyxl
@@ -66,6 +67,19 @@ st.markdown("""
   .ct-tbl .sec   { font: 400 12.5px/1.5 var(--ct-font-body); color: var(--ct-muted);
                    white-space: nowrap; }
   .ct-quiet      { font: 500 12.5px/1 var(--ct-font-body); color: var(--ct-faint); }
+  .ct-src        { margin-top: 9px; }
+  .ct-src > summary {
+      list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+      font: 600 11.5px/1 var(--ct-font-body); color: var(--ct-accent); }
+  .ct-src > summary::-webkit-details-marker { display: none; }
+  .ct-src > summary::before { content: "▸"; font-size: 9px; }
+  .ct-src[open] > summary::before { content: "▾"; }
+  .ct-src > summary:hover { color: var(--ct-accent-hover); text-decoration: underline; }
+  .ct-src blockquote {
+      margin: 9px 0 0; padding: 10px 14px;
+      border-left: 2px solid var(--ct-accent-line); background: var(--ct-surface-alt);
+      border-radius: 0 var(--ct-r-sm) var(--ct-r-sm) 0;
+      font: 400 13px/1.6 var(--ct-font-body); color: var(--ct-body); font-style: italic; }
   .ct-flagrow    { display:flex; flex-wrap:wrap; gap:9px 12px; align-items:baseline;
                    padding: 11px 0; border-bottom:1px solid var(--ct-border-soft); }
   .ct-flagrow:last-of-type { border-bottom:none; }
@@ -73,6 +87,27 @@ st.markdown("""
   .ct-panel .ct-note:first-of-type { margin-top: var(--ct-s5); }
 </style>
 """, unsafe_allow_html=True)
+
+
+# ----- MODEL CONFIG -----
+# Sonnet 4.5's output ceiling is 64k. Verbatim source quotes are the first feature big enough to
+# threaten the old 8k budget on a large notice, so there is deliberate headroom here.
+MODEL = "claude-sonnet-4-5"
+MAX_TOKENS = 20000
+MAX_TOKENS_RETRY = 32000
+
+
+def analyse_notice(user_content, max_tokens):
+    """One extraction call. Returns the raw message so the caller can inspect stop_reason."""
+    return client.messages.create(
+        model=MODEL,
+        max_tokens=max_tokens,
+        # Extraction and classification, not creative writing: always take the most likely
+        # reading so the same notice gives the same answer twice.
+        temperature=0,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_content}],
+    )
 
 
 # ----- HELPERS -----
@@ -145,6 +180,20 @@ def cond_nums(conditions):
     """Comma-separated condition numbers, e.g. '#3, #4, #5'."""
     return ", ".join(f"#{c['condition_number']}" for c in sorted(
         conditions, key=lambda c: c["condition_number"]))
+
+
+def source_clause_html(condition):
+    """Collapsed disclosure showing the notice's own wording for one condition.
+
+    Renders nothing when there is no quote — an empty "Show original clause" that opens to
+    nothing is worse than no affordance at all.
+    """
+    quote = (condition.get("source_quote") or "").strip()
+    if not quote:
+        return ""
+    safe = html.escape(quote)
+    return ('<details class="ct-src"><summary>Show original clause</summary>'
+            f'<blockquote>{safe}</blockquote></details>')
 
 
 def n_conditions(n):
@@ -507,20 +556,25 @@ def build_excel(data):
     # ----- Sheet 1: Conditions -----
     ws = wb.active
     ws.title = "Conditions"
-    ws.append(["#", "Summary", "Category", "Deadline", "Responsible", "Discharge required?"])
+    ws.append(["#", "Summary", "Category", "Deadline", "Responsible", "Discharge required?",
+               "Source clause"])
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="1F4E78")
     for c in sort_by_category(data["conditions"]):
         ws.append([c["condition_number"], c["summary"], c["category"],
                    c["deadline"], c["responsible_party"],
-                   "Yes" if c["discharge_required"] else "No"])
+                   "Yes" if c["discharge_required"] else "No",
+                   c.get("source_quote") or ""])
         ws.cell(row=ws.max_row, column=3).fill = PatternFill(
             "solid", fgColor=CATEGORY_COLOURS.get(c["category"], "FFFFFF"))
-    for col, w in {"A": 5, "B": 55, "C": 18, "D": 16, "E": 14, "F": 18}.items():
+    for col, w in {"A": 5, "B": 52, "C": 18, "D": 16, "E": 14, "F": 18, "G": 70}.items():
         ws.column_dimensions[col].width = w
     for row in ws.iter_rows(min_row=2):
         row[1].alignment = Alignment(wrap_text=True, vertical="top")
+        # the verbatim clause travels with the export, in the notice's own words
+        row[6].alignment = Alignment(wrap_text=True, vertical="top")
+        row[6].font = Font(italic=True, color="3C382F")
     ws.freeze_panes = "A2"
 
     # ----- Things to check (only when the notice actually has problems) -----
@@ -796,15 +850,18 @@ if uploaded_file is not None:
                     {"type": "text", "text": "Analyse this planning decision notice."},
                 ]
 
-            message = client.messages.create(
-                model="claude-sonnet-4-5",
-                max_tokens=8000,
-                # Extraction and classification, not creative writing: always take the most likely
-                # reading so the same notice gives the same answer twice.
-                temperature=0,
-                system=system_prompt,
-                messages=[{"role": "user", "content": user_content}],
-            )
+            message = analyse_notice(user_content, MAX_TOKENS)
+
+            # Verbatim source quotes roughly double the size of the conditions array, so a very
+            # large notice can hit the output ceiling and return JSON cut off mid-array. Retry once
+            # with more room before giving up — a truncated response is never worth parsing.
+            if message.stop_reason == "max_tokens":
+                message = analyse_notice(user_content, MAX_TOKENS_RETRY)
+
+            if message.stop_reason == "max_tokens":
+                st.error("This notice was large enough to hit the response limit, even on a second "
+                         "attempt with more room. Try splitting it into sections, or get in touch.")
+                st.stop()
 
             try:
                 data = json.loads(strip_fences(message.content[0].text))
@@ -859,7 +916,7 @@ if uploaded_file is not None:
                 rows_html += (
                     f'<tr>'
                     f'<td class="num">{c["condition_number"]}</td>'
-                    f'<td>{c["summary"]}</td>'
+                    f'<td>{c["summary"]}{source_clause_html(c)}</td>'
                     f'<td>{category_pill(c["category"])}</td>'
                     f'<td class="sec">{deadline}</td>'
                     f'<td class="sec" style="text-align:center">{disc}</td>'
@@ -874,6 +931,9 @@ if uploaded_file is not None:
                 f'<tbody>{rows_html}</tbody></table></div>'
             )
             st.markdown(table_html, unsafe_allow_html=True)
+            st.markdown(note("Original clauses are shown for verification. If a quote ever looks "
+                             "off, the source notice is always the final word."),
+                        unsafe_allow_html=True)
 
             # ----- DISCHARGE PLAN -----
             plan_html = build_discharge_plan_html(data)

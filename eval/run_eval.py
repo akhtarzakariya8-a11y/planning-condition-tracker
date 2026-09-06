@@ -39,10 +39,14 @@ def analyse(path):
                                             "data": base64.standard_b64encode(raw).decode()}},
             {"type": "text", "text": "Analyse this planning decision notice."},
         ]
-    msg = app.client.messages.create(
-        model="claude-sonnet-4-5", max_tokens=8000, temperature=0,
-        system=app.system_prompt, messages=[{"role": "user", "content": content}],
-    )
+    # Call through app.analyse_notice so the harness always tests the model config the app
+    # actually ships — this file had its own max_tokens once, and silently truncated.
+    msg = app.analyse_notice(content, app.MAX_TOKENS)
+    if msg.stop_reason == "max_tokens":
+        msg = app.analyse_notice(content, app.MAX_TOKENS_RETRY)
+    if msg.stop_reason == "max_tokens":
+        raise RuntimeError(f"{os.path.basename(path)}: truncated even at "
+                           f"{app.MAX_TOKENS_RETRY} tokens")
     return json.loads(app.strip_fences(msg.content[0].text))
 
 
