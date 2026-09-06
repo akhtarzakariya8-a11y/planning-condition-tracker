@@ -75,6 +75,8 @@ st.markdown("""
   .ct-src > summary::before { content: "▸"; font-size: 9px; }
   .ct-src[open] > summary::before { content: "▾"; }
   .ct-src > summary:hover { color: var(--ct-accent-hover); text-decoration: underline; }
+  .ct-src-ocr    { margin-top: 7px; font: 400 11.5px/1.5 var(--ct-font-body);
+                   color: var(--ct-action-ink); }
   .ct-src blockquote {
       margin: 9px 0 0; padding: 10px 14px;
       border-left: 2px solid var(--ct-accent-line); background: var(--ct-surface-alt);
@@ -182,18 +184,35 @@ def cond_nums(conditions):
         conditions, key=lambda c: c["condition_number"]))
 
 
-def source_clause_html(condition):
+# Set locally after extraction — never comes from the model.
+FROM_SCAN_KEY = "_from_scan"
+
+
+def from_scan(data):
+    """True when the notice had no text layer and was read by vision instead."""
+    return bool(data.get(FROM_SCAN_KEY))
+
+
+def source_clause_html(condition, scanned=False):
     """Collapsed disclosure showing the notice's own wording for one condition.
 
     Renders nothing when there is no quote — an empty "Show original clause" that opens to
     nothing is worse than no affordance at all.
+
+    On a scanned notice there is no text layer to copy from, so the quote is the model's
+    transcription of an image rather than a copy. That is a materially weaker claim than
+    "here are the council's own words", so it is labelled rather than shown as if it were one.
     """
     quote = (condition.get("source_quote") or "").strip()
     if not quote:
         return ""
     safe = html.escape(quote)
-    return ('<details class="ct-src"><summary>Show original clause</summary>'
-            f'<blockquote>{safe}</blockquote></details>')
+    summary = "Show original clause (read from scan)" if scanned else "Show original clause"
+    caveat = ('<div class="ct-src-ocr">This notice is a scan with no text layer, so this wording '
+              'was read from the image and may contain transcription errors. Check it against '
+              'the original.</div>') if scanned else ""
+    return (f'<details class="ct-src"><summary>{summary}</summary>'
+            f'<blockquote>{safe}</blockquote>{caveat}</details>')
 
 
 def n_conditions(n):
@@ -556,8 +575,9 @@ def build_excel(data):
     # ----- Sheet 1: Conditions -----
     ws = wb.active
     ws.title = "Conditions"
+    scanned = from_scan(data)
     ws.append(["#", "Summary", "Category", "Deadline", "Responsible", "Discharge required?",
-               "Source clause"])
+               "Source clause (read from scan)" if scanned else "Source clause"])
     for cell in ws[1]:
         cell.font = Font(bold=True, color="FFFFFF")
         cell.fill = PatternFill("solid", fgColor="1F4E78")
@@ -576,6 +596,12 @@ def build_excel(data):
         row[6].alignment = Alignment(wrap_text=True, vertical="top")
         row[6].font = Font(italic=True, color="3C382F")
     ws.freeze_panes = "A2"
+    if scanned:
+        ws.append([])
+        ws.append(["This notice is a scan with no text layer, so the source clauses were read from "
+                   "the image rather than copied. Treat them as a transcription and check anything "
+                   "you rely on against the original notice."])
+        ws.cell(row=ws.max_row, column=1).font = Font(italic=True, color="8A5A14")
 
     # ----- Things to check (only when the notice actually has problems) -----
     flags = get_flags(data)
@@ -870,6 +896,8 @@ if uploaded_file is not None:
                          "It may be an unusual format — try another decision notice.")
                 st.stop()
 
+        data[FROM_SCAN_KEY] = from_scan
+
         conditions = data["conditions"]
         decision = data["decision"].upper()
 
@@ -908,6 +936,7 @@ if uploaded_file is not None:
                         f'{label("EXTRACTED CONDITIONS")}</div>', unsafe_allow_html=True)
 
             rows_html = ""
+            scanned = from_scan(data)
             for c in sort_by_category(conditions):
                 deadline = c["deadline"] or "—"
                 disc = ('<span class="ct-quiet" style="color:var(--ct-ink)">Yes</span>'
@@ -916,7 +945,7 @@ if uploaded_file is not None:
                 rows_html += (
                     f'<tr>'
                     f'<td class="num">{c["condition_number"]}</td>'
-                    f'<td>{c["summary"]}{source_clause_html(c)}</td>'
+                    f'<td>{c["summary"]}{source_clause_html(c, scanned)}</td>'
                     f'<td>{category_pill(c["category"])}</td>'
                     f'<td class="sec">{deadline}</td>'
                     f'<td class="sec" style="text-align:center">{disc}</td>'
@@ -931,9 +960,13 @@ if uploaded_file is not None:
                 f'<tbody>{rows_html}</tbody></table></div>'
             )
             st.markdown(table_html, unsafe_allow_html=True)
-            st.markdown(note("Original clauses are shown for verification. If a quote ever looks "
-                             "off, the source notice is always the final word."),
-                        unsafe_allow_html=True)
+            st.markdown(note(
+                "This notice is a scan with no text layer, so the original clauses were read from "
+                "the image rather than copied — treat them as a transcription and check anything "
+                "you rely on against the source notice."
+                if scanned else
+                "Original clauses are shown for verification. If a quote ever looks off, the "
+                "source notice is always the final word."), unsafe_allow_html=True)
 
             # ----- DISCHARGE PLAN -----
             plan_html = build_discharge_plan_html(data)
