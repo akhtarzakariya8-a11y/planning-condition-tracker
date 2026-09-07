@@ -44,8 +44,8 @@ def analyse(path):
     # Mirrors app.py: retry once on truncation OR malformed JSON. Verbatim clauses contain
     # quotation marks and the model occasionally emits one unescaped, which is intermittent.
     last = None
-    for budget in (app.MAX_TOKENS, app.MAX_TOKENS_RETRY):
-        msg = app.analyse_notice(content, budget)
+    for budget, temp in ((app.MAX_TOKENS, 0), (app.MAX_TOKENS_RETRY, 0.2)):
+        msg = app.analyse_notice(content, budget, temp)
         if msg.stop_reason == "max_tokens":
             last = "truncated"
             continue

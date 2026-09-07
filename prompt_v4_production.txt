@@ -129,6 +129,7 @@ source_quote — the OPERATIVE wording of the condition, copied VERBATIM from th
 - Quote the OPERATIVE requirement only — the sentence(s) stating what must be done. NOT the "Reason:" clause, and not the whole condition block.
 - Keep it tight. If the operative wording runs longer than about 60 words, quote the key operative sentence and mark omitted middle text with a single … character. Never alter the words you do quote.
 - Where the notice breaks a line or lays wording out as a list, join it with a single SPACE. Do NOT insert commas, semicolons, bullets or any other punctuation that is not printed in the notice. Adding punctuation is still altering the quote.
+- ESCAPING: planning clauses frequently contain double quotation marks — BREEAM Rating "Excellent", a plan titled "Site Layout". Inside JSON these MUST be written as \" or the whole response fails to parse and the user gets nothing. Escape them; never drop the character, swap it for a single quote, or reword around it. The same applies to any backslash, which must be written as \\.
 - Do not wrap the quote in quotation marks of your own, and do not prefix it with the condition number.
 - If you genuinely cannot isolate a verbatim operative sentence — for example a scanned notice where the text is garbled — set source_quote to null. Never invent or reconstruct wording.
 

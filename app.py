@@ -1,3 +1,5 @@
+import os
+
 import streamlit as st
 import anthropic
 import pdfplumber
@@ -16,7 +18,27 @@ from dotenv import load_dotenv
 from theme.ct_theme import inject_theme, label, pill, tile, banner, note, C
 
 load_dotenv()
-client = anthropic.Anthropic()
+
+
+def _resolve_api_key():
+    """Locally the key comes from .env; on Streamlit Cloud it comes from the app's Secrets.
+
+    Constructing the client without one does not fail here — it fails later inside the request
+    with a TypeError, which the upload handler used to catch and report as "check it's a valid
+    UK planning decision notice PDF". That blames the user's file for a configuration problem,
+    so the key is resolved up front instead.
+    """
+    key = os.environ.get("ANTHROPIC_API_KEY")
+    if key:
+        return key
+    try:
+        return st.secrets.get("ANTHROPIC_API_KEY")
+    except Exception:
+        return None  # no secrets.toml at all: normal when running locally
+
+
+API_KEY = _resolve_api_key()
+client = anthropic.Anthropic(api_key=API_KEY) if API_KEY else None
 
 with open("prompt_v4_production.txt") as f:
     system_prompt = f.read()
@@ -101,17 +123,24 @@ MAX_TOKENS = 20000
 MAX_TOKENS_RETRY = 32000
 
 
-def analyse_notice(user_content, max_tokens):
-    """One extraction call. Returns the raw message so the caller can inspect stop_reason."""
-    return client.messages.create(
+def analyse_notice(user_content, max_tokens, temperature=0):
+    """One extraction call. Returns the raw message so the caller can inspect stop_reason.
+
+    Streamed rather than a plain create(): the SDK refuses a non-streaming request whose
+    max_tokens could take it past ten minutes, which is exactly what the retry budget does.
+    get_final_message() hands back the same Message, so stop_reason and usage still work.
+    """
+    with client.messages.stream(
         model=MODEL,
         max_tokens=max_tokens,
         # Extraction and classification, not creative writing: always take the most likely
-        # reading so the same notice gives the same answer twice.
-        temperature=0,
+        # reading so the same notice gives the same answer twice. The retry nudges this off zero
+        # only because repeating an identical request reproduces an identical malformed response.
+        temperature=temperature,
         system=system_prompt,
         messages=[{"role": "user", "content": user_content}],
-    )
+    ) as stream:
+        return stream.get_final_message()
 
 
 # ----- HELPERS -----
@@ -890,6 +919,12 @@ uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="c
 
 if uploaded_file is not None:
     try:
+        if client is None:
+            st.error("This app isn't configured with an API key, so it can't analyse notices "
+                     "right now. That's a problem with the app, not with your file — the "
+                     "ANTHROPIC_API_KEY secret is missing.")
+            st.stop()
+
         file_bytes = uploaded_file.getvalue()
 
         # Anthropic request limit is ~32MB; base64 inflates ~33%, so cap the raw file
@@ -908,6 +943,7 @@ if uploaded_file is not None:
             if len(pdf_text.strip()) >= 100:
                 # digital PDF — send the extracted text (fast, cheap)
                 user_content = pdf_text
+                notice_is_scan = False
             else:
                 # scanned / image PDF — send the PDF itself so Claude reads it with vision
                 pdf_b64 = base64.standard_b64encode(file_bytes).decode("utf-8")
@@ -922,6 +958,9 @@ if uploaded_file is not None:
                     },
                     {"type": "text", "text": "Analyse this planning decision notice."},
                 ]
+                # No text layer to copy from, so every source_quote on this notice is the model's
+                # transcription of an image rather than a copy. The user has to be told that.
+                notice_is_scan = True
 
             # Two things can go wrong, and both are worth one retry rather than an apology.
             #   Truncation: verbatim source quotes roughly double the conditions array, so a very
@@ -931,8 +970,8 @@ if uploaded_file is not None:
             #     second time — telling the user their notice is "unusual" would be wrong.
             data = None
             truncated = False
-            for budget in (MAX_TOKENS, MAX_TOKENS_RETRY):
-                message = analyse_notice(user_content, budget)
+            for budget, temp in ((MAX_TOKENS, 0), (MAX_TOKENS_RETRY, 0.2)):
+                message = analyse_notice(user_content, budget, temp)
                 if message.stop_reason == "max_tokens":
                     truncated = True
                     continue  # never parse a response that was cut off
@@ -953,7 +992,7 @@ if uploaded_file is not None:
                              "It may be an unusual format — try another decision notice.")
                 st.stop()
 
-        data[FROM_SCAN_KEY] = from_scan
+        data[FROM_SCAN_KEY] = notice_is_scan
 
         conditions = data["conditions"]
         decision = data["decision"].upper()
