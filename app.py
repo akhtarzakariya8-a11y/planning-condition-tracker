@@ -1101,9 +1101,14 @@ if uploaded_file is not None:
     except anthropic.APIConnectionError:
         st.error("Couldn't reach the AI service — it may be a network problem. "
                  "Please try again in a moment.")
-    except Exception:
+    except Exception as exc:
         st.error("Something went wrong processing this file. Please check it's a valid "
                  "UK planning decision notice PDF and try again.")
+        # A friendly message with nothing behind it is undiagnosable once the app is deployed:
+        # every unexpected failure looks identical and gets blamed on the user's PDF. The detail
+        # stays collapsed so it does not shout, but it is there when something needs chasing.
+        with st.expander("Technical detail"):
+            st.code(f"{type(exc).__name__}: {exc}")
 
 # ----- FOOTER -----
 st.markdown(

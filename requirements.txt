@@ -1,5 +1,8 @@
-streamlit
-anthropic
-pdfplumber
-openpyxl
-python-dotenv
+# Pinned to the versions this app is tested against. Unpinned, Streamlit Cloud installs
+# the newest release of everything on every rebuild, so a deployed app can break without
+# a single line of code changing.
+streamlit==1.58.0
+anthropic==0.116.0
+pdfplumber==0.11.10
+openpyxl==3.1.5
+python-dotenv==1.2.2
