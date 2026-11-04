@@ -22,12 +22,16 @@ Developers, quantity surveyors, and planning consultants currently read these by
 
 ## What this tool does
 
-1. **Reads** the decision-notice PDF (text extraction)
-2. **Sends** it to the Claude API with a domain-tuned prompt
-3. **Extracts and categorises** every condition — number, plain-English summary, category, deadline, responsible party, and whether it needs formal discharge
-4. **Outputs** a colour-coded Excel tracker (one row per condition) and an on-screen table
-
-A dense legal document goes in; a structured, categorised tracker comes out — in about 30 seconds.
+1. **Reads** the decision-notice PDF (text, or Claude's vision for scanned notices)
+2. **Extracts and categorises** every condition — plain-English summary, category, deadline, whether it needs formal discharge, and the council's verbatim wording
+3. **Safety Gate** — what legally stops you starting on site, what only blocks above-ground works (so demolition and groundworks can start), what blocks piling, what's ambiguous, and the date the permission lapses (handled correctly for outline and section 73 permissions)
+4. **Things to check** — typos, missing drawings, contradictions and duplicated conditions in the council's own notice
+5. **Discharge plan** — how many applications to make and the statutory fees (England/Wales, switching automatically when fees rise)
+6. **Programme & deadlines** — enter your start, piling, above-ground and occupation dates; it works back to when each discharge application must be submitted and each consultant commissioned, flags anything late, and exports it all to your calendar (.ics)
+7. **Auto-drafted submissions** — one click writes the covering letter and a per-condition checklist of what to submit, as a Word document, with placeholders instead of invented facts
+8. **Specialists** — which consultants the conditions imply you'll need
+9. **Exports** — colour-coded Excel tracker, a printable PDF summary, and a portfolio workbook when you upload several notices at once
+10. **Saved projects** — sign in to keep each permission, track every condition's status (submitted, discharged…), and get warned when a deemed-discharge notice may be available
 
 ## Why the categorisation is the hard part
 
@@ -40,6 +44,9 @@ Anyone can extract text from a PDF. The value is in the **judgement**: correctly
 - **pdfplumber** — PDF text extraction
 - **openpyxl** — formatted Excel output
 - **Streamlit** — web interface, deployed on Streamlit Community Cloud
+- **python-docx / reportlab** — Word drafts and PDF summaries
+- **Supabase** (Postgres) + Google sign-in — saved projects
+- **MCP server** — the same tools inside Claude Desktop / Claude Code (`mcp_server/`)
 
 ## How it was built
 
@@ -56,31 +63,29 @@ Built over the summer as a final-year Quantity Surveying student, starting from 
 git clone https://github.com/akhtarzakariya8-a11y/planning-condition-tracker.git
 cd planning-condition-tracker
 pip install -r requirements.txt
+echo "ANTHROPIC_API_KEY=sk-ant-..." > .env
+streamlit run app.py
 ```
 
-Create a `.env` file with your Anthropic API key:
-
-```
-ANTHROPIC_API_KEY=your-key-here
-```
-
-Then run:
+Tests and accuracy:
 
 ```bash
-streamlit run app.py
+python3 -m pytest tests/ -q          # the rules — instant, no API calls
+python3 eval/run_eval.py --jobs 7    # the model — scored against a hand-made answer key
 ```
 
 ## Scope & limitations (honest notes)
 
-- Designed for **UK planning decision notices** specifically. Other document types (discharge approvals, certificates of lawfulness) will correctly return "no conditions."
-- Works on **text-based PDFs**. Scanned/image-only PDFs are detected and rejected with a message (OCR support is a planned addition).
-- This is a working tool and a proof of concept — not a replacement for professional review. Outputs should be checked against the source document.
+- Designed for **UK planning decision notices**. Discharge approvals, refusals and other documents are recognised and handled as what they are (nothing left to discharge, nothing to start).
+- **Scanned PDFs** are read with Claude's vision; quoted wording from a scan is labelled as a transcription.
+- Fees are priced for **England and Wales** only. Deemed discharge is an English provision and is only mentioned there.
+- Every output — gates, dates, fees, drafts — is a planning aid, **not legal advice**, and should be checked against the source notice and with a planning consultant.
 
 ## What's next
 
-- OCR support for scanned notices
-- Deadline tracking and reminders (turning the extractor into a full condition-management tool)
-- Batch processing of multiple notices
+- Payments and a free tier
+- Email reminders for upcoming submit-by deadlines
+- Saved drafts inside projects
 
 ---
 
