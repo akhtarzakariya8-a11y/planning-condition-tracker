@@ -1,0 +1,5 @@
+# For the MCP server only (the Streamlit app keeps using the main requirements.txt).
+mcp[cli]>=2.3,<3
+anthropic==0.116.0
+pdfplumber==0.11.10
+python-dotenv==1.2.2
