@@ -3,3 +3,11 @@ __pycache__/
 *.xlsx
 tracker.xlsx
 .DS_Store
+# local saved projects (development only)
+.ct_data/
+# Streamlit secrets — never commit; see .streamlit/secrets.toml.example
+.streamlit/secrets.toml
+# the MCP server's private environment and cache
+mcp_server/.venv/
+mcp_server/.cache/
+mcp_server/notices/

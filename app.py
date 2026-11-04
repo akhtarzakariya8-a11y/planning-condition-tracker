@@ -1,1119 +1,704 @@
-import os
+"""AI Planning Condition Tracker — the web page.
 
-import streamlit as st
+Run locally with:   streamlit run app.py
+
+Everything that is not the page itself lives in the ct/ package (see ct/__init__.py):
+the extraction call, the rules, the programme engine, drafting, the downloads and storage.
+This file only decides what to show, in what order, and wires up the buttons.
+"""
+import hashlib
+import os
+from concurrent.futures import ThreadPoolExecutor
+from datetime import date, datetime, timezone
+
 import anthropic
-import pdfplumber
-import json
-import io
-import base64
-import difflib
-import html
-import itertools
-import re
-from datetime import datetime
-import openpyxl
-from openpyxl.styles import Font, PatternFill, Alignment
+import streamlit as st
 from dotenv import load_dotenv
 
-from theme.ct_theme import inject_theme, label, pill, tile, banner, note, C
+from ct import config, drafting, extract, logic, panels, programme, reports, storage
+from theme.ct_theme import C, banner, inject_theme, label, note, pill, tile
 
 load_dotenv()
 
 
-def _resolve_api_key():
-    """Locally the key comes from .env; on Streamlit Cloud it comes from the app's Secrets.
-
-    Constructing the client without one does not fail here — it fails later inside the request
-    with a TypeError, which the upload handler used to catch and report as "check it's a valid
-    UK planning decision notice PDF". That blames the user's file for a configuration problem,
-    so the key is resolved up front instead.
-    """
-    key = os.environ.get("ANTHROPIC_API_KEY")
-    if key:
-        return key
+def secret(name):
+    """A setting from the environment (.env locally) or, on Streamlit Cloud, the app's Secrets."""
+    value = os.environ.get(name)
+    if value:
+        return value
     try:
-        return st.secrets.get("ANTHROPIC_API_KEY")
+        return st.secrets.get(name)
     except Exception:
         return None  # no secrets.toml at all: normal when running locally
 
 
-API_KEY = _resolve_api_key()
-client = anthropic.Anthropic(api_key=API_KEY) if API_KEY else None
+# The key is resolved up front: a missing key used to surface later as a TypeError that the
+# upload handler reported as "check it's a valid PDF" — blaming the user's file for our config.
+client = extract.get_client(secret("ANTHROPIC_API_KEY"))
 
-with open("prompt_v4_production.txt") as f:
-    system_prompt = f.read()
-
-
-# ----- PAGE CONFIG + THEME -----
-st.set_page_config(
-    page_title="AI Planning Condition Tracker",
-    page_icon="📋",
-    layout="wide",
-)
+st.set_page_config(page_title="AI Planning Condition Tracker", page_icon="📋", layout="wide")
 inject_theme()
+st.markdown(panels.LAYOUT_CSS, unsafe_allow_html=True)
 
-# Layout only — every colour and type decision comes from theme/tokens.css.
-st.markdown("""
-<style>
-  .block-container { max-width: 1180px; }
-  .ct-panel      { padding: var(--ct-s5); margin: 0 0 var(--ct-s5) 0; }
-  .ct-panel-hd   { margin-bottom: var(--ct-s3); }
-  .ct-line       { padding: 11px 0; border-bottom: 1px solid var(--ct-border-soft); }
-  .ct-line:last-of-type { border-bottom: none; }
-  .ct-line-txt   { font: 400 var(--ct-body-size)/1.65 var(--ct-font-body); color: var(--ct-body); }
-  .ct-nums       { font-variant-numeric: tabular-nums; font-size: 12px; color: var(--ct-faint);
-                   margin-top: 5px; letter-spacing: .2px; }
-  .ct-kv         { display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; }
-  .ct-kv-k       { font: 600 var(--ct-body-size)/1.5 var(--ct-font-body); color: var(--ct-ink);
-                   min-width: 236px; }
-  .ct-total      { font: var(--ct-h2); color: var(--ct-ink);
-                   font-variant-numeric: tabular-nums; margin-top: var(--ct-s4); }
-  .ct-expired    { display:flex; gap:10px; align-items:flex-start;
-                   padding: 11px 14px; border-radius: var(--ct-r-md);
-                   background: var(--ct-overdue-tint); border: 1px solid #e6c9c5;
-                   font: 400 13px/1.5 var(--ct-font-body); color: var(--ct-overdue);
-                   margin-bottom: var(--ct-s4); }
-  .ct-expired b  { font-weight: 700; }
-  .ct-step-n     { font: 700 var(--ct-label-size)/1 var(--ct-font-body);
-                   letter-spacing: var(--ct-label-track); color: var(--ct-accent); }
-  .ct-tbl        { width:100%; border-collapse: collapse; }
-  .ct-tbl thead th {
-      font:700 10.5px/1 var(--ct-font-body); letter-spacing:.9px; text-transform:uppercase;
-      color:var(--ct-faint); text-align:left; padding:13px 18px;
-      border-bottom:1px solid var(--ct-border); white-space:nowrap; }
-  .ct-tbl tbody td {
-      padding: 13px 18px; vertical-align: top;
-      border-bottom: 1px solid var(--ct-border-soft);
-      font: 600 14px/1.55 var(--ct-font-body); color: var(--ct-ink); }
-  .ct-tbl tbody tr:last-child td { border-bottom: none; }
-  .ct-tbl tbody tr:hover td { background: var(--ct-surface-hover); }
-  .ct-tbl .num   { font-variant-numeric: tabular-nums; font-weight:600; color: var(--ct-faint); }
-  .ct-tbl .sec   { font: 400 12.5px/1.5 var(--ct-font-body); color: var(--ct-muted);
-                   white-space: nowrap; }
-  .ct-quiet      { font: 500 12.5px/1 var(--ct-font-body); color: var(--ct-faint); }
-  .ct-src        { margin-top: 9px; }
-  .ct-src > summary {
-      list-style: none; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
-      font: 600 11.5px/1 var(--ct-font-body); color: var(--ct-accent); }
-  .ct-src > summary::-webkit-details-marker { display: none; }
-  .ct-src > summary::before { content: "▸"; font-size: 9px; }
-  .ct-src[open] > summary::before { content: "▾"; }
-  .ct-src > summary:hover { color: var(--ct-accent-hover); text-decoration: underline; }
-  .ct-src-ocr    { margin-top: 7px; font: 400 11.5px/1.5 var(--ct-font-body);
-                   color: var(--ct-action-ink); }
-  .ct-src blockquote {
-      margin: 9px 0 0; padding: 10px 14px;
-      border-left: 2px solid var(--ct-accent-line); background: var(--ct-surface-alt);
-      border-radius: 0 var(--ct-r-sm) var(--ct-r-sm) 0;
-      font: 400 13px/1.6 var(--ct-font-body); color: var(--ct-body); font-style: italic; }
-  .ct-flagrow    { display:flex; flex-wrap:wrap; gap:9px 12px; align-items:baseline;
-                   padding: 11px 0; border-bottom:1px solid var(--ct-border-soft); }
-  .ct-flagrow:last-of-type { border-bottom:none; }
-  .ct-panel .ct-note { margin-top: var(--ct-s2); }
-  .ct-panel .ct-note:first-of-type { margin-top: var(--ct-s5); }
-</style>
-""", unsafe_allow_html=True)
+ss = st.session_state
+ss.setdefault("analyses", {})   # file hash -> {"name", "data"} or {"name", "error", "detail"}
+ss.setdefault("drafts", {})     # draft key -> draft dict
 
 
-# ----- MODEL CONFIG -----
-# Sonnet 4.5's output ceiling is 64k. Verbatim source quotes are the first feature big enough to
-# threaten the old 8k budget on a large notice, so there is deliberate headroom here.
-MODEL = "claude-sonnet-4-5"
-MAX_TOKENS = 20000
-MAX_TOKENS_RETRY = 32000
-
-
-def analyse_notice(user_content, max_tokens, temperature=0):
-    """One extraction call. Returns the raw message so the caller can inspect stop_reason.
-
-    Streamed rather than a plain create(): the SDK refuses a non-streaming request whose
-    max_tokens could take it past ten minutes, which is exactly what the retry budget does.
-    get_final_message() hands back the same Message, so stop_reason and usage still work.
-    """
-    with client.messages.stream(
-        model=MODEL,
-        max_tokens=max_tokens,
-        # Extraction and classification, not creative writing: always take the most likely
-        # reading so the same notice gives the same answer twice. The retry nudges this off zero
-        # only because repeating an identical request reproduces an identical malformed response.
-        temperature=temperature,
-        system=system_prompt,
-        messages=[{"role": "user", "content": user_content}],
-    ) as stream:
-        return stream.get_final_message()
-
-
-# ----- HELPERS -----
-def strip_fences(text):
-    text = text.strip()
-    if text.startswith("```"):
-        lines = text.split("\n")[1:]
-        if lines and lines[-1].strip() == "```":
-            lines = lines[:-1]
-        text = "\n".join(lines)
-    return text.strip()
-
-
-CATEGORY_COLOURS = {
-    "pre-commencement": "F4CCCC", "pre-occupation": "FCE5CD",
-    "ongoing": "CFE2F3", "discharge-required": "D9D2E9", "time-limit": "FFF2CC",
-}
-
-CATEGORY_ORDER = ["time-limit", "pre-commencement", "discharge-required", "pre-occupation", "ongoing"]
-
-
-def sort_by_category(conditions):
-    return sorted(
-        conditions,
-        key=lambda c: CATEGORY_ORDER.index(c["category"]) if c["category"] in CATEGORY_ORDER else 99,
-    )
-
-
-def split_by_gate(conditions):
-    """Group conditions into the four Safety Gate buckets.
-
-    A condition flagged gate_ambiguous is never listed as startable, even if its
-    gate says above-ground only — it belongs in the "check these" bucket instead.
-    """
-    blockers = [c for c in conditions if c.get("gate") in ("blocks-any-commencement", "blocks-demolition")]
-    piling = [c for c in conditions if c.get("gate") == "blocks-piling"]
-    ambiguous = [c for c in conditions if c.get("gate_ambiguous")]
-    startable = [c for c in conditions
-                 if c.get("gate") == "blocks-above-ground" and not c.get("gate_ambiguous")]
-    return blockers, piling, ambiguous, startable
-
-
-def compute_begin_by(decision_date, years):
-    """Parse the decision date and add the time-limit years. Returns a date or None."""
-    if not decision_date or not years:
-        return None
-    s = re.sub(r"(\d+)(st|nd|rd|th)", r"\1", str(decision_date).strip(), flags=re.IGNORECASE)
-    d = None
-    # Four-digit-year formats first: %y would happily match a two-digit fragment.
-    for fmt in ("%d %B %Y", "%d %b %Y", "%d.%m.%Y", "%d/%m/%Y", "%d-%m-%Y", "%B %d, %Y", "%Y-%m-%d",
-                "%d %B %y", "%d %b %y", "%d.%m.%y", "%d/%m/%y", "%d-%m-%y"):
-        try:
-            d = datetime.strptime(s, fmt).date()
-            break
-        except ValueError:
-            d = None
-    if d is None:
-        return None
+# ----- ACCOUNTS + STORAGE (Phase 4) -----
+def auth_configured():
     try:
-        return d.replace(year=d.year + int(years))
-    except ValueError:  # 29 Feb edge case
-        return d.replace(month=2, day=28, year=d.year + int(years))
+        return "auth" in st.secrets
+    except Exception:
+        return False
 
 
-def fmt_date(d):
-    return d.strftime("%d %B %Y").lstrip("0")
+def current_user():
+    """The signed-in user's email, lower-case — or None.
 
-
-def cond_nums(conditions):
-    """Comma-separated condition numbers, e.g. '#3, #4, #5'."""
-    return ", ".join(f"#{c['condition_number']}" for c in sorted(
-        conditions, key=lambda c: c["condition_number"]))
-
-
-# Set locally after extraction — never comes from the model.
-FROM_SCAN_KEY = "_from_scan"
-
-
-def from_scan(data):
-    """True when the notice had no text layer and was read by vision instead."""
-    return bool(data.get(FROM_SCAN_KEY))
-
-
-def source_clause_html(condition, scanned=False):
-    """Collapsed disclosure showing the notice's own wording for one condition.
-
-    Renders nothing when there is no quote — an empty "Show original clause" that opens to
-    nothing is worse than no affordance at all.
-
-    On a scanned notice there is no text layer to copy from, so the quote is the model's
-    transcription of an image rather than a copy. That is a materially weaker claim than
-    "here are the council's own words", so it is labelled rather than shown as if it were one.
+    With Google sign-in configured ([auth] in secrets) this is Streamlit's st.user. Without it, a
+    developer can set CT_DEV_USER locally to try the saved-projects pages.
     """
-    quote = (condition.get("source_quote") or "").strip()
-    if not quote:
-        return ""
-    safe = html.escape(quote)
-    summary = "Show original clause (read from scan)" if scanned else "Show original clause"
-    caveat = ('<div class="ct-src-ocr">This notice is a scan with no text layer, so this wording '
-              'was read from the image and may contain transcription errors. Check it against '
-              'the original.</div>') if scanned else ""
-    return (f'<details class="ct-src"><summary>{summary}</summary>'
-            f'<blockquote>{safe}</blockquote>{caveat}</details>')
+    if auth_configured():
+        try:
+            if st.user.is_logged_in:
+                return (st.user.get("email") or "").strip().lower() or None
+        except Exception:
+            return None
+        return None
+    dev = os.environ.get("CT_DEV_USER")
+    return dev.strip().lower() if dev else None
 
 
-def n_conditions(n):
-    return "1 condition" if n == 1 else f"{n} conditions"
+@st.cache_resource
+def get_store():
+    return storage.get_store(secret)
 
 
-def build_safety_gate_html(data):
-    """A short summary panel: counts and condition numbers only.
+store = get_store()
+user = current_user()
 
-    Deliberately does NOT repeat condition text — the table below carries the detail.
+
+def log_usage(kind, cost):
+    """Record what each action cost. Never let bookkeeping break the page."""
+    if not store:
+        return
+    try:
+        store.log_usage(user or "anonymous", kind, cost)
+    except Exception:
+        pass
+
+
+def jsonable(obj):
+    """Dates -> ISO strings, recursively, so a summary can be stored as JSON."""
+    if isinstance(obj, (date, datetime)):
+        return obj.isoformat()
+    if isinstance(obj, dict):
+        return {k: jsonable(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [jsonable(v) for v in obj]
+    return obj
+
+
+# ----- ERRORS -----
+def friendly_error(exc):
+    """(message, technical detail or None). Says whose problem it is — ours or the file's."""
+    # Order matters: AuthenticationError and RateLimitError are subclasses of APIStatusError.
+    if isinstance(exc, anthropic.AuthenticationError):
+        return ("This app can't reach the AI service — its API key is missing or invalid. "
+                "That's a problem with the app, not with your file.", None)
+    if isinstance(exc, anthropic.RateLimitError):
+        return ("The AI service is busy at the moment. Please wait a few seconds and try again — "
+                "there's nothing wrong with your file.", None)
+    if isinstance(exc, anthropic.APIStatusError):
+        detail = str(getattr(exc, "message", "") or exc).lower()
+        if "credit balance" in detail or "billing" in detail or "quota" in detail:
+            return ("This app has run out of API credit, so it can't analyse notices right now. "
+                    "That's a problem with the app, not with your file.", None)
+        return ("The AI service returned an error, so this notice couldn't be analysed. That's a "
+                "problem with the service, not with your file — please try again shortly.", None)
+    if isinstance(exc, anthropic.APIConnectionError):
+        return ("Couldn't reach the AI service — it may be a network problem. "
+                "Please try again in a moment.", None)
+    if isinstance(exc, extract.ExtractionError):
+        if exc.kind == "truncated":
+            return ("This notice was large enough to hit the response limit, even on a second "
+                    "attempt with more room. Try splitting it into sections, or get in touch.", None)
+        return ("Couldn't read the AI's response for this document, twice. It may be an unusual "
+                "format — try another decision notice.", None)
+    # A friendly message with nothing behind it is undiagnosable once deployed, so the detail
+    # is kept (collapsed) for whoever has to chase it.
+    return ("Something went wrong processing this file. Please check it's a valid UK planning "
+            "decision notice PDF and try again.", f"{type(exc).__name__}: {exc}")
+
+
+# ----- ANALYSIS (cached per file, so a click never re-runs a paid call) -----
+def analyse_files(files):
+    """Analyse every uploaded file not already in this session's cache. Returns entries in order.
+
+    Every widget interaction reruns this whole script. Without the cache, pressing a download
+    button or changing a date would send the notice to Claude again — 30 seconds and a fresh bill.
     """
-    if doc_type(data) not in GATE_DOC_TYPES:
-        return ""  # nothing to start: a refusal, or conditions already discharged
+    entries, todo = [], []
+    for f in files:
+        raw = f.getvalue()
+        key = hashlib.sha256(raw).hexdigest()[:16]
+        if key not in ss.analyses:
+            if len(raw) > config.MAX_PDF_BYTES:
+                ss.analyses[key] = {"name": f.name, "error": "This PDF is too large to process (over "
+                                    "~24MB). Try a smaller file, or split it into sections."}
+            else:
+                todo.append((key, f.name, raw))
+        entries.append(key)
 
-    conditions = data.get("conditions", [])
-    begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
-
-    blockers, piling, ambiguous, startable = split_by_gate(conditions)
-
-    if not (begin_by or blockers or piling or ambiguous or startable):
-        return ""
-
-    parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', label("BEFORE YOU START ON SITE"), '</div>']
-
-    if begin_by and begin_by < datetime.now().date():
-        parts.append(
-            f'<div class="ct-expired"><span>⚠</span><span><b>This start deadline has already '
-            f'passed.</b> Development had to begin by <b>{fmt_date(begin_by)}</b>. Unless a material '
-            f'operation lawfully started on site before then, this permission has expired and cannot '
-            f'be implemented.</span></div>'
-        )
-    elif begin_by:
-        parts.append(
-            f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s4)">Development must begin by '
-            f'<b style="font-variant-numeric:tabular-nums">{fmt_date(begin_by)}</b> or the permission '
-            f'lapses. <span style="color:var(--ct-faint)">(computed from the decision date — confirm '
-            f'against the notice)</span></div>'
-        )
-
-    def line(status, text, conditions):
-        return (f'<div class="ct-line">{pill(text, status)}'
-                f'<div class="ct-nums">{cond_nums(conditions)}</div></div>')
-
-    if blockers:
-        parts.append(line("overdue",
-                          f"{n_conditions(len(blockers))} must be discharged before you can lawfully "
-                          f"start on site", blockers))
-    if startable:
-        verb = "blocks" if len(startable) == 1 else "block"
-        parts.append(line("discharged",
-                          f"{len(startable)} more only {verb} above-ground works — you can begin "
-                          f"demolition and groundworks first", startable))
-    if piling:
-        parts.append(line("action",
-                          f"{n_conditions(len(piling))} to clear before any piling", piling))
-    if ambiguous:
-        verb = "needs" if len(ambiguous) == 1 else "need"
-        parts.append(line("action",
-                          f"{n_conditions(len(ambiguous))} {verb} checking — wording is ambiguous",
-                          ambiguous))
-
-    parts.append(f'<div style="margin-top:var(--ct-s4)">'
-                 f'{label("FULL DETAIL IN THE CONDITIONS TABLE BELOW")}</div>')
-
-    if doc_type(data) in CIL_DOC_TYPES:
-        parts.append(note(
-            "<b>CIL reminder:</b> before any material operation on site, check whether the development "
-            "is CIL-liable and, if so, submit a CIL Commencement Notice to the council and get written "
-            "acknowledgement first. Starting before this can mean losing CIL relief and incurring "
-            "surcharges. This tool does not read CIL notices."))
-    parts.append(note(
-        "Automated flags, not legal advice — whether a condition is a true condition-precedent can be "
-        "finely balanced. Confirm with your planning consultant or solicitor before starting on site."))
-    parts.append("</div>")
-    return "".join(parts)
+    if todo:
+        n = len(todo)
+        msg = ("Reading the decision notice — usually 15–30 seconds..." if n == 1 else
+               f"Reading {n} decision notices in parallel — usually under a minute...")
+        with st.spinner(msg):
+            def work(item):
+                key, name, raw = item
+                try:
+                    # Development only: CT_FIXTURE_DIR points at saved analyses (eval/fixtures), so the
+                    # page can be tested end to end without paying for an API call. Unset in production.
+                    fixtures = os.environ.get("CT_FIXTURE_DIR")
+                    if fixtures:
+                        path = os.path.join(fixtures, os.path.splitext(name)[0] + ".json")
+                        if os.path.exists(path):
+                            import json
+                            with open(path, encoding="utf-8") as fh:
+                                return key, name, json.load(fh), None
+                    return key, name, extract.extract(raw, client), None
+                except Exception as exc:  # reported per file below; one bad file can't sink a batch
+                    return key, name, None, exc
+            with ThreadPoolExecutor(max_workers=min(n, config.BATCH_WORKERS)) as pool:
+                results = list(pool.map(work, todo))
+        for key, name, data, exc in results:
+            if exc is None:
+                ss.analyses[key] = {"name": name, "data": data}
+                log_usage("analysis", data.get(extract.COST_KEY, 0))
+            else:
+                message, detail = friendly_error(exc)
+                ss.analyses[key] = {"name": name, "error": message, "detail": detail}
+    return [(key, ss.analyses[key]) for key in entries]
 
 
-# ----- DISCHARGE FEES -----
-# England statutory fees, charged PER APPLICATION (request), not per condition. The fee line reads
-# "Approval of details and/or confirmation that ONE OR MORE conditions have been complied with".
-# Source: Planning Portal, Application Fees England, 1 April 2026 schedule.
-FEE_OTHER = 309         # any other development, per request
-FEE_HOUSEHOLDER = 89    # householder, per request
-FEE_OTHER_LATER = 435
-FEE_HOUSEHOLDER_LATER = 125
-FEE_RISE_DATE = "8 December 2026"
+def show_error(key, entry):
+    st.error(f"**{entry['name']}** — {entry['error']}")
+    if entry.get("detail"):
+        with st.expander("Technical detail"):
+            st.code(entry["detail"])
+    if st.button("Try this file again", key=f"retry_{key}"):
+        ss.analyses.pop(key, None)
+        st.rerun()
 
-# Per-nation fee scales. Wales: Planning Portal "Application Fees Wales – 1 December 2025"
-# (£242 any other development, £123 householder; no further rise announced for 2026).
-# Scotland and Northern Ireland run separate systems and are deliberately NOT priced here.
-FEES = {
-    "england": {"other": FEE_OTHER, "householder": FEE_HOUSEHOLDER,
-                "later": (FEE_OTHER_LATER, FEE_HOUSEHOLDER_LATER), "later_date": FEE_RISE_DATE},
-    "wales": {"other": 242, "householder": 123, "later": None, "later_date": None},
-}
-JURISDICTION_LABEL = {
-    "england": "England", "wales": "Wales",
-    "scotland": "Scotland", "northern-ireland": "Northern Ireland",
-}
 
-# Which documents impose conditions the applicant still has to discharge. A refusal grants nothing,
-# and a discharge-approval notice records conditions that have ALREADY been cleared.
-PLAN_DOC_TYPES = ("full-grant", "appeal-decision", "listed-building-consent")
-# ...and of those, the ones where a fee is actually payable. Discharging conditions on a listed
-# building consent is free: the fee line covers approvals "following grant of planning permission",
-# and the schedule lists LBC conditions under concessions.
-FEE_DOC_TYPES = ("full-grant", "appeal-decision")
-# The Safety Gate only makes sense where something can lawfully be started.
-GATE_DOC_TYPES = ("full-grant", "appeal-decision", "listed-building-consent")
-# CIL is charged on development granted planning permission, not on listed building consent.
-CIL_DOC_TYPES = ("full-grant", "appeal-decision")
-
-# Stage batches. The LAST entry is the catch-all — it also absorbs any unrecognised gate value.
-DISCHARGE_BATCHES = [
-    ("Before you start (pre-commencement)",
-     ("blocks-any-commencement", "blocks-demolition", "blocks-piling", "blocks-above-ground")),
-    ("Before occupation", ("before-occupation", "before-use")),
-    ("Other / any time", ("ongoing", "none")),
+# ----- PROGRAMME INPUTS -----
+PROGRAMME_FIELDS = [
+    ("start", "Start on site", "Demolition or first works"),
+    ("piling", "Start piling", "Leave blank if none / same as start"),
+    ("above_ground", "Above-ground works", "Leave blank if same as start"),
+    ("occupation", "First occupation", "Or first use"),
 ]
 
 
-def doc_type(data):
-    """Document type, defaulting to full-grant when the field is absent."""
-    return data.get("document_type") or "full-grant"
+def programme_inputs(key, saved=None, on_change=None):
+    """Four optional dates + two assumptions. Returns (dates, prep_weeks, buffer_weeks)."""
+    saved = saved or {}
+    cols = st.columns(4)
+    dates = {}
+    for col, (field, title, help_text) in zip(cols, PROGRAMME_FIELDS):
+        wkey = f"{key}_{field}"
+        if wkey not in ss and saved.get(field):
+            ss[wkey] = logic.parse_date(saved[field])
+        dates[field] = col.date_input(title, value=None, key=wkey, format="DD/MM/YYYY",
+                                      help=help_text, on_change=on_change)
+    with st.expander("Assumptions"):
+        a, b = st.columns(2)
+        pkey, bkey = f"{key}_prep", f"{key}_buffer"
+        if pkey not in ss:
+            ss[pkey] = int(saved.get("prep_weeks") or programme.DEFAULT_PREP_WEEKS)
+        if bkey not in ss:
+            ss[bkey] = int(saved.get("buffer_weeks") or programme.DEFAULT_BUFFER_WEEKS)
+        prep = a.number_input("Weeks to prepare each submission", 1, 52, key=pkey,
+                              on_change=on_change)
+        buffer = b.number_input("Extra weeks for council validation", 0, 12, key=bkey,
+                                on_change=on_change)
+        st.caption(f"The council's statutory {programme.DETERMINATION_WEEKS} weeks to decide is "
+                   f"always added on top.")
+    return dates, int(prep), int(buffer)
 
 
-def jurisdiction(data):
-    """Which nation's fee scale applies.
-
-    An absent key means a legacy extraction from before the field existed — assume England, which
-    is what the tool did previously. An explicit null means the model could not tell, and we must
-    NOT price it.
-    """
-    if "jurisdiction" not in data:
-        return "england"
-    return data.get("jurisdiction") or "unknown"
-
-
-def build_discharge_plan(data):
-    """Batch the discharge-required conditions by stage and price the applications.
-
-    "applies" is False for documents that impose no outstanding obligations — a refusal, or a
-    discharge-approval notice where the conditions listed have ALREADY been cleared.
-    """
-    dt = doc_type(data)
-    conditions = [c for c in data.get("conditions", []) if c.get("discharge_required")]
-    known = {g for _, gates in DISCHARGE_BATCHES for g in gates}
-
-    batches = []
-    for i, (stage, gates) in enumerate(DISCHARGE_BATCHES):
-        catch_all = i == len(DISCHARGE_BATCHES) - 1
-        members = [c for c in conditions
-                   if c.get("gate") in gates or (catch_all and c.get("gate") not in known)]
-        if members:
-            batches.append((stage, members))
-
-    householder = data.get("is_householder")
-    juris = jurisdiction(data)
-    scale = FEES.get(juris)              # None for Scotland, NI, or an unknown jurisdiction
-    fee_payable = dt in FEE_DOC_TYPES
-
-    fee = None
-    if fee_payable and scale and householder is True:
-        fee = scale["householder"]
-    elif fee_payable and scale and householder is False:
-        fee = scale["other"]
-
-    return {
-        "total": len(conditions),
-        "batches": batches,
-        "applications": len(batches),
-        "applies": dt in PLAN_DOC_TYPES,
-        "fee_payable": fee_payable,
-        "jurisdiction": juris,
-        "scale": scale,                  # None when we don't hold that nation's fees
-        "fee": fee,                      # None when free, unpriced, or householder status unclear
-        "householder": householder,
-        "cost": len(batches) * fee if fee else None,
-    }
-
-
-def build_discharge_plan_html(data):
-    plan = build_discharge_plan(data)
+# ----- DRAFTING (on demand — each draft is a paid call) -----
+def drafting_section(key, data, prog):
+    plan = logic.build_discharge_plan(data)
     if not plan["applies"] or not plan["total"]:
-        return ""
-
-    apps = plan["applications"]
-    app_word = f'{apps} application{"" if apps == 1 else "s"}'
-    scale = plan["scale"]
-    juris_name = JURISDICTION_LABEL.get(plan["jurisdiction"])
-    where = f" is from {juris_name}" if juris_name else "'s nation is unclear"
-
-    if not plan["fee_payable"]:
-        fee_lead = ('There is <b>no council fee</b> for discharging conditions on a listed building '
-                    'consent, but you still have to apply. A sensible way to batch these is by stage:')
-    elif scale is None:
-        fee_lead = ('The fee is charged <b>per application</b>, not per condition, so bundle them. This '
-                    'tool only holds the England and Wales fee scales, so it cannot price this one — '
-                    'check the figure with the authority. A sensible way to batch these is by stage:')
+        return
+    if prog["has_dates"]:
+        groups = [(g["submit_by"].isoformat(), f"Submit by {logic.fmt_date(g['submit_by'])}",
+                   g["discharge"], g["fee"]) for g in programme.submission_groups(prog)]
     else:
-        fee_lead = (f'The council fee is <b>£{plan["fee"] or scale["other"]} per application</b> — not per '
-                    f'condition, so bundle them. A sensible way to batch these is by stage:')
+        groups = [(stage, stage, members, plan["fee"]) for stage, members in plan["batches"]]
+    if not groups:
+        return
+    fee_note = ("No fee is payable for applications to discharge conditions on a listed building "
+                "consent." if logic.doc_type(data) == "listed-building-consent" else None)
 
-    needs = "needs" if plan["total"] == 1 else "need"
-    parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', label("DISCHARGE PLAN"), '</div>',
-             f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">You have '
-             f'<b>{n_conditions(plan["total"])}</b> that {needs} formal discharge (submitted to '
-             f'<b>and</b> approved by the council). {fee_lead}</div>']
-    for stage, members in plan["batches"]:
-        parts.append(
-            f'<div class="ct-line"><div class="ct-kv">'
-            f'<span class="ct-kv-k">{stage}</span>'
-            f'{pill(n_conditions(len(members)), "submitted")}'
-            f'<span class="ct-nums" style="margin-top:0">{cond_nums(members)}</span></div></div>'
-        )
-
-    if not plan["fee_payable"]:
-        parts.append(f'<div class="ct-total">\u2248 {app_word} to submit \u2014 no council fee.</div>')
-        parts.append(note("Conditions on a listed building consent carry no application fee. "
-                          "Conditions on a linked planning permission do."))
-    elif scale is None:
-        parts.append(f'<div class="ct-total">\u2248 {app_word} to submit.</div>')
-        parts.append(note(
-            f"No fee shown — this notice{where}, and this tool only holds the England and Wales fee "
-            f"scales. The per-application principle still applies, so bundling still saves money."))
-    elif plan["fee"] is not None:
-        scheme = "householder" if plan["householder"] else "non-householder"
-        rise = ""
-        if scale["later"]:
-            rise = (f' Fees rise to £{scale["later"][0]} (£{scale["later"][1]} householder) on '
-                    f'{scale["later_date"]}.')
-        parts.append(f'<div class="ct-total">\u2248 {app_word} \u00d7 £{plan["fee"]} = '
-                     f'~£{plan["cost"]:,} in council fees.</div>')
-        parts.append(note(f"Priced at the <b>{scheme}</b> rate for {juris_name}.{rise}"))
-    else:
-        rise = ""
-        if scale["later"]:
-            rise = f' Fees rise to £{scale["later"][0]} / £{scale["later"][1]} on {scale["later_date"]}.'
-        parts.append(f'<div class="ct-total">\u2248 {app_word} \u2014 about '
-                     f'£{apps * scale["other"]:,} at the standard rate, or '
-                     f'£{apps * scale["householder"]:,} if this is a householder scheme.</div>')
-        parts.append(note(
-            f"We couldn't tell which fee category this scheme falls into, so both {juris_name} rates "
-            f"are shown (£{scale['other']} vs £{scale['householder']} per application).{rise}"))
-
-    parts.append(note(
-        "<b>Deemed discharge:</b> the council has 8 weeks to decide. If it misses that — and the "
-        "condition isn't one of the excluded types — you may be able to proceed as if the condition "
-        "were discharged. A useful lever if they go quiet."))
-    parts.append(note(
-        "Batching is guidance, not a rule — you can combine or split further, and timing depends on "
-        "your programme. Fees are the statutory rate and change over time; confirm the current figure "
-        "before relying on it. Not legal or planning advice — confirm with your planning consultant."))
-    parts.append("</div>")
-    return "".join(parts)
-
-
-def specialists_for(condition):
-    """Disciplines needed for one condition.
-
-    The field is an array — a condition can genuinely need two disciplines at once. Older
-    extractions stored a single string or null, so both are still accepted.
-    """
-    raw = condition.get("specialist_needed")
-    if not raw:
-        return []
-    if isinstance(raw, str):
-        raw = [raw]
-    return [s.strip() for s in raw if isinstance(s, str) and s.strip()]
+    st.markdown(panels.section_label("DRAFT THE DISCHARGE APPLICATIONS"), unsafe_allow_html=True)
+    with st.container(border=True):
+        st.markdown('<div class="ct-line-txt">One click writes the covering letter and, for each '
+                    'condition, what to submit, who prepares it and what it must cover — taken '
+                    'from the council\'s own wording. Anything only you know is left as a '
+                    '<b>[PLACEHOLDER]</b>.</div>', unsafe_allow_html=True)
+        for gid, title, members, fee in groups:
+            nums = ",".join(str(c["condition_number"]) for c in members)
+            dkey = f"{key}|{gid}|{nums}"
+            left, right = st.columns([4, 1])
+            left.markdown(f'<div class="ct-line"><div class="ct-kv"><span class="ct-kv-k">'
+                          f'{panels.esc(title)}</span>{pill(logic.n_conditions(len(members)), "submitted")}'
+                          f'<span class="ct-nums" style="margin-top:0">{logic.cond_nums(members)}</span>'
+                          f'</div></div>', unsafe_allow_html=True)
+            if dkey not in ss.drafts:
+                if right.button("Draft application", key=f"draft_{dkey}", width="stretch"):
+                    if client is None:
+                        st.error("This app isn't configured with an API key, so it can't draft.")
+                    else:
+                        with st.spinner(f"Drafting the application for {logic.n_conditions(len(members))}"
+                                        f" — usually 20–60 seconds..."):
+                            try:
+                                d = drafting.draft_application(client, data, members, title, fee, fee_note)
+                                ss.drafts[dkey] = d
+                                log_usage("draft", d.get("_cost_usd", 0))
+                                st.rerun()
+                            except Exception as exc:
+                                st.error(friendly_error(exc)[0])
+            draft = ss.drafts.get(dkey)
+            if draft:
+                checks = draft.get("_checks") or {}
+                with st.expander(f"Draft ready — {title}", expanded=True):
+                    if checks.get("missing"):
+                        st.warning("The draft skipped condition(s) "
+                                   + ", ".join(f"#{n}" for n in checks["missing"])
+                                   + " — add them by hand or draft again.")
+                    if checks.get("unverified_references"):
+                        st.warning("Check these references — they are not in the notice: "
+                                   + ", ".join(checks["unverified_references"]))
+                    if draft.get("subject"):
+                        st.markdown(f"**{draft['subject']}**")
+                    st.markdown(f'<div class="ct-letter">{panels.esc(drafting.letter_text(draft))}</div>',
+                                unsafe_allow_html=True)
+                    c1, c2 = st.columns([1, 1])
+                    c1.download_button(
+                        "Download as Word  ↓", drafting.build_docx(data, draft),
+                        file_name=f"discharge-application-{gid[:20].replace(' ', '-')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        key=f"docx_{dkey}", on_click="ignore", type="primary")
+                    if c2.button("Draft again", key=f"redraft_{dkey}"):
+                        ss.drafts.pop(dkey, None)
+                        st.rerun()
+                    st.caption("The Word file adds a checklist per condition: documents, who "
+                               "prepares them, and every matter the condition says to cover. "
+                               "A draft — check it and fill every placeholder before you submit.")
 
 
-FLAG_LABEL = {
-    "typo": "typo", "duplicate": "duplicate", "missing-drawing": "missing drawing",
-    "internal-conflict": "conflict", "other": "check",
-}
-
-
-# Two conditions are duplicates when their verbatim wording is this similar. On the Lambeth
-# notice the real duplicate pair scores 0.944 and the next-closest pair 0.786, so the gap is
-# wide; the tree conditions that the model kept mislabelling score 0.464.
-DUPLICATE_SIMILARITY = 0.90
-DUPLICATE_MIN_CHARS = 60
-
-
-def _norm_quote(text):
-    return re.sub(r"[^a-z0-9 ]", "", re.sub(r"\s+", " ", (text or "").lower())).strip()
-
-
-def detect_duplicates(conditions):
-    """Find conditions whose operative wording is near-identical.
-
-    Computed here rather than asked of the model. "Are these two conditions the same" is a
-    comparison, and the model kept rationalising related-but-different conditions into duplicates
-    — flagging three distinct tree conditions as one repeated. Comparison is what code is good at:
-    this is deterministic, explainable, and cannot drift between runs.
-    """
-    quoted = [(c["condition_number"], _norm_quote(c.get("source_quote")))
-              for c in conditions if (c.get("source_quote") or "").strip()]
-    found = []
-    for (a, qa), (b, qb) in itertools.combinations(quoted, 2):
-        # very short clauses match each other by coincidence
-        if len(qa) < DUPLICATE_MIN_CHARS or len(qb) < DUPLICATE_MIN_CHARS:
-            continue
-        ratio = difflib.SequenceMatcher(None, qa, qb).ratio()
-        if ratio >= DUPLICATE_SIMILARITY:
-            found.append({
-                "type": "duplicate",
-                "condition": a,
-                "detail": (f"Conditions {a} and {b} are near-identical — their operative wording is "
-                           f"{round(ratio * 100)}% the same. They can usually be discharged in one "
-                           f"submission."),
-            })
-    return found
-
-
-def get_flags(data):
-    """Consistency flags raised against the notice itself. Always a list.
-
-    The model reports typos, missing drawings and internal conflicts; duplicates are computed
-    from the verbatim quotes instead.
-    """
-    flags = data.get("flags")
-    model_flags = ([f for f in flags if isinstance(f, dict) and f.get("detail")]
-                   if isinstance(flags, list) else [])
-    model_flags = [f for f in model_flags if f.get("type") != "duplicate"]
-    return model_flags + detect_duplicates(data.get("conditions", []))
-
-
-def build_flags_html(data):
-    flags = get_flags(data)
-    if not flags:
-        return ""   # a clean notice shows nothing at all
-
-    n = len(flags)
-    n = len(flags)
-    parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', label("THINGS TO CHECK IN THE NOTICE"), '</div>',
-             f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s2)">{n} possible '
-             f'{"error" if n == 1 else "errors"} in the council\'s own document — worth querying '
-             f'before you rely on the wording.</div>']
-    for f in flags:
-        kind = FLAG_LABEL.get(f.get("type"), "check").upper()
-        cond = f.get("condition")
-        cond_html = (f'<span class="ct-quiet" style="font-variant-numeric:tabular-nums">#{cond}'
-                     f'</span>') if cond is not None else ""
-        parts.append(f'<div class="ct-flagrow">{pill(kind, "action")}{cond_html}'
-                     f'<span class="ct-line-txt" style="flex:1;min-width:250px">{f["detail"]}</span>'
-                     f'</div>')
-    parts.append(note("Automated flags — the tool may miss some issues or occasionally over-flag. "
-                      "Always read against the source notice."))
-    parts.append("</div>")
-    return "".join(parts)
-
-
-def build_specialists(data):
-    """Map each external discipline to the conditions that need it.
-
-    Ordered by how many conditions they cover, so the biggest commissions read first. A condition
-    needing two disciplines is listed under both, so the counts sum to more than the number of
-    conditions — that is correct, they are separate commissions.
-    """
-    if doc_type(data) not in PLAN_DOC_TYPES:
-        return []
-    grouped = {}
-    for c in sorted(data.get("conditions", []), key=lambda x: x["condition_number"]):
-        for name in specialists_for(c):
-            grouped.setdefault(name, []).append(c["condition_number"])
-    return sorted(grouped.items(), key=lambda kv: (-len(kv[1]), kv[0]))
-
-
-def build_specialists_html(data):
-    specialists = build_specialists(data)
-    if not specialists:
-        return ""
-
-    n = len(specialists)
-    parts = ['<div class="ct-card ct-panel">',
-             '<div class="ct-panel-hd">', label("SPECIALISTS TO COMMISSION"), '</div>',
-             f'<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">You will likely need to '
-             f'bring in <b>{n} external specialist{"" if n == 1 else "s"}</b> for this scheme. The '
-             f'notice never says so — each discipline below is implied by what its conditions '
-             f'actually ask you to produce.</div>']
-    for name, nums in specialists:
-        joined = ", ".join(f"#{x}" for x in nums)
-        parts.append(
-            f'<div class="ct-line"><div class="ct-kv">'
-            f'<span class="ct-kv-k">{name}</span>'
-            f'{pill(n_conditions(len(nums)), "submitted")}'
-            f'<span class="ct-nums" style="margin-top:0">{joined}</span>'
-            f'</div></div>'
-        )
-    parts.append(note(
-        "A guide to resourcing, not a definitive list — some conditions can be handled in-house, and "
-        "one consultant often covers several disciplines. Confirm with your team. Not legal or "
-        "planning advice."))
-    parts.append("</div>")
-    return "".join(parts)
-
-
-def build_excel(data):
-    wb = openpyxl.Workbook()
-
-    # ----- Sheet 1: Conditions -----
-    ws = wb.active
-    ws.title = "Conditions"
-    scanned = from_scan(data)
-    ws.append(["#", "Summary", "Category", "Deadline", "Responsible", "Discharge required?",
-               "Source clause (read from scan)" if scanned else "Source clause"])
-    for cell in ws[1]:
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor="1F4E78")
-    for c in sort_by_category(data["conditions"]):
-        ws.append([c["condition_number"], c["summary"], c["category"],
-                   c["deadline"], c["responsible_party"],
-                   "Yes" if c["discharge_required"] else "No",
-                   c.get("source_quote") or ""])
-        ws.cell(row=ws.max_row, column=3).fill = PatternFill(
-            "solid", fgColor=CATEGORY_COLOURS.get(c["category"], "FFFFFF"))
-    for col, w in {"A": 5, "B": 52, "C": 18, "D": 16, "E": 14, "F": 18, "G": 70}.items():
-        ws.column_dimensions[col].width = w
-    for row in ws.iter_rows(min_row=2):
-        row[1].alignment = Alignment(wrap_text=True, vertical="top")
-        # the verbatim clause travels with the export, in the notice's own words
-        row[6].alignment = Alignment(wrap_text=True, vertical="top")
-        row[6].font = Font(italic=True, color="3C382F")
-    ws.freeze_panes = "A2"
-    if scanned:
-        ws.append([])
-        ws.append(["This notice is a scan with no text layer, so the source clauses were read from "
-                   "the image rather than copied. Treat them as a transcription and check anything "
-                   "you rely on against the original notice."])
-        ws.cell(row=ws.max_row, column=1).font = Font(italic=True, color="8A5A14")
-
-    # ----- Things to check (only when the notice actually has problems) -----
-    flags = get_flags(data)
-    if flags:
-        wsf = wb.create_sheet("Things to check")
-        wsf.append(["Type", "Condition", "Detail"])
-        for cell in wsf[1]:
-            cell.font = Font(bold=True, color="FFFFFF")
-            cell.fill = PatternFill("solid", fgColor="8A6D20")
-        for f in flags:
-            cond = f.get("condition")
-            wsf.append([FLAG_LABEL.get(f.get("type"), "check"),
-                        f"#{cond}" if cond is not None else "—", f["detail"]])
-        for col, w in {"A": 17, "B": 11, "C": 78}.items():
-            wsf.column_dimensions[col].width = w
-        for row in wsf.iter_rows(min_row=2):
-            row[2].alignment = Alignment(wrap_text=True, vertical="top")
-        wsf.freeze_panes = "A2"
-        wsf.append([])
-        wsf.append(["Automated flags — the tool may miss some issues or occasionally over-flag. "
-                    "Always read against the source notice."])
-
-    # ----- Sheet 2: Before you start -----
-    # Only for documents that actually permit works to start.
-    if doc_type(data) not in GATE_DOC_TYPES:
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        return buffer.getvalue()
-
-    ws2 = wb.create_sheet("Before you start")
+# ----- ONE NOTICE -----
+def render_notice(key, name, data, project=None):
+    """Everything for one analysed notice. With `project`, programme dates are saved as you type."""
     conditions = data.get("conditions", [])
-    begin_by = compute_begin_by(data.get("decision_date"), data.get("time_limit_years"))
-    blockers, piling, ambiguous, startable = split_by_gate(conditions)
+    decision = (data.get("decision") or "").upper()
+    tracker = project["tracker"] if project else None
 
-    def head(text, fill="1F4E78"):
-        ws2.append([text])
-        cell = ws2.cell(row=ws2.max_row, column=1)
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor=fill)
+    title = logic.notice_title(data, name)
+    if project is None:
+        st.markdown(f'<div class="ct-quiet" style="margin:var(--ct-s5) 0 var(--ct-s2)">'
+                    f'{panels.esc(title)}</div>', unsafe_allow_html=True)
 
-    def line(text, bold=False, colour=None):
-        ws2.append([text])
-        ws2.cell(row=ws2.max_row, column=1).font = Font(bold=bold, color=colour)
+    if not conditions:
+        st.info(f"**{decision}** — no planning conditions found. This may be a refusal or a "
+                f"document without conditions.")
+        return
 
-    head("BEFORE YOU START ON SITE")
-    line("")
-    if begin_by and begin_by < datetime.now().date():
-        line(f"THIS START DEADLINE HAS ALREADY PASSED — development had to begin by {fmt_date(begin_by)}. "
-             f"Unless a material operation lawfully started on site before then, this permission has "
-             f"expired and cannot be implemented. (computed from the decision date — confirm against "
-             f"the notice)", bold=True, colour="C0392B")
-    elif begin_by:
-        line(f"Development must begin by:  {fmt_date(begin_by)}   (computed from the decision date — confirm against the notice)", bold=True)
-    else:
-        line("Development must begin by:  not stated on this notice")
-    line("")
+    total = len(conditions)
+    discharge = sum(1 for c in conditions if c.get("discharge_required"))
+    precom = sum(1 for c in conditions if c.get("category") == "pre-commencement")
+    st.markdown(banner(f"{decision} — {total} planning conditions extracted from this notice",
+                       f"{discharge} need discharge"), unsafe_allow_html=True)
+    st.markdown('<div style="height:var(--ct-s4)"></div>', unsafe_allow_html=True)
+    s1, s2, s3 = st.columns(3)
+    for col, value, text, dot, danger in [
+        (s1, total, "Total conditions", C["submitted"], False),
+        (s2, precom, "Pre-commencement", C["overdue"], True),
+        (s3, discharge, "Need discharge", C["action"], False),
+    ]:
+        col.markdown(tile(text, value, dot=dot, danger=danger), unsafe_allow_html=True)
+    st.write("")
 
-    # Summary lines only — counts and condition numbers. Detail lives on the Conditions tab.
-    if blockers:
-        line(f"{n_conditions(len(blockers))} must be discharged before you can lawfully start on site:   "
-             f"{cond_nums(blockers)}", bold=True, colour="C0392B")
-    if startable:
-        verb = "blocks" if len(startable) == 1 else "block"
-        line(f"{len(startable)} more only {verb} above-ground works — you can begin demolition and "
-             f"groundworks first:   {cond_nums(startable)}", colour="17663A")
-    if piling:
-        line(f"{n_conditions(len(piling))} to clear before any piling:   {cond_nums(piling)}", colour="B9770E")
-    if ambiguous:
-        verb = "needs" if len(ambiguous) == 1 else "need"
-        line(f"{n_conditions(len(ambiguous))} {verb} checking — wording is ambiguous:   "
-             f"{cond_nums(ambiguous)}", colour="B9770E")
-    line("")
-    line("Full detail is on the Conditions tab.")
-    line("")
+    for html in (panels.build_safety_gate_html(data), panels.build_flags_html(data)):
+        if html:
+            st.markdown(html, unsafe_allow_html=True)
 
-    line("CIL reminder: before any material operation on site, check whether the development is CIL-liable and, "
-         "if so, submit a CIL Commencement Notice to the council and get written acknowledgement first. Starting "
-         "before this can mean losing CIL relief and incurring surcharges. This tool does not read CIL notices.")
-    line("")
-    line("Automated flags, not legal advice — whether a condition is a true condition-precedent can be finely "
-         "balanced. Confirm with your planning consultant or solicitor before starting on site.")
-    ws2.column_dimensions["A"].width = 110
-    for row in ws2.iter_rows(min_row=1):
-        row[0].alignment = Alignment(wrap_text=True, vertical="top")
+    st.markdown(panels.section_label("EXTRACTED CONDITIONS"), unsafe_allow_html=True)
+    st.markdown(panels.build_conditions_table_html(data, tracker), unsafe_allow_html=True)
+    st.markdown(note(
+        "This notice is a scan with no text layer, so the original clauses were read from the image "
+        "rather than copied — treat them as a transcription and check anything you rely on against "
+        "the source notice." if logic.from_scan(data) else
+        "Original clauses are shown for verification. If a quote ever looks off, the source notice "
+        "is always the final word."), unsafe_allow_html=True)
 
-    # ----- Sheet 3: Discharge plan -----
-    plan = build_discharge_plan(data)
-    if not plan["applies"]:
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        return buffer.getvalue()
+    plan_html = panels.build_discharge_plan_html(data)
+    if plan_html:
+        st.markdown('<div style="height:var(--ct-s5)"></div>', unsafe_allow_html=True)
+        st.markdown(plan_html, unsafe_allow_html=True)
 
-    ws3 = wb.create_sheet("Discharge plan")
+    # ----- programme: order of work + deadlines -----
+    prog = programme.build_programme(data)
+    if prog["steps"]:
+        st.markdown(panels.section_label("YOUR PROGRAMME"), unsafe_allow_html=True)
+        st.markdown('<div class="ct-line-txt" style="margin-bottom:var(--ct-s3)">Add your planned '
+                    'dates and the tool works back to when each discharge application must go in, '
+                    'and when to commission each consultant.</div>', unsafe_allow_html=True)
 
-    def head3(text, fill="1F4E78"):
-        ws3.append([text])
-        cell = ws3.cell(row=ws3.max_row, column=1)
-        cell.font = Font(bold=True, color="FFFFFF")
-        cell.fill = PatternFill("solid", fgColor=fill)
+        def save_programme():
+            if not project:
+                return
+            pd = {f: ss.get(f"{key}_{f}") for f, _, _ in PROGRAMME_FIELDS}
+            pd = {k: v.isoformat() for k, v in pd.items() if v}
+            pd["prep_weeks"] = ss.get(f"{key}_prep")
+            pd["buffer_weeks"] = ss.get(f"{key}_buffer")
+            try:
+                store.update_project(user, project["id"], programme=pd)
+            except Exception:
+                st.toast("Couldn't save your dates just now.")
 
-    def line3(text, bold=False, colour=None):
-        ws3.append([text])
-        ws3.cell(row=ws3.max_row, column=1).font = Font(bold=bold, color=colour)
+        dates, prep, buffer = programme_inputs(key, project["programme"] if project else None,
+                                               on_change=save_programme if project else None)
+        prog = programme.build_programme(data, dates, prep, buffer)
+        st.markdown(panels.build_programme_html(data, prog), unsafe_allow_html=True)
 
-    head3("DISCHARGE PLAN")
-    line3("")
-    if not plan["total"]:
-        line3("No conditions on this notice require formal discharge by the council.")
-    else:
-        apps = plan["applications"]
-        app_word = f"{apps} application{'' if apps == 1 else 's'}"
-        line3(f"{n_conditions(plan['total'])} {'needs' if plan['total'] == 1 else 'need'} formal discharge "
-              f"(submitted to AND approved by the council).")
-        line3("")
-        scale = plan["scale"]
-        juris_name = JURISDICTION_LABEL.get(plan["jurisdiction"])
-        if not plan["fee_payable"]:
-            line3("There is no council fee for discharging conditions on a listed building consent, "
-                  "but you still have to apply.", bold=True)
-        elif scale is None:
-            line3("The fee is charged per application, not per condition — so bundle them. This tool "
-                  "only holds the England and Wales fee scales, so it cannot price this notice; check "
-                  "the figure with the authority.", bold=True)
-        else:
-            line3(f"The council fee is £{plan['fee'] or scale['other']} per application — not per "
-                  f"condition. So bundle them.", bold=True)
-        line3("A sensible way to batch these is by stage:")
-        line3("")
-        for stage, members in plan["batches"]:
-            line3(f"   {stage}:   {n_conditions(len(members))} — {cond_nums(members)}")
-        line3("")
-        rise = ""
-        if scale and scale["later"]:
-            rise = (f" Fees rise to £{scale['later'][0]} / £{scale['later'][1]} on "
-                    f"{scale['later_date']}.")
-        if not plan["fee_payable"]:
-            line3(f"≈ {app_word} to submit — no council fee.", bold=True, colour="17663A")
-            line3("Conditions on a listed building consent carry no application fee. Conditions on a "
-                  "linked planning permission do.")
-        elif scale is None:
-            line3(f"≈ {app_word} to submit.", bold=True, colour="1F4E78")
-            line3(f"(No fee shown — this notice is from {juris_name or 'an unclear jurisdiction'}, and "
-                  f"this tool holds the England and Wales scales only. The per-application principle "
-                  f"still applies, so bundling still saves money.)")
-        elif plan["fee"] is not None:
-            scheme = "householder" if plan["householder"] else "non-householder"
-            line3(f"≈ {app_word} × £{plan['fee']} = ~£{plan['cost']:,} in council fees.",
-                  bold=True, colour="1F4E78")
-            line3(f"(Priced at the {scheme} rate for {juris_name}.{rise})")
-        else:
-            line3(f"≈ {app_word} — about £{apps * scale['other']:,} at the standard rate, or "
-                  f"£{apps * scale['householder']:,} if this is a householder scheme.",
-                  bold=True, colour="1F4E78")
-            line3(f"(Fee category unclear from this notice, so both {juris_name} rates are shown: "
-                  f"£{scale['other']} vs £{scale['householder']} per application.{rise})")
-        line3("")
-        line3("Deemed discharge: the council has 8 weeks to decide. If it misses that — and the condition "
-              "isn't one of the excluded types — you may be able to proceed as if the condition were "
-              "discharged. A useful lever if they go quiet.", colour="17663A")
-    line3("")
-    line3("Batching is guidance, not a rule — you can combine or split further, and timing depends on your "
-          "programme. Fees are the England statutory rate and change over time; confirm the current figure "
-          "before relying on it. Not legal or planning advice — confirm with your planning consultant.")
-    ws3.column_dimensions["A"].width = 110
-    for row in ws3.iter_rows(min_row=1):
-        row[0].alignment = Alignment(wrap_text=True, vertical="top")
+    drafting_section(key, data, prog)
 
-    # ----- Sheet 4: Specialists -----
-    specialists = build_specialists(data)
-    if specialists:
-        ws4 = wb.create_sheet("Specialists")
-        ws4.append(["Specialist", "Conditions", "Count"])
-        for cell in ws4[1]:
-            cell.font = Font(bold=True, color="FFFFFF")
-            cell.fill = PatternFill("solid", fgColor="4B3B7A")
-        for name, nums in specialists:
-            ws4.append([name, ", ".join(f"#{x}" for x in nums), len(nums)])
-        for col, w in {"A": 42, "B": 46, "C": 8}.items():
-            ws4.column_dimensions[col].width = w
-        for row in ws4.iter_rows(min_row=2):
-            row[1].alignment = Alignment(wrap_text=True, vertical="top")
-        ws4.freeze_panes = "A2"
-        ws4.append([])
-        ws4.append(["A guide to resourcing, not a definitive list — some conditions can be handled "
-                    "in-house, and one consultant often covers several disciplines. Confirm with your "
-                    "team. Not legal or planning advice."])
+    spec_html = panels.build_specialists_html(data)
+    if spec_html:
+        st.markdown('<div style="height:var(--ct-s4)"></div>', unsafe_allow_html=True)
+        st.markdown(spec_html, unsafe_allow_html=True)
 
-    buffer = io.BytesIO()
-    wb.save(buffer)
-    return buffer.getvalue()
+    # ----- downloads -----
+    st.markdown(panels.section_label("DOWNLOAD"), unsafe_allow_html=True)
+    stem = (data.get("application_reference") or "planning").replace("/", "-")
+    d1, d2, d3, d4 = st.columns(4)
+    d1.download_button("Excel tracker  ↓", reports.build_excel(data, prog, tracker),
+                       file_name=f"{stem}-condition-tracker.xlsx",
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                       type="primary", key=f"xlsx_{key}", on_click="ignore", width="stretch")
+    d2.download_button("PDF summary  ↓", reports.build_pdf(data, prog),
+                       file_name=f"{stem}-summary.pdf", mime="application/pdf",
+                       key=f"pdf_{key}", on_click="ignore", width="stretch")
+    if prog["lapse"] or prog["has_dates"] or programme.dated_condition_deadlines(data):
+        d3.download_button("Calendar (.ics)  ↓", programme.build_ics(data, prog),
+                           file_name=f"{stem}-deadlines.ics", mime="text/calendar",
+                           key=f"ics_{key}", on_click="ignore", width="stretch",
+                           help="Imports into Outlook, Google Calendar or Apple Calendar: the "
+                                "permission lapse date and, once you add dates, every submit-by "
+                                "and commission-by deadline.")
+    if project is None:
+        save_button(d4, key, name, data)
 
 
-# Category -> the editorial status set. Colour means status here, so only categories implying
-# outstanding work get a pill; time-limit and ongoing need no action and stay quiet.
-CATEGORY_PILL = {
-    "pre-commencement": "overdue",
-    "discharge-required": "action",
-    "pre-occupation": "submitted",
-}
+def save_button(col, key, name, data):
+    if not store:
+        return
+    if not user:
+        if auth_configured():
+            col.button("Sign in to save", key=f"signin_{key}", on_click=st.login,
+                       width="stretch")
+        return
+    saved = ss.setdefault("saved", {})
+    if key in saved:
+        col.button("Saved to My projects ✓", key=f"saved_{key}", disabled=True, width="stretch")
+        return
+    if col.button("Save to My projects", key=f"save_{key}", width="stretch"):
+        pd = {f: ss.get(f"{key}_{f}") for f, _, _ in PROGRAMME_FIELDS}
+        pd = {k: v.isoformat() for k, v in pd.items() if v}
+        try:
+            saved[key] = store.create_project(user, logic.notice_title(data, name), data,
+                                              jsonable(logic.summarise(data)), pd)
+            st.toast("Saved. Open it from My projects to track each condition.")
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Couldn't save this project: {exc}")
 
 
-def category_pill(cat):
-    status = CATEGORY_PILL.get(cat)
-    return pill(cat, status) if status else f'<span class="ct-quiet">{cat}</span>'
+# ----- PAGE: ANALYSE -----
+def page_analyse():
+    st.markdown(
+        f'{label("AI PLANNING CONDITION TRACKER")}'
+        f'<h1 class="ct-h1" style="margin:10px 0 12px">Planning conditions, tracked in seconds.</h1>'
+        f'<p class="ct-body" style="max-width:660px;margin:0">A second pair of eyes on your planning '
+        f'conditions. Upload a UK decision notice and get every condition read and categorised, what '
+        f'stops you starting on site, when each discharge application must go in — and a first draft '
+        f'of each application.</p>',
+        unsafe_allow_html=True)
+
+    st.markdown(panels.section_label("HOW IT WORKS", "var(--ct-s6)"), unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
+    for col, num, title, text in [
+        (c1, "01", "Upload", "Drop in one decision notice — or a batch of them"),
+        (c2, "02", "Analyse", "AI reads &amp; categorises every condition, then plans the order of work"),
+        (c3, "03", "Act", "Draft the discharge applications, export the tracker, add the deadlines to your calendar"),
+    ]:
+        col.markdown(
+            f'<div class="ct-card" style="height:100%;padding:18px 20px">'
+            f'<div class="ct-step-n">{num}</div>'
+            f'<div style="font:600 17px/1.3 var(--ct-font-display);color:var(--ct-ink);'
+            f'margin:9px 0 5px">{title}</div>'
+            f'<div class="ct-muted">{text}</div></div>', unsafe_allow_html=True)
+
+    st.markdown(panels.section_label("UPLOAD DECISION NOTICES", "var(--ct-s6)"), unsafe_allow_html=True)
+    files = st.file_uploader("Choose PDFs", type="pdf", accept_multiple_files=True,
+                             label_visibility="collapsed")
+    if not files:
+        return
+    if client is None and not os.environ.get("CT_FIXTURE_DIR"):
+        st.error("This app isn't configured with an API key, so it can't analyse notices right now. "
+                 "That's a problem with the app, not with your file — the ANTHROPIC_API_KEY secret "
+                 "is missing.")
+        return
+    if len(files) > config.BATCH_MAX_FILES:
+        st.warning(f"Up to {config.BATCH_MAX_FILES} notices at a time — analysing the first "
+                   f"{config.BATCH_MAX_FILES}.")
+        files = files[:config.BATCH_MAX_FILES]
+
+    entries = analyse_files(files)
+    good = [(k, e) for k, e in entries if "data" in e]
+    for k, e in entries:
+        if "error" in e:
+            show_error(k, e)
+    if not good:
+        return
+
+    if len(good) == 1:
+        key, e = good[0]
+        render_notice(key, e["name"], e["data"])
+        return
+
+    # ----- PORTFOLIO (batch upload) -----
+    st.markdown(panels.section_label(f"PORTFOLIO — {len(good)} NOTICES"), unsafe_allow_html=True)
+    rows = [{"name": logic.notice_title(e["data"], e["name"]), "summary": logic.summarise(e["data"])}
+            for _, e in good]
+    st.markdown(panels.build_portfolio_html(rows), unsafe_allow_html=True)
+    total_blockers = sum(r["summary"]["blockers"] for r in rows)
+    total_fees = sum(r["summary"]["fees"] or 0 for r in rows)
+    st.markdown(note(f"Across these notices: <b>{total_blockers}</b> conditions block a start on site, "
+                     f"and about <b>£{total_fees:,}</b> in discharge fees if each notice's conditions "
+                     f"are bundled by stage."), unsafe_allow_html=True)
+    st.download_button("Portfolio workbook  ↓",
+                       reports.build_portfolio_excel([(e["name"], e["data"]) for _, e in good]),
+                       file_name="planning-portfolio.xlsx",
+                       mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                       type="primary", on_click="ignore")
+
+    names = {k: logic.notice_title(e["data"], e["name"]) for k, e in good}
+    pick = st.selectbox("Open one notice in full", list(names), format_func=names.get)
+    e = dict(good)[pick]
+    render_notice(pick, e["name"], e["data"])
 
 
-# ----- HERO -----
-st.markdown(
-    f'{label("AI PLANNING CONDITION TRACKER")}'
-    f'<h1 class="ct-h1" style="margin:10px 0 12px">Planning conditions, tracked in seconds.</h1>'
-    f'<p class="ct-body" style="max-width:640px;margin:0">A second pair of eyes on your planning '
-    f'conditions. Upload a UK decision notice and get every condition read, categorised and exported '
-    f'as a structured tracker spreadsheet — in seconds.</p>',
-    unsafe_allow_html=True,
-)
+# ----- PAGE: MY PROJECTS (the living tracker) -----
+STATUS_LABELS = {k: v for k, v in reports.STATUS_LABEL.items()}
+LABEL_TO_STATUS = {v: k for k, v in STATUS_LABELS.items()}
 
-# ----- HOW IT WORKS -----
-st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{label("HOW IT WORKS")}</div>',
-            unsafe_allow_html=True)
-c1, c2, c3 = st.columns(3)
-for col, num, title, text in [
-    (c1, "01", "Upload", "Drop in a decision notice PDF"),
-    (c2, "02", "Analyse", "AI reads &amp; categorises every condition"),
-    (c3, "03", "Export", "Download your structured tracker"),
-]:
-    col.markdown(
-        f'<div class="ct-card" style="height:100%;padding:18px 20px">'
-        f'<div class="ct-step-n">{num}</div>'
-        f'<div style="font:600 17px/1.3 var(--ct-font-display);color:var(--ct-ink);'
-        f'margin:9px 0 5px">{title}</div>'
-        f'<div class="ct-muted">{text}</div></div>',
-        unsafe_allow_html=True,
-    )
 
-# ----- UPLOAD -----
-st.markdown(f'<div style="margin:var(--ct-s6) 0 var(--ct-s3)">{label("UPLOAD A DECISION NOTICE")}</div>',
-            unsafe_allow_html=True)
-uploaded_file = st.file_uploader("Choose a PDF", type="pdf", label_visibility="collapsed")
+def next_deadline(project):
+    analysis = project.get("analysis")
+    if not analysis:
+        return None
+    prog = programme.build_programme(analysis, project.get("programme") or {},
+                                     int((project.get("programme") or {}).get("prep_weeks") or 6),
+                                     int((project.get("programme") or {}).get("buffer_weeks") or 2))
+    tracker = project.get("tracker") or {}
+    for g in programme.submission_groups(prog):
+        open_ = [c for c in g["discharge"]
+                 if (tracker.get(str(c["condition_number"])) or {}).get("status")
+                 not in ("submitted",) + storage.DONE_STATUSES]
+        if open_:
+            return g["submit_by"]
+    return None
 
-if uploaded_file is not None:
+
+def page_projects():
+    st.markdown(f'{label("MY PROJECTS")}<h1 class="ct-h1" style="margin:10px 0 12px">'
+                f'Every permission, every condition, in one place.</h1>', unsafe_allow_html=True)
     try:
-        if client is None:
-            st.error("This app isn't configured with an API key, so it can't analyse notices "
-                     "right now. That's a problem with the app, not with your file — the "
-                     "ANTHROPIC_API_KEY secret is missing.")
-            st.stop()
-
-        file_bytes = uploaded_file.getvalue()
-
-        # Anthropic request limit is ~32MB; base64 inflates ~33%, so cap the raw file
-        if len(file_bytes) > 24_000_000:
-            st.error("This PDF is too large to process (over ~24MB). "
-                     "Try a smaller file, or split it into sections.")
-            st.stop()
-
-        with st.spinner("Reading the decision notice — usually 15–30 seconds..."):
-            # 1. try fast digital text extraction
-            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-                pdf_text = ""
-                for page in pdf.pages:
-                    pdf_text += page.extract_text() or ""
-
-            if len(pdf_text.strip()) >= 100:
-                # digital PDF — send the extracted text (fast, cheap)
-                user_content = pdf_text
-                notice_is_scan = False
-            else:
-                # scanned / image PDF — send the PDF itself so Claude reads it with vision
-                pdf_b64 = base64.standard_b64encode(file_bytes).decode("utf-8")
-                user_content = [
-                    {
-                        "type": "document",
-                        "source": {
-                            "type": "base64",
-                            "media_type": "application/pdf",
-                            "data": pdf_b64,
-                        },
-                    },
-                    {"type": "text", "text": "Analyse this planning decision notice."},
-                ]
-                # No text layer to copy from, so every source_quote on this notice is the model's
-                # transcription of an image rather than a copy. The user has to be told that.
-                notice_is_scan = True
-
-            # Two things can go wrong, and both are worth one retry rather than an apology.
-            #   Truncation: verbatim source quotes roughly double the conditions array, so a very
-            #     large notice can hit the ceiling and return JSON cut off mid-array.
-            #   Malformed JSON: clause text contains quotation marks, and the model occasionally
-            #     emits one unescaped. This is intermittent, so the same call usually succeeds
-            #     second time — telling the user their notice is "unusual" would be wrong.
-            data = None
-            truncated = False
-            for budget, temp in ((MAX_TOKENS, 0), (MAX_TOKENS_RETRY, 0.2)):
-                message = analyse_notice(user_content, budget, temp)
-                if message.stop_reason == "max_tokens":
-                    truncated = True
-                    continue  # never parse a response that was cut off
-                truncated = False
-                try:
-                    data = json.loads(strip_fences(message.content[0].text))
-                    break
-                except json.JSONDecodeError:
-                    continue
-
-            if data is None:
-                if truncated:
-                    st.error("This notice was large enough to hit the response limit, even on a "
-                             "second attempt with more room. Try splitting it into sections, or "
-                             "get in touch.")
-                else:
-                    st.error("Couldn't read the AI's response for this document, twice. "
-                             "It may be an unusual format — try another decision notice.")
-                st.stop()
-
-        data[FROM_SCAN_KEY] = notice_is_scan
-
-        conditions = data["conditions"]
-        decision = data["decision"].upper()
-
-        if len(conditions) == 0:
-            st.info(f"**{decision}** — no planning conditions found. This may be a refusal or a document without conditions.")
-        else:
-            total = len(conditions)
-            discharge = sum(1 for c in conditions if c["discharge_required"])
-            precom = sum(1 for c in conditions if c["category"] == "pre-commencement")
-
-            st.markdown(banner(f"{decision} — {total} planning conditions extracted from this notice",
-                               f"{discharge} need discharge"), unsafe_allow_html=True)
-            st.markdown('<div style="height:var(--ct-s4)"></div>', unsafe_allow_html=True)
-
-            s1, s2, s3 = st.columns(3)
-            for col, value, text, dot, danger in [
-                (s1, total, "Total conditions", C["submitted"], False),
-                (s2, precom, "Pre-commencement", C["overdue"], True),
-                (s3, discharge, "Need discharge", C["action"], False),
-            ]:
-                col.markdown(tile(text, value, dot=dot, danger=danger), unsafe_allow_html=True)
-
-            st.write("")
-
-            # ----- SAFETY GATE: "Before you start on site" -----
-            gate_html = build_safety_gate_html(data)
-            if gate_html:
-                st.markdown(gate_html, unsafe_allow_html=True)
-
-            # ----- THINGS TO CHECK IN THE NOTICE -----
-            flags_html = build_flags_html(data)
-            if flags_html:
-                st.markdown(flags_html, unsafe_allow_html=True)
-
-            st.markdown(f'<div style="margin:var(--ct-s5) 0 var(--ct-s3)">'
-                        f'{label("EXTRACTED CONDITIONS")}</div>', unsafe_allow_html=True)
-
-            rows_html = ""
-            scanned = from_scan(data)
-            for c in sort_by_category(conditions):
-                deadline = c["deadline"] or "—"
-                disc = ('<span class="ct-quiet" style="color:var(--ct-ink)">Yes</span>'
-                        if c["discharge_required"]
-                        else '<span class="ct-quiet">—</span>')
-                rows_html += (
-                    f'<tr>'
-                    f'<td class="num">{c["condition_number"]}</td>'
-                    f'<td>{c["summary"]}{source_clause_html(c, scanned)}</td>'
-                    f'<td>{category_pill(c["category"])}</td>'
-                    f'<td class="sec">{deadline}</td>'
-                    f'<td class="sec" style="text-align:center">{disc}</td>'
-                    f'</tr>'
-                )
-            table_html = (
-                '<div class="ct-card" style="overflow:hidden"><table class="ct-tbl">'
-                '<thead><tr>'
-                '<th style="width:56px">#</th><th>Summary</th>'
-                '<th style="width:180px">Category</th><th style="width:130px">Deadline</th>'
-                '<th style="width:110px;text-align:center">Discharge</th></tr></thead>'
-                f'<tbody>{rows_html}</tbody></table></div>'
-            )
-            st.markdown(table_html, unsafe_allow_html=True)
-            st.markdown(note(
-                "This notice is a scan with no text layer, so the original clauses were read from "
-                "the image rather than copied — treat them as a transcription and check anything "
-                "you rely on against the source notice."
-                if scanned else
-                "Original clauses are shown for verification. If a quote ever looks off, the "
-                "source notice is always the final word."), unsafe_allow_html=True)
-
-            # ----- DISCHARGE PLAN -----
-            plan_html = build_discharge_plan_html(data)
-            if plan_html:
-                st.markdown('<div style="height:var(--ct-s5)"></div>', unsafe_allow_html=True)
-                st.markdown(plan_html, unsafe_allow_html=True)
-
-            # ----- SPECIALISTS TO COMMISSION -----
-            spec_html = build_specialists_html(data)
-            if spec_html:
-                st.markdown(spec_html, unsafe_allow_html=True)
-
-            st.write("")
-
-            excel_bytes = build_excel(data)
-            st.download_button("Download Excel tracker  ↓", excel_bytes,
-                               file_name="planning_condition_tracker.xlsx",
-                               mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                               type="primary")
-
-    # Order matters: AuthenticationError and RateLimitError are subclasses of APIStatusError.
-    except anthropic.AuthenticationError:
-        st.error("This app can't reach the AI service — its API key is missing or invalid. "
-                 "That's a problem with the app, not with your file.")
-    except anthropic.RateLimitError:
-        st.error("The AI service is busy at the moment. Please wait a few seconds and try again — "
-                 "there's nothing wrong with your file.")
-    except anthropic.APIStatusError as exc:
-        detail = str(getattr(exc, "message", "") or exc).lower()
-        if "credit balance" in detail or "billing" in detail or "quota" in detail:
-            st.error("This app has run out of API credit, so it can't analyse notices right now. "
-                     "That's a problem with the app, not with your file.")
-        else:
-            st.error("The AI service returned an error, so this notice couldn't be analysed. "
-                     "That's a problem with the service, not with your file — please try again shortly.")
-    except anthropic.APIConnectionError:
-        st.error("Couldn't reach the AI service — it may be a network problem. "
-                 "Please try again in a moment.")
+        projects = store.list_projects(user)
     except Exception as exc:
-        st.error("Something went wrong processing this file. Please check it's a valid "
-                 "UK planning decision notice PDF and try again.")
-        # A friendly message with nothing behind it is undiagnosable once the app is deployed:
-        # every unexpected failure looks identical and gets blamed on the user's PDF. The detail
-        # stays collapsed so it does not shout, but it is there when something needs chasing.
-        with st.expander("Technical detail"):
-            st.code(f"{type(exc).__name__}: {exc}")
+        st.error(f"Couldn't load your projects: {exc}")
+        return
+    if not projects:
+        st.info("No saved projects yet. Analyse a notice, then press **Save to My projects**.")
+        return
+
+    # Portfolio overview — the full analysis is only loaded for the project you open.
+    today = date.today()
+    rows_html = ""
+    for p in projects:
+        s = p.get("summary") or {}
+        tracker = p.get("tracker") or {}
+        begin = logic.parse_date(s.get("begin_by"))
+        done = sum(1 for t in tracker.values() if (t or {}).get("status") in storage.DONE_STATUSES)
+        submitted = sum(1 for t in tracker.values() if (t or {}).get("status") == "submitted")
+        begin_html = (f'<span style="color:var(--ct-overdue);font-weight:700">{logic.fmt_date(begin)}'
+                      f'</span>' if begin and begin < today else logic.fmt_date(begin) if begin else "—")
+        rows_html += (f'<tr><td>{panels.esc(p["name"])}<div class="ct-quiet" style="margin-top:4px">'
+                      f'{panels.esc(s.get("council") or "")}</div></td>'
+                      f'<td class="sec">{begin_html}</td>'
+                      f'<td class="num">{s.get("conditions", "—")}</td>'
+                      f'<td class="num">{done}</td><td class="num">{submitted}</td>'
+                      f'<td class="sec">{panels.esc(str(p.get("updated_at", ""))[:10])}</td></tr>')
+    st.markdown('<div class="ct-card" style="overflow-x:auto"><table class="ct-tbl compact"><thead><tr>'
+                '<th>Project</th><th>Begin by</th><th>Conditions</th><th>Done</th><th>With council</th>'
+                f'<th>Updated</th></tr></thead><tbody>{rows_html}</tbody></table></div>',
+                unsafe_allow_html=True)
+
+    names = {p["id"]: p["name"] for p in projects}
+    pid = st.selectbox("Open a project", list(names), format_func=names.get,
+                       index=list(names).index(ss.get("open_project")) if ss.get("open_project") in names else 0)
+    ss.open_project = pid
+    try:
+        project = store.get_project(user, pid)
+    except Exception as exc:
+        st.error(f"Couldn't open this project: {exc}")
+        return
+    if not project:
+        st.warning("That project no longer exists.")
+        return
+    render_project(project)
+
+
+def render_project(project):
+    data, tracker = project["analysis"], project.get("tracker") or {}
+    today = date.today()
+
+    st.markdown(f'<h2 class="ct-h2" style="margin:var(--ct-s5) 0 4px">{panels.esc(project["name"])}</h2>'
+                f'<div class="ct-quiet">{panels.esc(data.get("local_authority") or "")} · '
+                f'{panels.esc(data.get("development_description") or "")[:180]}</div>',
+                unsafe_allow_html=True)
+
+    done, total = storage.tracker_progress(data, tracker)
+    blockers = storage.outstanding_blockers(data, tracker)
+    england = logic.jurisdiction(data) == "england"
+    deemed = storage.deemed_discharge_candidates(data, tracker, today, england)
+    parts = ['<div class="ct-card ct-panel" style="margin-top:var(--ct-s4)">',
+             '<div class="ct-panel-hd">', label("PROGRESS"), '</div>', panels.progress_html(done, total)]
+    if blockers:
+        parts.append(f'<div class="ct-line" style="margin-top:var(--ct-s3)">'
+                     f'{pill(f"{logic.n_conditions(len(blockers))} still stop you starting on site", "overdue")}'
+                     f'<div class="ct-nums">{logic.cond_nums(blockers)}</div></div>')
+    elif logic.doc_type(data) in logic.GATE_DOC_TYPES:
+        parts.append(f'<div class="ct-line" style="margin-top:var(--ct-s3)">'
+                     f'{pill("Every pre-start blocker is discharged", "discharged")}</div>')
+    for c, weeks in deemed:
+        parts.append(f'<div class="ct-line">{pill("Deemed discharge?", "action")} '
+                     f'<span class="ct-line-txt">Condition #{c["condition_number"]} was submitted '
+                     f'{weeks} weeks ago with no decision recorded. Unless you agreed a longer period '
+                     f'or it is an excluded type, you may be able to serve a deemed discharge notice. '
+                     f'Check with your planning consultant first.</span></div>')
+    parts.append("</div>")
+    st.markdown("".join(parts), unsafe_allow_html=True)
+
+    # ----- the living tracker -----
+    st.markdown(panels.section_label("TRACK EACH CONDITION"), unsafe_allow_html=True)
+    rows = []
+    for c in sorted(data.get("conditions", []), key=lambda c: c["condition_number"]):
+        t = tracker.get(str(c["condition_number"])) or {}
+        rows.append({
+            "#": c["condition_number"], "Condition": c.get("summary"),
+            "Must be cleared": logic.gate_label(c),
+            "Discharge": "Yes" if c.get("discharge_required") else "—",
+            "Status": STATUS_LABELS.get(t.get("status") or "not-started"),
+            "Submitted": logic.parse_date(t.get("submitted")),
+            "Approved": logic.parse_date(t.get("approved")),
+            "Council ref": t.get("reference") or "",
+            "Notes": t.get("notes") or "",
+        })
+    edited = st.data_editor(
+        rows, key=f"tracker_{project['id']}", hide_index=True, width="stretch",
+        disabled=["#", "Condition", "Must be cleared", "Discharge"],
+        column_config={
+            "#": st.column_config.NumberColumn(width="small"),
+            "Condition": st.column_config.TextColumn(width="large"),
+            "Status": st.column_config.SelectboxColumn(options=list(STATUS_LABELS.values()),
+                                                       required=True),
+            "Submitted": st.column_config.DateColumn(format="DD/MM/YYYY"),
+            "Approved": st.column_config.DateColumn(format="DD/MM/YYYY"),
+            "Council ref": st.column_config.TextColumn(help="The discharge application's reference"),
+        })
+    if st.button("Save tracker", type="primary", key=f"save_tracker_{project['id']}"):
+        new = {}
+        for r in edited:
+            entry = {"status": LABEL_TO_STATUS.get(r.get("Status"), "not-started"),
+                     "submitted": r["Submitted"].isoformat() if r.get("Submitted") else None,
+                     "approved": r["Approved"].isoformat() if r.get("Approved") else None,
+                     "reference": r.get("Council ref") or None, "notes": r.get("Notes") or None}
+            if any(v for k, v in entry.items() if k != "status") or entry["status"] != "not-started":
+                new[str(r["#"])] = entry
+        try:
+            store.update_project(user, project["id"], tracker=new)
+            st.toast("Tracker saved.")
+            st.rerun()
+        except Exception as exc:
+            st.error(f"Couldn't save: {exc}")
+
+    render_notice(f"project:{project['id']}", project["name"], data, project=project)
+
+    with st.expander("Rename or delete this project"):
+        new_name = st.text_input("Project name", value=project["name"], key=f"name_{project['id']}")
+        if st.button("Rename", key=f"rename_{project['id']}") and new_name.strip():
+            store.update_project(user, project["id"], name=new_name.strip())
+            st.rerun()
+        sure = st.checkbox("I want to delete this project permanently", key=f"sure_{project['id']}")
+        if st.button("Delete project", key=f"delete_{project['id']}", disabled=not sure):
+            store.delete_project(user, project["id"])
+            ss.pop("open_project", None)
+            st.rerun()
+
+
+# ----- NAVIGATION -----
+# The sidebar only appears once saved projects are switched on (a store is configured), so the
+# public page looks exactly as it did until then.
+page = "analyse"
+if store:
+    with st.sidebar:
+        st.markdown(f'{label("CONDITION TRACKER")}', unsafe_allow_html=True)
+        if user:
+            choice = st.radio("Go to", ["Analyse notices", "My projects"], key="nav",
+                              label_visibility="collapsed")
+            page = "projects" if choice == "My projects" else "analyse"
+            st.caption(f"Signed in as {user}")
+            try:
+                month_start = datetime.now(timezone.utc).replace(day=1, hour=0, minute=0, second=0,
+                                                                 microsecond=0).isoformat()
+                used = store.usage_count(user, "analysis", month_start)
+                st.caption(f"{used} notice{'' if used == 1 else 's'} analysed this month")
+            except Exception:
+                pass
+            if auth_configured():
+                st.button("Sign out", on_click=st.logout)
+        elif auth_configured():
+            st.caption("Sign in to save projects, track each condition's discharge and keep "
+                       "your deadlines in one place.")
+            st.button("Sign in with Google", on_click=st.login, type="primary")
+
+if page == "projects" and store and user:
+    page_projects()
+else:
+    page_analyse()
 
 # ----- FOOTER -----
 st.markdown(
-    f'<hr style="margin:var(--ct-s6) 0 var(--ct-s4)">'
-    f'{note("Built by Zak Akhtar · <a href=\'https://github.com/akhtarzakariya8-a11y/planning-condition-tracker\'>GitHub</a>")}'
-    f'{note("A tool for UK planning decision notices. Always check outputs against the source document.")}',
+    '<hr style="margin:var(--ct-s6) 0 var(--ct-s4)">'
+    + note('Built by Zak Akhtar · <a href="https://github.com/akhtarzakariya8-a11y/planning-condition-tracker">GitHub</a>')
+    + note("A tool for UK planning decision notices. Always check outputs against the source "
+           "document. Drafts and dates are planning aids, not legal advice."),
     unsafe_allow_html=True,
 )

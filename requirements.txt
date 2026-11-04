@@ -6,3 +6,9 @@ anthropic==0.116.0
 pdfplumber==0.11.10
 openpyxl==3.1.5
 python-dotenv==1.2.2
+# Auto-drafted submissions -> Word
+python-docx==1.2.0
+# PDF summary export
+reportlab==5.0.1
+# Google sign-in for saved projects (Streamlit's st.login needs it)
+Authlib==1.6.5
