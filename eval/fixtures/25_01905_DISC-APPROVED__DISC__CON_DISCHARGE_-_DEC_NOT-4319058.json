@@ -1,0 +1,34 @@
+{
+  "document_type": "discharge-approval",
+  "jurisdiction": "england",
+  "is_householder": false,
+  "permission_type": null,
+  "local_authority": "London Borough of Croydon",
+  "application_reference": "25/01905/DISC",
+  "site_address": "Development Site Former Site Of, 5 - 9 Surrey Street, Croydon, CR0 1RG",
+  "applicant": "Sam Barrett Purelake New Homes",
+  "development_description": "Details pursuit to Condition 11 (shopfront elevations) attached to PP 18/01211/FUL for the demolition of the existing building and replacement with a six/seven/eight storey development. Commercial units would be provided on the lower ground (sui generis, A3 and D1/D2) and ground floor (flexible use A1, A2, A3, D1, D2, B1(a)), with 60 flats above with associated public realm improvements and landscaping including courtyard area with, disabled car parking and cycle parking.",
+  "decision": "granted",
+  "decision_date": "26th June 2025",
+  "time_limit_years": null,
+  "flags": [],
+  "conditions": [
+    {
+      "condition_number": 11,
+      "summary": "Shopfront details — already approved pursuant to planning permission 18/01211/FUL",
+      "category": "discharge-required",
+      "deadline": null,
+      "responsible_party": null,
+      "discharge_required": false,
+      "gate": "none",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": null
+    }
+  ],
+  "_usage": {
+    "input_tokens": 5322,
+    "output_tokens": 438
+  }
+}

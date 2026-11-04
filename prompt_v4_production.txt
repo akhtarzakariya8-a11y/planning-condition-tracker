@@ -10,6 +10,12 @@ Output rules — follow exactly:
   "document_type": "full-grant",
   "jurisdiction": "england",
   "is_householder": false,
+  "permission_type": "full",
+  "local_authority": "London Borough of Lambeth" or null,
+  "application_reference": "21/04939/FUL" or null,
+  "site_address": "Land at 1 Example Road, London SE1 7AA" or null,
+  "applicant": "Example Developments Ltd" or null,
+  "development_description": "Demolition of existing buildings and erection of…" or null,
   "decision": "granted" or "refused",
   "decision_date": "10 November 2025" or null,
   "time_limit_years": 3 or null,
@@ -19,8 +25,23 @@ Output rules — follow exactly:
 
 - "decision_date": the Date of Decision exactly as written on the notice, or null if not stated.
 - "time_limit_years": the number of years within which development must begin, taken from the time-limit condition (usually 3), as an integer; null if there is none.
-- If the notice says "refuses to permit" or "REFUSAL", output: {"document_type": "refusal", "is_householder": <as below>, "decision": "refused", "decision_date": <date or null>, "time_limit_years": null, "flags": [], "conditions": []} and nothing else.
+- If the notice says "refuses to permit" or "REFUSAL", output: {"document_type": "refusal", "jurisdiction": <as below>, "is_householder": <as below>, "permission_type": null, "local_authority": <as below>, "application_reference": <as below>, "site_address": <as below>, "applicant": <as below>, "development_description": <as below>, "decision": "refused", "decision_date": <date or null>, "time_limit_years": null, "flags": [], "conditions": []} and nothing else.
 - Otherwise "decision" is "granted" and "conditions" is an array of condition objects.
+
+NOTICE DETAILS — copied from the notice, used to address discharge applications to the right council. Never guess: use null for anything not printed on the notice.
+- "local_authority": the council that issued the notice (or, for an appeal decision, the council whose decision was appealed — NOT the Planning Inspectorate), exactly as printed, e.g. "London Borough of Lambeth".
+- "application_reference": the application reference exactly as printed, e.g. "21/04939/FUL". For an appeal decision, the council's application reference if printed, otherwise the appeal reference (APP/…).
+- "site_address": the site address exactly as printed, on one line; where the notice splits it over lines, join them with ", ".
+- "applicant": the applicant's name exactly as printed (a person or a company). Not the agent.
+- "development_description": the description of the development (often headed "Proposal" or "Development"), copied verbatim. If it runs longer than about 60 words, keep the opening and mark the cut with a single … character.
+
+permission_type — what KIND of permission this is, because it decides how the start deadline is worked out. Exactly one of these strings, or null:
+- "full": full planning permission, including householder permission. The time limit runs from the date of this decision.
+- "outline": outline permission with matters reserved for later approval. Look for "outline planning permission", "reserved matters", "approval of the details of the appearance, landscaping, layout and scale". The start deadline runs from the approval of the LAST reserved matters, not from this decision.
+- "reserved-matters": approval of reserved matters following an outline permission.
+- "variation": a permission granted under section 73 that varies or removes conditions of an EARLIER permission. Look for "Section 73", "variation of condition", "removal of condition", "minor material amendment", or a description that refers to "planning permission ref …". The time limit normally still runs from the ORIGINAL permission, not from this decision.
+- null: the document is not a planning permission at all (listed building consent, discharge-approval, refusal, other).
+For an appeal decision, use the type of permission the Inspector granted.
 
 document_type — CRITICAL: what KIND of document this is. Exactly one of these strings:
 - "full-grant": a grant of planning permission (full, outline, or approval of reserved matters). The conditions listed are obligations the applicant still has to satisfy.

@@ -1,0 +1,20 @@
+{
+  "document_type": "refusal",
+  "jurisdiction": "england",
+  "is_householder": true,
+  "permission_type": null,
+  "local_authority": "London Borough of Lambeth",
+  "application_reference": "26/01309/FUL",
+  "site_address": "11 Josephine Avenue London SW2 2JU",
+  "applicant": "Mr Marius Mihaila",
+  "development_description": "Replacement of existing windows and doors with double glazed timber windows and doors.",
+  "decision": "refused",
+  "decision_date": "22nd June 2026",
+  "time_limit_years": null,
+  "flags": [],
+  "conditions": [],
+  "_usage": {
+    "input_tokens": 6442,
+    "output_tokens": 189
+  }
+}

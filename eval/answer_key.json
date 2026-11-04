@@ -18,7 +18,8 @@
     "Duplicates are NOT asked of the model. They are computed in app.detect_duplicates() by",
     "comparing the verbatim source_quote of every pair of conditions, flagging above 0.90",
     "similarity. That is deterministic and cannot drift; the model kept rationalising related",
-    "conditions into duplicates. flags.count therefore includes computed duplicates."
+    "conditions into duplicates. flags.count therefore includes computed duplicates.",
+    "permission_type / application_reference / local_authority added 4 Nov 2026, checked against each PDF."
   ],
   "21_04939_FUL--3474437.pdf": {
     "asserted": {
@@ -95,7 +96,10 @@
             "detail_contains": "7 and 8"
           }
         ]
-      }
+      },
+      "permission_type": "full",
+      "application_reference": "21/04939/FUL",
+      "local_authority": "London Borough of Lambeth"
     },
     "contested": {
       "18": "gate: flips between before-use and blocks-any-commencement across runs. Decide which.",
@@ -110,7 +114,10 @@
     "asserted": {
       "flags": {
         "count": 0
-      }
+      },
+      "permission_type": null,
+      "application_reference": "25/AP/3061",
+      "local_authority": "London Borough of Southwark"
     },
     "contested": {}
   },
@@ -118,7 +125,10 @@
     "asserted": {
       "flags": {
         "count": 0
-      }
+      },
+      "permission_type": "full",
+      "application_reference": "26/01199/FUL",
+      "local_authority": "London Borough of Lambeth"
     },
     "contested": {}
   },
@@ -126,7 +136,10 @@
     "asserted": {
       "flags": {
         "count": 0
-      }
+      },
+      "permission_type": "full",
+      "application_reference": "26/01232/FUL",
+      "local_authority": "London Borough of Lambeth"
     },
     "contested": {}
   },
@@ -134,7 +147,10 @@
     "asserted": {
       "flags": {
         "count": 0
-      }
+      },
+      "permission_type": null,
+      "application_reference": "26/01309/FUL",
+      "local_authority": "London Borough of Lambeth"
     },
     "contested": {}
   },
@@ -142,7 +158,10 @@
     "asserted": {
       "flags": {
         "count": 0
-      }
+      },
+      "permission_type": null,
+      "application_reference": "25/01905/DISC",
+      "local_authority": "London Borough of Croydon"
     },
     "contested": {}
   },
@@ -157,7 +176,10 @@
       "begin_by": "2028-04-07",
       "flags": {
         "count": 0
-      }
+      },
+      "permission_type": "full",
+      "application_reference": "24/3095/F",
+      "local_authority": "Royal Borough of Greenwich"
     },
     "contested": {}
   }

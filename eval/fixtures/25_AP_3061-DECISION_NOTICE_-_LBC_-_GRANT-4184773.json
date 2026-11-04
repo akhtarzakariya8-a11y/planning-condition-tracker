@@ -1,0 +1,60 @@
+{
+  "document_type": "listed-building-consent",
+  "jurisdiction": "england",
+  "is_householder": false,
+  "permission_type": null,
+  "local_authority": "London Borough of Southwark",
+  "application_reference": "25/AP/3061",
+  "site_address": "Imperial War Museum Lambeth Road London Southwark",
+  "applicant": "Imperial War Museums",
+  "development_description": "Listed building consent for the replacement and installation of 3x permanent banners (with fixings) in each of the following locations: the front portico, the internal north atrium wall, the internal staircase of the Imperial War Museum London",
+  "decision": "granted",
+  "decision_date": "11/12/2025",
+  "time_limit_years": 3,
+  "flags": [],
+  "conditions": [
+    {
+      "condition_number": 1,
+      "summary": "Development to be carried out in accordance with approved plans: 25_IWM_LON_DR_011 PROPOSED PORTICO -ELEVATION (FRONT) received 21/10/2025, 25_IWM_LON_DR_013 PROPOSED ELEVATION (FRONT) - ATRIUM STAIR received 21/10/2025, 181664 -20171348 PLAIN VIEW- STRUCTURAL DRAWINGS received 21/10/2025, STRUCTURAL DRAWINGS received 21/10/2025, IWM_SB_V STAIR BANNER- DETAIL DRAWING received 21/10/2025, DETAILED DRAWING - BRACKETS received 09/12/2025, ATRIUM WINDOW WALL BANNERS received 09/12/2025, METHOD STATEMENT received 09/12/2025",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The consent shall be carried out in accordance with the following approved plans and documents: Reference no./Plan or document name/Rev. Received on: 25_IWM_LON_DR_011 PROPOSED PORTICO -ELEVATION (FRONT) 21/10/2025 25_IWM_LON_DR_013 PROPOSED ELEVATION (FRONT) - ATRIUM STAIR 21/10/2025 181664 -20171348 PLAIN VIEW- STRUCTURAL DRAWINGS 21/10/2025 STRUCTURAL DRAWINGS 21/10/2025 IWM_SB_V STAIR BANNER- DETAIL DRAWING 21/10/2025 DETAILED DRAWING - BRACKETS 09/12/2025 ATRIUM WINDOW WALL BANNERS 09/12/2025 METHOD STATEMENT 09/12/2025"
+    },
+    {
+      "condition_number": 2,
+      "summary": "Development to begin within three years from the date of this permission",
+      "category": "time-limit",
+      "deadline": "11/12/2028",
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "none",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby permitted shall be begun before the end of three years from the date of this permission."
+    },
+    {
+      "condition_number": 3,
+      "summary": "All new works and finishes to match existing original work in materials, execution and appearance",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "All new internal/external works and finishes and works of making good shall match existing original work adjacent in respect of materials used, detailed execution and finished appearance, except where indicated otherwise on the drawings hereby approved or as required by any condition(s) attached to this consent."
+    }
+  ],
+  "_usage": {
+    "input_tokens": 7119,
+    "output_tokens": 1041
+  }
+}

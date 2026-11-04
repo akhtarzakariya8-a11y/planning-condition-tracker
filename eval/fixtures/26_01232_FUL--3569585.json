@@ -1,0 +1,60 @@
+{
+  "document_type": "full-grant",
+  "jurisdiction": "england",
+  "is_householder": true,
+  "permission_type": "full",
+  "local_authority": "London Borough of Lambeth",
+  "application_reference": "26/01232/FUL",
+  "site_address": "129 Babington Road London Lambeth SW16 6AN",
+  "applicant": "Mr Jon Northfield",
+  "development_description": "Excavation/extension to the basement.",
+  "decision": "granted",
+  "decision_date": "15.06.2026",
+  "time_limit_years": 3,
+  "flags": [],
+  "conditions": [
+    {
+      "condition_number": 1,
+      "summary": "Begin development within three years from 15 June 2026",
+      "category": "time-limit",
+      "deadline": "15 June 2029",
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "none",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development to which this permission relates must be begun no later than three years from the date of this decision notice."
+    },
+    {
+      "condition_number": 2,
+      "summary": "Carry out development in accordance with approved drawings and documents: Site Location Plan, Existing and Proposed Ground Floor and Basement Plan, Existing and Proposed Section A-A, Existing and Proposed Section B-B, Basement Impact Assessment dated 18th April 2026, & Fire Statement dated 18th April 2026",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby permitted shall be carried out in accordance with the approved drawings and documents: Site Location Plan, Existing and Proposed Ground Floor and Basement Plan, Existing and Proposed Section A-A, Existing and Proposed Section B-B, Basement Impact Assessment dated 18th April 2026, & Fire Statement dated 18th April 2026."
+    },
+    {
+      "condition_number": 3,
+      "summary": "Carry out basement works in accordance with mitigation measures in Basement Impact Assessment dated 18th April 2026",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The basement works hereby approved shall be carried out in accordance with the mitigation measures set out in the Basement Impact Assessment dated 18th April 2026."
+    }
+  ],
+  "_usage": {
+    "input_tokens": 6498,
+    "output_tokens": 741
+  }
+}

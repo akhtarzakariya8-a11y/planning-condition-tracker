@@ -1,0 +1,567 @@
+{
+  "document_type": "full-grant",
+  "jurisdiction": "england",
+  "is_householder": false,
+  "permission_type": "full",
+  "local_authority": "London Borough of Lambeth",
+  "application_reference": "21/04939/FUL",
+  "site_address": "Havilland House And The Church Of St Anselm, 13 Sancroft Street London SE11 5UG",
+  "applicant": "Rocco Homes (no 20) Ltd",
+  "development_description": "Demolition of Havilland House and the vestry of the Church of St Anselm. Redevelopment of the site involving erection of three storey building with roof top to provide a new church hall (Use Class F1/F2), including kitchen and ancillary spaces at ground floor and 9 residential units (Use Class C3) on the upper floors with communal roof terrace, together with the provision of cycle and refuse store and associated landscaping.",
+  "decision": "granted",
+  "decision_date": "10th November 2025",
+  "time_limit_years": 3,
+  "flags": [
+    {
+      "type": "typo",
+      "condition": 17,
+      "detail": "Date written as \"14th December 20221\" instead of \"14th December 2021\""
+    }
+  ],
+  "conditions": [
+    {
+      "condition_number": 1,
+      "summary": "Begin development within three years",
+      "category": "time-limit",
+      "deadline": "10th November 2028",
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "none",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development to which this permission relates must be begun not later than the expiration of three years beginning from the date of this decision notice."
+    },
+    {
+      "condition_number": 2,
+      "summary": "Carry out development in accordance with approved plans: 1916/PL2 01; 1916/PL2 02; 1916/PL2 03; 1916/PL2 04, 1916/PL2 05; 1916/PL2 06; 1916/PL2 07; 1916/PL2 08; 1916/PL2 09E; 1916/PL2 11D; 1916/PL2 12D; 1916/PL2 13; 1916/PL2 14; 1916/PL2 15B; 1916/PL2 16A; 1916/PL2 17; 1916/PL2 18; 1916/PL2 19; 1916/PL2 20; 1916/PL2 21; 1916/PL1 03; 1916/PL1 04; LLD2507-ECO-FIG-001 REV 00; LLD2507-LAN-DWG-001 01; LLD2507-LAN-DWG-002 01; ITB16706-GA-001 Dated 04/03/2022; Site Layout Plan Received 14/03/2022, and all documents listed in the decision notice",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby permitted shall be carried out in complete accordance with the approved plans and drawings listed in this decision notice, other than where those details are altered pursuant to the conditions of this planning permission."
+    },
+    {
+      "condition_number": 3,
+      "summary": "Submit and obtain approval of schedule and samples of external materials including RAL numbers, material schedule, and sample panel of brickwork, walling and roofing",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to the commencement of above ground works",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the commencement of above ground works, a schedule and details of the materials to be used in the external elevations (including RAL numbers where appropriate) shall be submitted to and approved in writing by the local planning authority. The submission shall include (but not be limited to) the following details: a) Material schedule of all facing materials (including windows); and b) Sample panel of the proposed brickwork, external walling and roofing to be built on site (including any fixings, mortars, bond) for inspection and approval."
+    },
+    {
+      "condition_number": 4,
+      "summary": "Submit and obtain approval of detailed external construction drawings at 1:20, 1:10, 1:5 and 1:2 scales for windows, doors, brickwork, entrances, reveals, ledges, copings, cills, lintels, soffits, plant screening, vents, parapets, rainwater goods, pipes, handrails, guard rails, and balustrade screening",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "above ground works shall not commence until",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Notwithstanding the details shown on the drawings hereby approved, above ground works shall not commence until drawings showing all external construction detailing of the whole development have been submitted to and approved by the Local Planning Authority in writing."
+    },
+    {
+      "condition_number": 5,
+      "summary": "Submit and obtain approval of Delivery and Servicing Management Plan for residential development covering frequency, vehicle dimensions, loading locations and management strategy",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to above ground works",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Transport / highways consultant"
+      ],
+      "source_quote": "Prior to above ground works a Delivery and Servicing Management Plan for (a) the residential and (b) the non-residential development shall be submitted to and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 6,
+      "summary": "Submit and obtain approval of Construction and Environmental Management Plan (CEMP) covering demolition, construction programme, site logistics, parking, deliveries, storage, dust and noise mitigation, working hours, communication, loading, hoarding/scaffolding and wheel washing",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "The development hereby approved shall not commence until",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby approved shall not commence until a Construction and Environmental Management Plan (CEMP) has been submitted to and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 7,
+      "summary": "Submit and obtain approval of Waste Management Strategy for residential bin stores including internal overnight storage of glass waste and collection hours",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the occupation of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the occupation of the development hereby permitted, a Waste Management Strategy shall be submitted to and approved in writing by the local planning authority. … this must include but not be limited to provision of internal overnight storage of glass waste and the proposed hours of waste collection. … will include the management for the residential bin stores."
+    },
+    {
+      "condition_number": 8,
+      "summary": "Submit and obtain approval of Waste Management Strategy for church hall bin stores including internal overnight storage of glass waste and collection hours",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the occupation of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the occupation of the development hereby permitted, a Waste Management Strategy shall be submitted to and approved in writing by the local planning authority. … this must include but not be limited to provision of internal overnight storage of glass waste and the proposed hours of waste collection. … will include the management for the church hall bin stores."
+    },
+    {
+      "condition_number": 9,
+      "summary": "Submit and obtain approval of Secured by Design security measures and implement before occupation",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "prior to commencement of the above ground works",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Security (Secured by Design) consultant"
+      ],
+      "source_quote": "Details of these measures shall be submitted to and approved in writing by the local planning authority prior to commencement of the above ground works and shall be implemented in accordance with the approved details prior to occupation."
+    },
+    {
+      "condition_number": 10,
+      "summary": "Obtain Secured by Design certificate following satisfactory inspection and submit to the authority before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Security (Secured by Design) consultant"
+      ],
+      "source_quote": "Prior to occupation, a satisfactory Secured by Design inspection must take place. The resulting Secured by Design certificate shall be submitted to and approved by the local planning authority."
+    },
+    {
+      "condition_number": 11,
+      "summary": "Submit and obtain approval of Air Quality and Dust Management Plan (AQDMP) covering mitigation measures for medium risk sites, site details, haul routes, water supply, inventory of dust-generating activities, control measures, fuel storage, monitoring, trained personnel, NRMM standards and ULEZ-compliant vehicles, and implement before any demolition or development commences",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "No demolition or development shall commence until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Air quality consultant"
+      ],
+      "source_quote": "No demolition or development shall commence until full details of the proposed mitigation measures for impact on air quality and dust emissions, in the form of an Air Quality and Dust Management Plan (AQDMP), have been submitted to and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 12,
+      "summary": "Ensure all Non-Road Mobile Machinery (NRMM) of 37kW to 560kW complies with GLA emission standards, register all NRMM at https://nrmm.london before bringing on site, and keep register updated",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "If Non-Road Mobile Machinery (NRMM) of net power of 37kW and up to and including 560kW is required on site during the course of demolition, site preparation and construction phases, it must comply with the emission standards set out in chapter 7 of the GLA's supplementary planning guidance \"Control of Dust and Emissions During Construction and Demolition\" dated July 2014 (SPG), or subsequent guidance."
+    },
+    {
+      "condition_number": 13,
+      "summary": "Submit and obtain approval of updated Fire Statement by independent third party assessor covering outside space for fire appliances and evacuation, fire safety features, fire spread minimisation, means of escape and evacuation strategy, and firefighting access and equipment",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to the commencement of above ground works",
+      "gate_ambiguous": true,
+      "specialist_needed": [
+        "Fire engineer"
+      ],
+      "source_quote": "Prior to the commencement of above ground works, an updated Fire Statement shall be submitted to and approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 14,
+      "summary": "Submit and obtain approval of updated Flood Risk Assessment including Management and Maintenance Plan before any development takes place",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "No development should take place until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Flood risk consultant"
+      ],
+      "source_quote": "No development should take place until an updated Flood Risk Assessment (including a Management and Maintenance Plan) for the site has been submitted and approved by the Local Planning Authority."
+    },
+    {
+      "condition_number": 15,
+      "summary": "Submit and obtain approval of detailed surface water drainage system design with evidence of 1% AEP event management capability including climate change factor and exceedance flow paths",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "No development above ground shall commence on site until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Drainage / SuDS engineer"
+      ],
+      "source_quote": "No development above ground shall commence on site until a detailed design for the surface water drainage system and associated pipework presented in the Flood Risk Assessment (Document: Flood Risk Assessment and Sustainable Drainage Strategy - dated 14/12/2021) has been submitted to and approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 16,
+      "summary": "Submit and obtain approval of Piling Method Statement detailing depth, type, methodology, measures to protect sewerage infrastructure and programme, in consultation with Thames Water, before any piling takes place",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-piling",
+      "trigger_quote": "No piling shall take place until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Structural / geotechnical engineer"
+      ],
+      "source_quote": "No piling shall take place until a Piling Method Statement (detailing the depth and type of piling to be undertaken and the methodology by which such piling will be carried out, including measures to prevent and minimise the potential for damage to subsurface sewerage infrastructure, and the programme for the works) has been submitted to and approved in writing by the local planning authority in consultation with Thames Water."
+    },
+    {
+      "condition_number": 17,
+      "summary": "Submit and obtain approval of kitchen fume extraction and filtration equipment details, full specifications and ongoing maintenance plan designed to mitigate high odour levels, and implement before the use commences",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-use",
+      "trigger_quote": "The use hereby permitted shall not commence until",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The use hereby permitted shall not commence until details and full specifications of kitchen fume extraction and filtration equipment, and ongoing maintenance plan, have been submitted to and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 18,
+      "summary": "Submit and obtain approval of plant noise assessment to BS 4142:2014 with attenuation measures ensuring rating level 5dBA below background, and submit post-installation assessment confirming compliance before use or plant operation commences",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-use",
+      "trigger_quote": "Prior to commencement of construction … The use hereby permitted, or the operation of any building services plant, shall not commence until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Acoustic consultant"
+      ],
+      "source_quote": "Prior to commencement of construction, a scheme of assessment of the acoustic impact arising from the operation of all internally and externally located plant has shall be submitted to and approved in writing by the local planning authority. … The use hereby permitted, or the operation of any building services plant, shall not commence until a post-installation noise assessment has been carried out including suitable measurements to confirm compliance with the approved noise criteria and submitted to and approved by the planning authority."
+    },
+    {
+      "condition_number": 19,
+      "summary": "Submit and obtain approval of Noise Management Plan for outside garden area covering management responsibilities, noise and disturbance control, amplified sound, and measures to minimise impacts from organised activities, before any use of the garden",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-use",
+      "trigger_quote": "Prior to any use of the outside garden area",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to any use of the outside garden area hereby approved a Noise Management Plan must be submitted to and approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 20,
+      "summary": "Submit and obtain approval of scheme for siting and design of all boundary treatments and gates at 1:10 scale including fixings, hinges, latches and other details, and implement before use commences",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the first occupation of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the first occupation of the development hereby permitted, a scheme for the siting and design of all boundary treatments and gates shall be submitted to and approved in writing by the local planning authority. The details shall be submitted at 1:10 scale drawings and include fixings, hinges, latches and other details."
+    },
+    {
+      "condition_number": 21,
+      "summary": "Submit and obtain approval of updated written scheme of archaeological investigation (WSI) including statement of significance, research objectives, programme and methodology of site investigation and recording, nomination of competent person/organisation, and programme for post-investigation assessment, analysis, publication, dissemination and deposition, before any demolition or development causing ground disturbance",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "No demolition or development shall take place that will cause ground disturbance until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Archaeologist"
+      ],
+      "source_quote": "No demolition or development shall take place that will cause ground disturbance until an updated written scheme of investigation (WSI) has been submitted to and approved by the local planning authority in writing."
+    },
+    {
+      "condition_number": 22,
+      "summary": "Submit and obtain approval of public engagement framework for the site's geo/archaeological programme of work before any development takes place",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "No development shall take place until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Archaeologist"
+      ],
+      "source_quote": "No development shall take place until details of the public engagement framework pertaining to the site's geo/archaeological program of work have been submitted and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 23,
+      "summary": "Submit and obtain approval of foundation design and construction method to protect archaeological remains before any development takes place",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "No development shall take place until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Archaeologist",
+        "Structural / geotechnical engineer"
+      ],
+      "source_quote": "No development shall take place until details of the foundation design and construction method to protect archaeological remains have been submitted and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 24,
+      "summary": "Submit and obtain approval of specification of all soft landscaping and tree planting including quantity, size, species, position, timing, integration, maintenance, protection, green screening around nursery and communal spaces, and demonstration of net biodiversity gain, before above ground works",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "No development above ground shall take place until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Landscape architect",
+        "Ecologist"
+      ],
+      "source_quote": "No development above ground shall take place until a specification of all proposed soft landscaping and tree planting has been submitted to and approved in writing by the Local Planning Authority. … The details should demonstrate that a net biodiversity gain has been achieved in accordance with the Environmental Impact Assessment prepared by Lizard Landscape Design and Ecology (02 December 2021)."
+    },
+    {
+      "condition_number": 25,
+      "summary": "Submit and obtain approval of detailed specification of biodiverse green roofs including quantity, size, species, position, timing, maintenance and protection, and implement before occupation of the relevant building",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to commencement of the construction works above ground of the relevant Building",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Ecologist"
+      ],
+      "source_quote": "Prior to commencement of the construction works above ground of the relevant Building of the development hereby permitted, a detailed specification of the biodiverse green roofs shall be submitted to and approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 26,
+      "summary": "Carry out all approved planting, seeding or turfing in the first planting season following occupation or substantial completion, and replace any failures within five years with similar size and species",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "All planting, seeding or turfing comprised in the approved details of landscaping shall be carried out in the first planting and seeding season following the occupation of the development hereby permitted or the substantial completion of the development, whichever is the sooner."
+    },
+    {
+      "condition_number": 27,
+      "summary": "Submit and obtain approval of specification for green infrastructure to achieve urban greening factor of 0.4 or more, with justification if target not met, before above ground works",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to above ground works",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Landscape architect"
+      ],
+      "source_quote": "Prior to above ground works, specification for green infrastructure shall be submitted to and approved in writing by the local planning authority, to achieve an urban greening factor of 0.4 or more on the site."
+    },
+    {
+      "condition_number": 28,
+      "summary": "Submit and obtain approval of Energy Statement compliant with Lambeth and London Plan policies including 'Be Seen' reporting commitment, heat pump performance evidence, and dynamic overheating modelling to CIBSE TM59 and TM49, before commencement of development",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to commencement of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to commencement of the development. An Energy Statement compliant with Lambeth Local Plan policies and London Plan policies shall be submitted to and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 29,
+      "summary": "Submit and obtain approval of As Built SAP calculations and Block Compliance sheet demonstrating 35% carbon reduction over Part L 2013 before first occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to first occupation of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to first occupation of the development As Built SAP calculations and Block Compliance sheet as an output of the National Calculation Method should be submitted to and approved in writing by the Local Planning Authority demonstrating that the scheme has achieved a minimum of 35% reduction in carbon emissions over that required by Part L of the Building Regulations 2013, in line with the approved Energy Statement."
+    },
+    {
+      "condition_number": 30,
+      "summary": "Submit and obtain approval of As Built SBEM calculations demonstrating 35% carbon reduction over Part L 2013 before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to occupation of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to occupation of the development As Built SBEM calculations should be submitted to and approved in writing by the Local Planning Authority demonstrating that 35% reductions in carbon emissions over Building Regulations Part L 2013 have been achieved, in line with the approved Energy Statement."
+    },
+    {
+      "condition_number": 31,
+      "summary": "Submit and obtain approval of dynamic overheating modelling for residential dwellings to CIBSE TM59 and TM49 showing compliance with DSY1 weather scenario before commencement of development",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to commencement of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to commencement of the development, for the residential dwellings, satisfactory dynamic overheating modelling in line with the guidance and data sets in CIBSE TM59 and TM49 respectively in keeping with Energy Assessment Guidance, GLA, June 2022 should be submitted to and approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 32,
+      "summary": "Submit and obtain approval of calculations and manufacturer's datasheets showing water consumption below 105 litres per person per day before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the occupation of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the occupation of the development, calculations (and manufacturer's datasheets) should be submitted to and approved in writing by the Local Planning Authority which shows how water consumption rates of less than 105 litres per person per day have been achieved."
+    },
+    {
+      "condition_number": 33,
+      "summary": "Submit and obtain approval of calculations and datasheets showing non-residential water consumption achieves BREEAM Wat 01 Excellent (12.5% improvement), and details of smart metering, water saving and recycling measures, before above ground works commence",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to the commencement of above ground works … Prior to commencement of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to the commencement of above ground works, calculations (and manufacturer's datasheets) should be submitted to and approved in writing by the Local Planning Authority which shows how water consumption in the non-residential spaces achieves the BREEAM Wat 01 Excellent standard (12.5% improvement over the baseline). Prior to commencement of the development, details should be submitted to and approved in writing by the Local Planning Authority to show how the scheme proposes to incorporate measures such as smart metering, water saving and recycling measures to help to achieve lower water consumption rates and to maximise future-proofing."
+    },
+    {
+      "condition_number": 34,
+      "summary": "Submit and obtain approval of Community Management and Maintenance Plan setting out how the hall and St Anselm's church will be used, maintained and managed, before occupation of residential units",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the occupation of the residential units",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the occupation of the residential units hereby approved, a Community Management and Maintenance Plan shall be submitted to and approved in writing by the Local Planning Authority. The Community Management and Maintenance Plan should set how the hall will be used, maintained and managed upon occupation including St Anselm's church."
+    },
+    {
+      "condition_number": 35,
+      "summary": "Submit annotated exterior record photographs of St Anselm's Church and Havilland House including church vestry interior, with plan showing photograph locations, to London Historic Environment Record before demolition commences",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "blocks-demolition",
+      "trigger_quote": "prior to the commencement of demolition",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Heritage consultant"
+      ],
+      "source_quote": "A set of annotated exterior record photographs of the exterior of both buildings (St Anselm's Church and Havilland House), including the interior of the church vestry, accompanied by a plan showing the photograph locations, shall be submitted to the London Historic Environment Record prior to the commencement of demolition on the site."
+    },
+    {
+      "condition_number": 36,
+      "summary": "Submit and obtain approval of full details of children's play space provisions (minimum 23sqm, layout, equipment specification, phasing) and implement before occupation of residential parts",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "no occupation of the residential parts of the development shall commence until",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Notwithstanding details shown on the approved plans, no occupation of the residential parts of the development shall commence until full details of the children's play space provisions (including a minimum area of 23sqm, layout, equipment specification, and phasing of delivery) have been submitted to and approved in writing by the local planning authority and the development has been implemented in accordance with the approved details and agreed phasing."
+    },
+    {
+      "condition_number": 37,
+      "summary": "Permanently display property number and name at the street entrance of the block",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The property number and name shall be permanently displayed at the street entrance of the block."
+    },
+    {
+      "condition_number": 38,
+      "summary": "Submit and obtain approval of BREEAM Pre-Assessment targeting 'Excellent' before commencement; submit BREEAM Design Stage (Interim) certificate within six months of work starting; submit BREEAM Post Construction Review (Final) certificate within six months of occupation",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to the commencement of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to the commencement of the development hereby approved, a BREEAM Pre-Assessment shall be submitted and approved in writing by the Local Planning authority. This should clearly identify the credits to be targeted and detailing how BREEAM 'Excellent' will be achieved."
+    }
+  ],
+  "_usage": {
+    "input_tokens": 15768,
+    "output_tokens": 8801
+  }
+}

@@ -1,0 +1,612 @@
+{
+  "document_type": "full-grant",
+  "jurisdiction": "england",
+  "is_householder": false,
+  "permission_type": "full",
+  "local_authority": "Royal Borough of Greenwich",
+  "application_reference": "24/3095/F",
+  "site_address": "Land adjacent 81-88 Beresford Street, Woolwich, SE18 6BG",
+  "applicant": "RA Student Limited",
+  "development_description": "Construction of a new building comprising purpose-built student accommodation and associated amenity space (Sui Generis) as an extension of the purpose built student accommodation at 81-88 Beresford Street, together with ancillary plant and servicing; and associated enabling works.",
+  "decision": "granted",
+  "decision_date": "07 April 2025",
+  "time_limit_years": 3,
+  "flags": [],
+  "conditions": [
+    {
+      "condition_number": 1,
+      "summary": "Development must begin within 3 years",
+      "category": "time-limit",
+      "deadline": "07 April 2028",
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "none",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development to which this permission relates must be begun not later than the expiration of three (3) years beginning with the date on which the permission is granted."
+    },
+    {
+      "condition_number": 2,
+      "summary": "Development in accordance with approved plans and documents: 22262-A0-00-DR-A-09-202 Rev P01, 22262-HCD-A0-00-DR-A-04-200 GA Rev P02, 22262-HCD-A0-00-DR-A-04-201 GA Rev P01, 22262-HCD-A0-00-DR-A-04-202 GA Rev P01, 22262-HCD-A0-00-DR-A-04-203 GA Rev P01, 22262-HCD-A0-00-DR-A-04-204 GA Rev P01, 22262-HCD-A0-00-DR-A-04-205 GA Rev P01, 22262-HCD-A0-00-DR-A-04-207 GA Rev P02, 22262-HCD-A0-00-DR-A-05-200 Rev P01, 22262-HCD-A0-00-DR-A-05-201 Rev P01, 22262-HCD-A0-00-DR-A-05-202 Rev P01, 22262-HCD-A0-00-DR-A-06-201 Rev P01, 22262-HCD-A0-00-DR-A-06-202 Rev P01, 22262-HCD-A0-00-DR-A-06-203 Rev P01, and all documents listed in the condition",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development shall be carried out strictly in accordance with the application plans, drawings and documents hereby approved and as detailed below: … [full list of drawings and documents]"
+    },
+    {
+      "condition_number": 3,
+      "summary": "Construction Management Plan and Construction Logistics Plan to be submitted and approved before construction commences",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to the commencement of construction",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Transport / highways consultant"
+      ],
+      "source_quote": "Prior to the commencement of construction (including ground works and storage of construction materials on site) for the development hereby approved, a Construction Logistics Plan (CLP) and a Construction Management Plan (CMP) shall be submitted, to and approved in writing by, the Local Planning Authority, in conjunction with Transport for London, to minimise impacts to the local highway network and to control noise, vibration and air pollutants generated as a result of the construction process."
+    },
+    {
+      "condition_number": 4,
+      "summary": "Stage 1 and (if required) Stage 2 Written Scheme of Investigation for archaeology to be submitted and approved before intrusive excavations commence",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to the commencement of any intrusive excavations",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Archaeologist"
+      ],
+      "source_quote": "Prior to the commencement of any intrusive excavations (including for the retaining wall or those that may be required for decontamination) of the development hereby approved a Stage 1 written scheme of investigation (WSI) shall be submitted to and approved in writing by the local planning authority."
+    },
+    {
+      "condition_number": 5,
+      "summary": "Contaminated land remediation strategy (preliminary risk assessment, site investigation, detailed risk assessment, remediation strategy and verification plan) to be submitted and approved before development commences",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to the commencement of development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Contamination / geo-environmental consultant"
+      ],
+      "source_quote": "Prior to the commencement of development hereby approved, the following components of a scheme to deal with the risks associated with contamination of the site shall each be submitted to and approved, in writing by, the Local Planning Authority: … [full list of components]"
+    },
+    {
+      "condition_number": 6,
+      "summary": "Verification report demonstrating completion and effectiveness of remediation to be submitted and approved within 2 months of completion of remediation works, before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "The development shall not be occupied until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Contamination / geo-environmental consultant"
+      ],
+      "source_quote": "Within 2 months of the completion of the works set out in the approved remediation strategy, a verification report demonstrating completion of the works set out in the approved remediation strategy and the effectiveness of the remediation shall be submitted to the Local Planning Authority for approval. The development shall not be occupied until the Local Planning Authority's written approval of the verification report has been obtained."
+    },
+    {
+      "condition_number": 7,
+      "summary": "If unexpected contamination is found during development, works must stop and a remediation strategy submitted and approved before works continue",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Contamination / geo-environmental consultant"
+      ],
+      "source_quote": "If, during development, contamination not previously identified is found to be present at the site then no further development (unless otherwise agreed in writing with the Local Planning Authority) shall be carried out until the developer has submitted a remediation strategy to the Local Planning Authority detailing how this unsuspected contamination shall be dealt with and obtained written approval from the Local Planning Authority of that remediation strategy."
+    },
+    {
+      "condition_number": 8,
+      "summary": "Piling Method Statement to be submitted and approved before any piling takes place",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-piling",
+      "trigger_quote": "No piling shall take place until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Structural / geotechnical engineer"
+      ],
+      "source_quote": "No piling shall take place until a Piling Method Statement (detailing the depth and type of piling to be undertaken and the methodology by which such piling will be carried out, including measures to prevent and minimise the potential for damage to subsurface sewerage infrastructure, and the programme for the works) has been submitted to, and approved in writing by, the Local Planning Authority in consultation with Thames Water and the Environment Agency."
+    },
+    {
+      "condition_number": 9,
+      "summary": "Unexploded ordnance preliminary risk assessment, and if required detailed risk assessment and risk mitigation plan, to be submitted and approved before development commences",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to the commencement of development",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the commencement of development hereby approved, a Preliminary Risk Assessment to identify the risks associated with unexploded ordnance (UXO) threat of the site shall be submitted to, and approved in writing, by the Local Planning Authority."
+    },
+    {
+      "condition_number": 10,
+      "summary": "Details of all construction plant and machinery (NRMM) to be submitted and approved, and all NRMM registered, before construction commences",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to the commencement of the construction",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the commencement of the construction hereby approved, details of all plant and machinery to be used at the construction phases have been submitted to, and approved in writing by, the Local Planning Authority."
+    },
+    {
+      "condition_number": 11,
+      "summary": "Full details including physical samples and images of all facing materials and finishes to be submitted and approved before installation",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to the installation of the relevant works",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the installation of the relevant works for the development hereby approved, full details including physical samples and images of all facing materials and finishes, to be used on the development shall be submitted to, and approved in writing by, the Local Planning Authority and the scheme shall thereafter be implemented in accordance with the approved details."
+    },
+    {
+      "condition_number": 12,
+      "summary": "Detailed plans and sections at 1:5 or 1:10 scale and physical samples of architectural details (windows, doors, joints, soffits, coping, balustrades) to be submitted and approved before installation",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "prior to the installation of the relevant works",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Notwithstanding the details hereby approved, prior to the installation of the relevant works for the development hereby approved, shall commence until detailed plans and sections at a scale of either 1:5 or 1:10, as well as physical samples as may be necessary, showing the following elements of the development have been submitted to, and approved in writing by, the Local Planning Authority: … [list of elements]"
+    },
+    {
+      "condition_number": 13,
+      "summary": "Landscaping Strategy for hard and soft landscaping to be submitted and approved before first occupation; all works completed before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the first occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Landscape architect"
+      ],
+      "source_quote": "Prior to the first occupation of the development hereby approved, a Landscaping Strategy for all the hard and soft landscaping of any part of the site not occupied by buildings shall be submitted to, and approved in writing by, the Local Planning Authority."
+    },
+    {
+      "condition_number": 14,
+      "summary": "Non-residential element to achieve BREEAM Rating \"Excellent\"; interim and post-construction certificates to be submitted within 3 months of completion and first occupation",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "The non-residential element of the development shall be registered with Building Research Establishment (BRE) and achieve BREEAM Rating \"Excellent\" (based on the latest BREEAM NC Technical guidance)."
+    },
+    {
+      "condition_number": 15,
+      "summary": "Energy Strategy to be implemented achieving 36.55% CO2 reduction; details of renewable energy equipment to be submitted before installation; commissioning documentation and two-page summary report to be submitted",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to construction completion and occupation, the Development shall implement and maintain, and in the case of energy generation equipment confirm as operational, the approved measures to achieve an overall sitewide reduction in regulated CO2 emissions of at least 36.55%(equating to 3.96 tonnes of CO2 per year) beyond Building Regulations Part L 2021 and using SAP10.2 emission factors."
+    },
+    {
+      "condition_number": 16,
+      "summary": "Post-construction energy monitoring ('Be Seen') data to be submitted to GLA at planning, as-built and in-use stages",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "In order to demonstrate compliance with the 'be seen' post-construction monitoring requirement of Policy SI2 of the London Plan, the legal Owner shall at all times and all in all respects comply with the energy monitoring requirements set out in points a, b and c below."
+    },
+    {
+      "condition_number": 17,
+      "summary": "Post-construction Whole Life-Cycle Carbon Assessment to be submitted to GLA; measures in WLC Assessment to be implemented",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Once the as-built design has been completed (upon commencement of RIBA Stage 6) and prior to the building(s) being occupied (or handed over to a new owner, if applicable), the legal owner(s) of the development should submit the post-construction Whole Life-Cycle Carbon (WLC) Assessment to the GLA at: ZeroCarbonPlanning@london.gov.uk."
+    },
+    {
+      "condition_number": 18,
+      "summary": "Circular Economy Statement Post Completion Report to be submitted to GLA before occupation; commitments in Circular Economy statement to be implemented",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "before-occupation",
+      "trigger_quote": "prior to occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Energy & sustainability consultant"
+      ],
+      "source_quote": "Prior to completion of construction of the permitted development, a Circular Economy Statement Post Completion Report should be completed accurately and in its entirety in line with the GLA's Circular Economy Statement Guidance (or equivalent alternative Guidance as may be adopted)."
+    },
+    {
+      "condition_number": 19,
+      "summary": "Sustainability measures in approved Sustainability Statement to be implemented and maintained before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to occupation of the development hereby approved, the sustainability measures detailed in the final approved Sustainability Statement submitted by Energy and Sustainable Assessment – prepared by Applied Energy – 22 October 2024 shall be fully implemented and maintained for the lifetime of the development."
+    },
+    {
+      "condition_number": 20,
+      "summary": "Acoustic report detailing noise from fixed plant to be submitted and approved before installation; measures implemented before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the installation of plant",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Acoustic consultant"
+      ],
+      "source_quote": "Prior to the installation of plant and equipment hereby permitted, an acoustic report detailing noise from fixed plant shall be submitted to, and approved in writing by, the Local Planning Authority."
+    },
+    {
+      "condition_number": 21,
+      "summary": "Details of sound insulation measures for divisions separating bedrooms and communal areas to be submitted and approved before above ground works commence; installed before first occupation",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to the commencement of above ground works",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Acoustic consultant"
+      ],
+      "source_quote": "Prior to the commencement of above ground works, details of the proposed sound insulation measures for all divisions (walls and floors) separating bedrooms and internal/external communal areas/facilities, shall be submitted to, and approved in writing by, the Local Planning Authority."
+    },
+    {
+      "condition_number": 22,
+      "summary": "Details of sound attenuation to protect against environmental/transport noise to be submitted and approved before above ground works commence",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-above-ground",
+      "trigger_quote": "Prior to the commencement of above ground works",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Acoustic consultant"
+      ],
+      "source_quote": "Prior to the commencement of above ground works, details of the sound attenuation, to protect against externally generated (environmental) noise sources including road and aircraft traffic shall be submitted to, and approved in writing by, the Local Planning Authority."
+    },
+    {
+      "condition_number": 23,
+      "summary": "All recommendations of approved Air Quality Assessment to be implemented before first occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "before-occupation",
+      "trigger_quote": "prior to the first occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "All of the recommendations of the approved Air Quality Assessment – prepared by IDOM – 16 September 2024 shall be fully implemented prior to the first occupation of the development hereby approved, and these measures shall be maintained for the lifetime of the development."
+    },
+    {
+      "condition_number": 24,
+      "summary": "Detailed Delivery and Servicing Plan to be submitted and approved before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "shall not be occupied until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Transport / highways consultant"
+      ],
+      "source_quote": "The development hereby approved shall not be occupied until a detailed Delivery and Servicing Plan (DSP) has been submitted to, and approved in writing by, the Local Planning Authority in consultation with Transport for London and the Council's Waste, Transport and Highway Services."
+    },
+    {
+      "condition_number": 25,
+      "summary": "Details of Secured by Design security measures to be submitted and approved before commencement of relevant part; Secured by Design certificate to be submitted before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "prior commencement of the relevant part",
+      "gate_ambiguous": true,
+      "specialist_needed": [
+        "Security (Secured by Design) consultant"
+      ],
+      "source_quote": "The development hereby permitted shall incorporate security measures to minimise the risk of crime and to meet the specific security needs of the development in accordance with the principles and objectives of Secured by Design. Details of these measures shall be submitted to, and approved in writing by, the Local Planning Authority prior commencement of the relevant part of the development and shall be implemented in accordance with the approved details prior to occupation and thereafter retained for the lifetime of the development."
+    },
+    {
+      "condition_number": 26,
+      "summary": "Detailed site-specific Travel Plan to be submitted and approved before occupation; evidence of compliance to be submitted as specified",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "shall not be occupied until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Transport / highways consultant"
+      ],
+      "source_quote": "The development hereby approved shall not be occupied until such time as a detailed site specific Travel Plan for the student accommodation, in accordance with Transport for London's document 'Travel Planning for New Development in London' has been submitted to, and approved in writing by, the Local Planning Authority."
+    },
+    {
+      "condition_number": 27,
+      "summary": "Completed Water Efficiency Calculator to be submitted and approved before first occupation showing 105 l/p/d consumption",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the first occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the first occupation of the development hereby approved, a completed Water Efficiency Calculator for the residential development must be submitted to the Local Planning Authority and approved in writing to show that internal potable water consumption for each of the dwellings will be limited to 105 litres per person per day (l/p/d) based on the Government's national calculation method for water efficiency for the purpose of the Building Regulations."
+    },
+    {
+      "condition_number": 28,
+      "summary": "PBSA to comply with Building Regulations Approved Document M Volume 2; deliver at least 6 wheelchair accessible and 6 wheelchair adaptable units",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The purpose built student accommodation (PBSA) hereby approved shall comply with Building Regulations Approved Document M Volume 2: Buildings other than dwellings. The development must deliver at least six (6) wheelchair accessible units and at least six (6) wheelchair adaptable in accordance with Building Regulations Approved Document M Volume 2 category M1 and retained for the lifetime of the development."
+    },
+    {
+      "condition_number": 29,
+      "summary": "Details of waste management arrangements to be submitted and approved; waste and recycling provision as per Operational Waste Management Strategy to be provided before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Details of waste management arrangements including movement of refuse to any collection point shall be submitted to, and approved in writing by, the Local Planning Authority."
+    },
+    {
+      "condition_number": 30,
+      "summary": "Cycle parking facilities as per approved Transport Assessment to be implemented and available before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to occupation of the development hereby approved, the cycle parking facilities as set out in the approved Healthy Streets Transport Assessment – prepared by RPS – 18 September 2024 shall be fully implemented and made available for use, and shall be maintained for the lifetime of the development."
+    },
+    {
+      "condition_number": 31,
+      "summary": "Development not to be occupied until confirmation that water network upgrades are complete or phasing plan agreed with Thames Water",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "before-occupation",
+      "trigger_quote": "shall not be occupied until",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby approved shall not be occupied until satisfactory confirmation has been provided to the Council that either: all water network upgrades required to accommodate the additional demand to serve the development have been completed; or a development and infrastructure phasing plan has been agreed with Thames Water to allow development to be occupied."
+    },
+    {
+      "condition_number": 32,
+      "summary": "No construction within 5m of 600mm DI trunk water main; details of diversion/alignment to be submitted and approved before commencement",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "No construction shall take place",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Drainage / SuDS engineer"
+      ],
+      "source_quote": "No construction shall take place within 5m of the marked position of 600 mm DI trunk water main located along Beresford Street to the south. Information detailing how the developer intends to divert the asset / align the development, so as to prevent the potential for damage to subsurface potable water infrastructure, must be submitted to and approved in writing by the local planning authority in consultation with Thames Water prior to commencement of development."
+    },
+    {
+      "condition_number": 33,
+      "summary": "Full details of drainage and flood attenuation strategy to be submitted and approved before commencement (except site clearance)",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "Prior to commencement of the development",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Drainage / SuDS engineer"
+      ],
+      "source_quote": "Prior to commencement of the development (with the exception of site clearance), full details of the drainage and flood attenuation strategy shall be submitted to and approved in writing by the Local Planning Authority in consultation with Thames Water and the LLFA."
+    },
+    {
+      "condition_number": 34,
+      "summary": "Measures in Urban Greening Factor Report to be implemented; Ecological and Landscape Management Plan to be submitted and approved before completion of superstructure; evidence of installation before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Ecologist",
+        "Landscape architect"
+      ],
+      "source_quote": "The Development shall fully implement the measures detailed in the Urban Greening Factor Report – prepared by Greengage – September 2024."
+    },
+    {
+      "condition_number": 35,
+      "summary": "Construction hours restricted to Monday-Friday 08:00-18:00, Saturday 08:00-13:00, not at all on Sundays and Bank Holidays",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The earth removal, piling work and any mechanical building operations required to implement the development shall only be carried out between the hours of: Monday to Friday 08:00 - 18:00 Saturdays 08:00 - 13:00 And not at all on Sunday and Public and Bank Holidays"
+    },
+    {
+      "condition_number": 36,
+      "summary": "Details of measures to manage student arrival and departure at beginning and end of tenancy to be submitted and approved before occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the occupation of the development hereby approved, details of the measures to manage and coordinate the arrival and departure of the student population resident within the development at the beginning and end of tenancy periods shall be submitted to and approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 37,
+      "summary": "Development to be carried out in accordance with approved Fire Strategy Statement",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development must be carried out in strict accordance with the provisions of the Fire Strategy Statement Gateway 1 Fire Statement – prepared by Clarke Banks – 23 September 2024 and HSE Response dated 4 November 2024 unless otherwise approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 38,
+      "summary": "Use restricted to purpose built student accommodation (Sui Generis) only",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby approved, shall be restricted to purpose built student accommodation (Sui Generis) and shall not be used for any other use class as specified by the Town and Country Planning (Use Classes) Order 1987 (as amended)."
+    },
+    {
+      "condition_number": 39,
+      "summary": "Total quantum not to exceed 120 student accommodation bed spaces",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The total quantum of the development hereby permitted shall not exceed 120 Student Accommodation bed spaces."
+    },
+    {
+      "condition_number": 40,
+      "summary": "Operations Management Plan to be submitted and approved before occupation; mitigation measures operational before first occupation",
+      "category": "pre-occupation",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "before-occupation",
+      "trigger_quote": "Prior to the occupation",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "Prior to the occupation of the development, an Operations Management Plan associated with the operation of the purpose built student accommodation shall be submitted to and approved in writing by the Local Planning Authority."
+    },
+    {
+      "condition_number": 41,
+      "summary": "Detailed design and construction method statements for ground floor structures, foundations and below-ground works to be submitted and approved before commencement (except site clearance); works completed before occupation",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "None of the development hereby permitted shall be commenced",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Structural / geotechnical engineer"
+      ],
+      "source_quote": "None of the development hereby permitted shall be commenced (with the exception of site clearance) until detailed design and construction method statements for all of the ground floor structures and foundations and for any other structures below ground level, including piling, any temporary works, and site investigations, have been submitted to and approved in writing by the Local Planning Authority which:- (i) Accommodate the Elizabeth line infrastructure, including any temporary works associated with the Elizabeth line (formerly known as Crossrail), (ii) Mitigate the effects on the Elizabeth line, of ground movement arising from the development."
+    },
+    {
+      "condition_number": 42,
+      "summary": "Method statements to secure that Elizabeth line operation and maintenance is not disrupted during construction and after completion to be submitted and approved before commencement",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "None of the development hereby permitted shall be commenced until",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "None of the development hereby permitted shall be commenced until method statements have been submitted to, and approved in writing, by the Local Planning Authority to include arrangements to secure that, during any period when development construction is taking place and thereafter upon completion and occupation of the development, the planned Operation and Maintenance of the Elizabeth line shall not be disrupted."
+    }
+  ],
+  "_usage": {
+    "input_tokens": 19877,
+    "output_tokens": 9007
+  }
+}

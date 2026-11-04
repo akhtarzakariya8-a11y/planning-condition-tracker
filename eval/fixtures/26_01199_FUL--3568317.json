@@ -1,0 +1,103 @@
+{
+  "document_type": "full-grant",
+  "jurisdiction": "england",
+  "is_householder": true,
+  "permission_type": "full",
+  "local_authority": "London Borough of Lambeth",
+  "application_reference": "26/01199/FUL",
+  "site_address": "64 Brixton Water Lane London Lambeth SW2 1QB",
+  "applicant": "Mr Sam Britton",
+  "development_description": "Replacement of the rear garden shed with a single storey garden studio outbuilding including the replacement of the part of the boundary wall. Felling of 2 trees (Spindle and a laburnum tree). (Full Planning permission and Listed Building Consent ref : 26/01200/LB applications received).",
+  "decision": "granted",
+  "decision_date": "11.06.2026",
+  "time_limit_years": 3,
+  "flags": [],
+  "conditions": [
+    {
+      "condition_number": 1,
+      "summary": "Begin development within three years",
+      "category": "time-limit",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "none",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development to which this permission relates must be begun no later than three years from the date of this decision notice."
+    },
+    {
+      "condition_number": 2,
+      "summary": "Carry out in accordance with approved drawings: PP-14716461v1; 25-211-S-750; 25-211-S-150; 11_10 Existing; 11_10 Proposed; 10_02; 00_02; 00_01",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby permitted shall be carried out in accordance with the approved drawings and documents: PP-14716461v1; 25-211-S-750; 25-211-S-150; 11_10 Existing; 11_10 Proposed; 10_02 ; 00_02; 00_01."
+    },
+    {
+      "condition_number": 3,
+      "summary": "Outbuilding to be used only for purposes incidental to the dwellinghouse, not as a self-contained dwelling",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "The development hereby permitted shall only be used for purposes incidental to the enjoyment of the dwellinghouse in whose curtilage the approved outbuilding is situated and for no other purpose."
+    },
+    {
+      "condition_number": 4,
+      "summary": "Submit and obtain approval of detailed Arboricultural Method Statement covering tree protection, foundation design within RPA of T10, construction methodology, and service routes; carry out in accordance with approved AMS",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": true,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "No development shall commence until",
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Arboriculturalist"
+      ],
+      "source_quote": "No development shall commence until a detailed Arboricultural Method Statement (AMS) has been submitted to and approved in writing by the Local Planning Authority. The AMS shall include: a) Tree protection fencing and ground protection measures b) Foundation design and construction methodology within or adjacent to the Root Protection Area (RPA) of T10 (London plane), including confirmation of foundation type (e.g. pile, pile-and-beam, or other no-dig solutions) c) Detailed construction information including excavation depths, pile locations, beam and slab design within the RPA d) Service and drainage routes, including methodologies for works within RPAs (e.g. hand-digging, no-dig techniques) e) Development shall be carried out in full accordance with the approved AMS."
+    },
+    {
+      "condition_number": 5,
+      "summary": "All works within or adjacent to RPA of T10 to be supervised by qualified arboriculturalist; pre-commencement meeting required; monitoring reports to be submitted within 5 working days of each visit",
+      "category": "ongoing",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "ongoing",
+      "trigger_quote": null,
+      "gate_ambiguous": false,
+      "specialist_needed": [
+        "Arboriculturalist"
+      ],
+      "source_quote": "All works within or adjacent to the RPA of T10 shall be carried out under the supervision of a qualified arboriculturist. A pre-commencement meeting and site briefing shall be undertaken with the contractor and site manager. Arboricultural monitoring reports shall be submitted to the Local Planning Authority within 5 working days of each supervision visit."
+    },
+    {
+      "condition_number": 6,
+      "summary": "Install approved tree protection fencing and ground protection measures prior to commencement; retain for duration of construction; not to be removed or altered without prior written consent",
+      "category": "pre-commencement",
+      "deadline": null,
+      "responsible_party": "applicant",
+      "discharge_required": false,
+      "gate": "blocks-any-commencement",
+      "trigger_quote": "prior to commencement",
+      "gate_ambiguous": false,
+      "specialist_needed": [],
+      "source_quote": "All approved tree protection fencing and ground protection measures shall be installed prior to commencement and retained for the duration of the construction works. They shall not be removed or altered without the prior written consent of the Local Planning Authority."
+    }
+  ],
+  "_usage": {
+    "input_tokens": 7201,
+    "output_tokens": 1544
+  }
+}
