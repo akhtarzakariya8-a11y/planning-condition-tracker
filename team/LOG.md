@@ -9,4 +9,4 @@ Waiting on Zak: 0 pull requests.
 
 `YYYY-MM-DD | ticket | lane | verdict | PR link | what changed, one line | anything that failed`
 
-2026-11-09 | 1 Team setup | AMBER | n/a | setup pull request | team files, agents, runbook, lanes and CI added | nothing
+2026-11-09 | 1 Team setup | AMBER | n/a | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/1 | team files, agents, runbook, lanes and CI added | nothing

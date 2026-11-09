@@ -51,4 +51,4 @@ _None yet._
 
 | # | Ticket | Date | PR |
 | --- | --- | --- | --- |
-| 1 | Team setup: `team/` files, agent files, runbook, lanes in `CLAUDE.md`, CI | 2026-11-09 | setup pull request |
+| 1 | Team setup: `team/` files, agent files, runbook, lanes in `CLAUDE.md`, CI | 2026-11-09 | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/1 |
