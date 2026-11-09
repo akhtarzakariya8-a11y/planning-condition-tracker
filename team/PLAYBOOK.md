@@ -10,20 +10,20 @@ _None yet._
 
 ## Trial today (one at a time, a new one each day)
 
-_None yet. Each evening the scout judges the last trial and promotes one candidate: what
+_None yet. Each evening the coach judges the last trial and promotes one candidate: what
 it is, source link, date, how to try it on one ticket, how we will know it helped._
 
-## Candidates (the scout adds one line a day, with a source link)
+## Candidates (the coach adds these, one line each, with a source link)
 
 _None yet._
 
-## To study (Zak or the scout can add links, including YouTube videos)
+## To study (Zak, the scout or the coach can add links, including YouTube videos)
 
 _None yet._
 
 ## To study (needs Zak's computer)
 
-Videos the scout found but could not read in a cloud run. Zak can ask Claude on his own
+Videos the coach found but could not read in a cloud run. Zak can ask Claude on his own
 computer to transcribe these and add the notes here.
 
 _None yet._
