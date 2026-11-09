@@ -18,6 +18,7 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 
 | # | Ticket | Lane | Depends on | Status |
 | --- | --- | --- | --- | --- |
+| 16 | Rename the product to Aftergrant everywhere a user sees it: app title and page text, README, exports (Excel, PDF, Word), MCP server descriptions. Tagline: "From planning permission to start on site". Leave the repo name, file names and live URL alone | AMBER | none. Do this before ticket 4 so the landing page launches with the right name | Ready |
 | 2 | App smoke test: load `app.py` against the saved fixtures with no API call, so a broken page fails CI | GREEN | 1 | Ready |
 | 3 | "Try a sample notice" button: run the Lambeth 38-condition example from fixtures, no upload, no API cost | GREEN | 2 | Ready |
 | 4 | Landing page v1 in `site/`: what it does, three real outputs from the sample, the fee-rise hook, one button to the tool | GREEN | 3, GitHub Pages on | Ready |
@@ -48,6 +49,8 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 
 The complete list of things the team cannot do. Everything else it does.
 
+- [ ] Aftergrant name checks before spending on it: search Companies House and the UK trade mark register for "Aftergrant", then buy the domain.
+- [ ] Renaming the GitHub repo or the Streamlit URL: tell Claude first, because the scheduled runs point at the current repo name.
 - [ ] Switch on GitHub Pages for the repo (Settings, Pages, Source: GitHub Actions). Needed for ticket 4.
 - [ ] Add the Supabase and Google sign-in keys in Streamlit Cloud (planned 19 Nov 2026). Needed for ticket 9.
 - [ ] Send the fee-rise messages the scout drafts (7 Dec 2026).
