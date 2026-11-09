@@ -47,10 +47,28 @@ Each run
    anything a competitor or the government has just changed. Re-check each named
    competitor at least once a month.
 
-4. LEARN. Study one source on building better: Claude Code and Streamlit release notes,
-   written guides, or the next link under "To study" in `team/PLAYBOOK.md` (use the
-   `youtube-transcriber` skill for videos when it is available; if it is not, leave the
-   link in place and say so). Add anything promising to "Candidates" in the playbook.
+4. LEARN. Hunt for techniques that would make this team build better, from anywhere
+   with value. Go looking yourself; do not wait for links.
+   - Where to look: YouTube talks and tutorials, conference talks, engineering blogs,
+     official docs and release notes, well-run open-source repos (how they test, review
+     and structure work, including their `.claude/` setups), newsletters, podcasts with
+     transcripts, Hacker News, Reddit, X threads, indie-founder write-ups, teardowns of
+     excellent product and landing pages, and anything under "To study" in
+     `team/PLAYBOOK.md` (Zak's links come first).
+   - What to look for, rotating so no area is neglected: testing and code quality;
+     Claude Code and agent workflows; prompt and eval practice; UI and visual design;
+     landing page copy and conversion; pricing and first-customer tactics for
+     solo-built software; performance and reliability.
+   - Study at least 3 sources a day, from at least 2 different kinds of place.
+   - Videos: use the `youtube-transcriber` skill when it is available. If it is not,
+     look for a published transcript or a written version of the same talk. If neither
+     exists, add the link under "To study (needs Zak's computer)" and move on.
+   - Judge every idea on its evidence, never its popularity: who is saying it, what
+     have they built, do they show results, and does it fit a small Python and
+     Streamlit app built by agents? Views, likes and confident delivery prove nothing.
+     Corroborate anything from a forum or social post with a second source.
+   - Add each promising idea to "Candidates" in the playbook in one line: the
+     technique, why it might help here, and the source link.
    A new technique goes on trial EVERY day:
    a. Judge the last trial from the TECHNIQUE ON TRIAL lines in the newest build entry
       of `team/LOG.md`. Helped: move it to "Adopted" with that evidence. Did not help:
