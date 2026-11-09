@@ -85,7 +85,7 @@ An agent team works on this repo on a schedule (see `team/RUNBOOK.md`; agents in
 
 | Lane | What is in it | What the team does |
 | --- | --- | --- |
-| GREEN: ships itself | `site/`, `theme/`, `tests/`, `README.md` and docs, `team/LESSONS.md`, `team/PLAYBOOK.md`, `team/EVIDENCE.md`; layout and wording in `app.py`, `ct/panels.py` and `ct/reports.py` that change no rule, number or caveat | Opens the pull request, waits for CI, merges, confirms `main` is green |
+| GREEN: ships itself | `site/`, `theme/`, `tests/`, `README.md` and docs, `team/LESSONS.md`, `team/PLAYBOOK.md`, `team/EVIDENCE.md`, the "Updates" section of `team/MARKET.md`; layout and wording in `app.py`, `ct/panels.py` and `ct/reports.py` that change no rule, number or caveat | Opens the pull request, waits for CI, merges, confirms `main` is green |
 | AMBER: built, then parked | `prompt_*.txt`, `ct/logic.py`, `ct/programme.py`, `ct/extract.py`, `ct/drafting.py`, `ct/config.py`, `ct/storage.py`, `supabase/`, `mcp_server/`, `eval/`, `requirements.txt`, `.streamlit/`, `.github/`; sign-in, payments, pricing, user data; privacy policy and terms; any file deletion; any new dependency, plugin or tool | Builds and tests it fully, opens the pull request labelled `needs-zak` with one sentence on what Zak is deciding, then moves on |
 | RED: only Zak | Keys and secrets; creating accounts (Supabase, Google sign-in, Stripe, domain, email provider); spending money; sending messages to real people; publishing legal pages; setting prices | Writes the exact step under "Waiting on Zak" in `team/BACKLOG.md` and prepares everything around it |
 
