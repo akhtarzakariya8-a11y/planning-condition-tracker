@@ -1,7 +1,7 @@
 # Team runbook
 
 The build team for the AI Planning Condition Tracker. Two runs use this file:
-the **daily build run** and the **weekly scout run**. Nobody is watching either.
+the **daily build run** and the **daily scout run**. Nobody is watching either.
 
 Agents start every run with no memory. The files in `team/` are the memory:
 read them first, write to them last.
@@ -69,7 +69,10 @@ of the matching file in `.claude/agents/` as its instructions.
 
 If any step fails twice, log it and stop. Never improvise around a hard limit.
 
-## Weekly scout run
+## Daily scout run
+
+Runs every evening. Most days are short: report only what is new since the last scout
+entry. Never repeat an observation already in `team/EVIDENCE.md`.
 
 1. Pull `main`. Read `CLAUDE.md`, `team/EVIDENCE.md`, `team/PLAYBOOK.md`, `team/BACKLOG.md`
    and the last 7 entries of `team/LOG.md`.
