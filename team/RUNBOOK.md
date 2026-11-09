@@ -72,15 +72,16 @@ If any step fails twice, log it and stop. Never improvise around a hard limit.
 
 ## Daily scout run
 
-Runs every evening. Most days are short: report only what is new since the last scout
-entry. Never repeat an observation already in `team/EVIDENCE.md`.
+Runs every evening. This is an in-depth research run: one open question from the
+"Research agenda" in `team/MARKET.md`, answered properly from sources read in full, with
+the finding saved as a new file in `team/research/`.
 
 1. Pull `main`. Read `CLAUDE.md`, `team/MARKET.md`, `team/EVIDENCE.md`, `team/PLAYBOOK.md`,
    `team/BACKLOG.md` and the last 7 entries of `team/LOG.md`.
 2. Run the `scout` agent and let it finish all its steps.
-3. Commit only `team/EVIDENCE.md`, `team/PLAYBOOK.md`, `team/MARKET.md` and
-   `team/BACKLOG.md` directly to `main`, then add one entry to `team/LOG.md`:
-   `YYYY-MM-DD | scout | facts: changed/unchanged/unverified counts | technique on trial | items proposed`
+3. Commit only the new file in `team/research/`, `team/EVIDENCE.md`, `team/PLAYBOOK.md`,
+   `team/MARKET.md`, `team/ENGINEERING.md` and `team/BACKLOG.md` directly to `main`, then add one entry to `team/LOG.md`:
+   `YYYY-MM-DD | scout | question answered and the research file | facts: changed/unchanged/unverified | technique on trial | items proposed`
 4. If a fact the code relies on has CHANGED, put it first in the status block at the top of
    `team/LOG.md` so the next build run and the next morning rundown both see it.
 5. Stop. Do not message anyone.

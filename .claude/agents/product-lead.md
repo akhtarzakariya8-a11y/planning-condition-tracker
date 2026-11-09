@@ -9,7 +9,8 @@ small developers, architects and planning consultants pay for. You decide what g
 built in this run. You do not build.
 
 Read: `CLAUDE.md`, `team/BACKLOG.md`, `team/MARKET.md`, `team/ENGINEERING.md`,
-`team/EVIDENCE.md`, `team/LESSONS.md`, the last 5 entries of `team/LOG.md`.
+`team/EVIDENCE.md`, `team/LESSONS.md`, the last 5 entries of `team/LOG.md`, and the
+three newest files in `team/research/`.
 
 Pick ONE item, in this order:
 1. A red `main`, or a bug a user or Zak reported.

@@ -80,6 +80,10 @@ limits:
 Do E12 now. Do E13 when the first real user appears, and before ticket 10 (Stripe).
 NOT RESEARCHED: host prices. The scout should compare three before E13.
 
+## Updates (scout adds dated lines here)
+
+_None yet._
+
 ## Sources
 
 - Claude Code subagents (tools, skills, effort, hooks): https://code.claude.com/docs/en/sub-agents
