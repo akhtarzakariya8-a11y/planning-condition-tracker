@@ -135,6 +135,23 @@ Desk research cannot tell us whether anyone will pay. Ask five people in group 1
 A "yes, I would pay" from three of five is the signal to build item 3 onward. Silence or
 polite interest from all five means stop building and rethink the buyer.
 
+## Research agenda
+
+The scout answers the top open question in depth each evening and saves the finding in
+`team/research/`. Zak can add a question at the top at any time; his come first.
+The scout keeps at least five open, most valuable first.
+
+- [ ] How do small planning consultancies and architects handle discharge of conditions today, step by step, and what do they charge clients for it? (Sets what our time saving is worth.)
+- [ ] How many small planning consultancies and SME developers are there in England, and where do they gather (bodies, forums, newsletters, events)? (Size and how to reach them.)
+- [ ] PlanningCore in depth: pricing, sign-up, exactly what its condition tools do and do not do, and what users say.
+- [ ] Avoice Practice and DevTrack in depth: the same questions.
+- [ ] What do development finance lenders and monitoring surveyors require on planning conditions before releasing funds? (Tests the lender-pack idea.)
+- [ ] National model conditions and per-condition fees: what exactly is proposed, when, and what it changes for this tool.
+- [ ] Which hosts suit a Streamlit app that must stay awake with a custom domain, and what do three of them cost? (For ticket E13.)
+- [ ] Where can 20 or more public decision notices be found across different councils and permission types for the test set? (For ticket E7.)
+- [ ] How do comparable solo-built tools for UK property professionals win their first ten paying customers?
+- [ ] Wales and Scotland: how do conditions, fees and deemed discharge differ, and is either worth supporting?
+
 ## Updates (scout adds dated lines here)
 
 _None yet._

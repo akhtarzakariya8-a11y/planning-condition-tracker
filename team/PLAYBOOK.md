@@ -21,6 +21,13 @@ _None yet._
 
 _None yet._
 
+## To study (needs Zak's computer)
+
+Videos the scout found but could not read in a cloud run. Zak can ask Claude on his own
+computer to transcribe these and add the notes here.
+
+_None yet._
+
 ## Dropped (one line each, with the reason)
 
 _None yet._
