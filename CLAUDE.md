@@ -79,3 +79,17 @@ Eval: 45/45 on 7 notices. Cost per notice ≈ $0.02–0.20 (Sonnet 4.5); a draft
 
 ## Golden rule
 One feature at a time: prompt-first (or code-first for maths) → validate on real notices → ship small.
+
+## Team lanes and limits
+An agent team works on this repo on a schedule (see `team/RUNBOOK.md`; agents in `.claude/agents/`). The team finishes every ticket end to end; the lane only decides who presses merge. The lane is set by the files a change touches. If any touched path is AMBER, the whole change is AMBER. If unsure, AMBER.
+
+| Lane | What is in it | What the team does |
+| --- | --- | --- |
+| GREEN: ships itself | `site/`, `theme/`, `tests/`, `README.md` and docs, `team/LESSONS.md`, `team/PLAYBOOK.md`, `team/EVIDENCE.md`; layout and wording in `app.py`, `ct/panels.py` and `ct/reports.py` that change no rule, number or caveat | Opens the pull request, waits for CI, merges, confirms `main` is green |
+| AMBER: built, then parked | `prompt_*.txt`, `ct/logic.py`, `ct/programme.py`, `ct/extract.py`, `ct/drafting.py`, `ct/config.py`, `ct/storage.py`, `supabase/`, `mcp_server/`, `eval/`, `requirements.txt`, `.streamlit/`, `.github/`; sign-in, payments, pricing, user data; privacy policy and terms; any file deletion; any new dependency, plugin or tool | Builds and tests it fully, opens the pull request labelled `needs-zak` with one sentence on what Zak is deciding, then moves on |
+| RED: only Zak | Keys and secrets; creating accounts (Supabase, Google sign-in, Stripe, domain, email provider); spending money; sending messages to real people; publishing legal pages; setting prices | Writes the exact step under "Waiting on Zak" in `team/BACKLOG.md` and prepares everything around it |
+
+- While `team/BACKLOG.md` says `autonomy: calibration`, GREEN is treated as AMBER.
+- With three `needs-zak` pull requests open, the team works GREEN only.
+- Off-limits to agents: `.claude/`, `team/RUNBOOK.md` and this section. Changes to them come as AMBER pull requests.
+- The hard limits at the top of `team/RUNBOOK.md` apply to every agent in every run.
