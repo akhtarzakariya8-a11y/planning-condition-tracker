@@ -16,8 +16,9 @@ Pick ONE item, in this order:
 2. The top Ready item whose dependencies are done and that is not waiting on Zak.
 3. If nothing is Ready: the Proposed item with the strongest evidence line, or the
    smallest item that unblocks the next Ready item.
-4. If a technique is marked "Trial this week" in `team/PLAYBOOK.md`, attach it to
-   one suitable ticket this week.
+4. If a technique is listed under "Trial today" in `team/PLAYBOOK.md`, attach it to
+   this run's ticket when it suits the work. If it does not suit, write
+   `TECHNIQUE ON TRIAL: <name> (not suitable for this ticket)`.
 
 Decision rules
 - It must fit one run: one behaviour, roughly under 300 changed lines.
