@@ -1,8 +1,10 @@
-# CLAUDE.md — AI Planning Condition Tracker
+# CLAUDE.md — Aftergrant (formerly AI Planning Condition Tracker)
 
 Project context for Claude Code. Read this first every session. **Last updated: 4 Nov 2026.**
 
 ## What this is
+**Name:** the product is called **Aftergrant** from 9 Nov 2026. Tagline: "From planning permission to start on site". The name covers everything after permission is granted, not only conditions. The repo name and the live URL still use the old name until Zak changes them; do not rename either.
+
 A Streamlit web app that reads UK planning **decision notices** (PDFs), extracts every condition, and turns them into decisions: what stops you starting on site, how many discharge applications to make and what they cost, when each must go in, who to hire, a first draft of each application, and a tracker that stays up to date. Live on Streamlit Community Cloud; repo `akhtarzakariya8-a11y/planning-condition-tracker`. Also exposed to AI assistants as an MCP server (`mcp_server/`).
 
 ## The developer

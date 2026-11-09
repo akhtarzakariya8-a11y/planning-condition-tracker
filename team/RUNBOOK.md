@@ -1,6 +1,7 @@
 # Team runbook
 
-The build team for the AI Planning Condition Tracker. Two runs use this file:
+The Aftergrant team: the agents that build Aftergrant (formerly the AI Planning
+Condition Tracker). Two runs use this file:
 the **daily build run** and the **daily scout run**. Nobody is watching either.
 
 Agents start every run with no memory. The files in `team/` are the memory:
