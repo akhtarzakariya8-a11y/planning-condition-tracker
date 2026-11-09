@@ -34,8 +34,9 @@ Use the REST API through `gh api` (GraphQL commands such as `gh pr create` do no
 
 Deliver one small, finished improvement, then stop.
 
-1. **SYNC.** Pull `main`. Read `CLAUDE.md`, `team/BACKLOG.md`, `team/LESSONS.md`,
-   `team/PLAYBOOK.md` and the last 5 entries of `team/LOG.md`. List open pull requests.
+1. **SYNC.** Pull `main`. Read `CLAUDE.md`, `team/BACKLOG.md`, `team/MARKET.md`,
+   `team/ENGINEERING.md`, `team/LESSONS.md`, `team/PLAYBOOK.md` and the last 5 entries
+   of `team/LOG.md`. List open pull requests.
    Run `python3 -m pytest tests/ -q`. If `main` is red, fixing it is the only job.
 2. **OWNER FIRST.** If the repo owner commented on an open team pull request since the
    last run, that comment is the ticket for this run.
@@ -74,11 +75,11 @@ If any step fails twice, log it and stop. Never improvise around a hard limit.
 Runs every evening. Most days are short: report only what is new since the last scout
 entry. Never repeat an observation already in `team/EVIDENCE.md`.
 
-1. Pull `main`. Read `CLAUDE.md`, `team/EVIDENCE.md`, `team/PLAYBOOK.md`, `team/BACKLOG.md`
-   and the last 7 entries of `team/LOG.md`.
+1. Pull `main`. Read `CLAUDE.md`, `team/MARKET.md`, `team/EVIDENCE.md`, `team/PLAYBOOK.md`,
+   `team/BACKLOG.md` and the last 7 entries of `team/LOG.md`.
 2. Run the `scout` agent and let it finish all its steps.
-3. Commit only `team/EVIDENCE.md`, `team/PLAYBOOK.md` and `team/BACKLOG.md` directly to
-   `main`, then add one entry to `team/LOG.md`:
+3. Commit only `team/EVIDENCE.md`, `team/PLAYBOOK.md`, `team/MARKET.md` and
+   `team/BACKLOG.md` directly to `main`, then add one entry to `team/LOG.md`:
    `YYYY-MM-DD | scout | facts: changed/unchanged/unverified counts | technique on trial | items proposed`
 4. If a fact the code relies on has CHANGED, put it first in the status block at the top of
    `team/LOG.md` so the next build run and the next morning rundown both see it.
