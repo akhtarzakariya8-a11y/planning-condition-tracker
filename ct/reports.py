@@ -1,6 +1,7 @@
 """Files people download: the Excel tracker, the PDF summary, the portfolio workbook."""
 import io
 from datetime import date
+from pathlib import Path
 from xml.sax.saxutils import escape
 
 import openpyxl
@@ -13,7 +14,8 @@ from ct.logic import (CATEGORY_COLOURS, CIL_DOC_TYPES, CIL_TEXT, FLAG_LABEL, GAT
                       start_deadline_message, summarise)
 from ct.programme import DETERMINATION_WEEKS, fee_rise_saving, submission_groups
 
-NAVY = "1F4E78"
+BRAND = "234F3D"   # Aftergrant forest green (logo letters)
+LOGO_RATIO = 120 / 653   # height / width of theme/brand/aftergrant-wordmark.png
 STATUS_LABEL = {
     "not-started": "Not started", "in-progress": "In preparation", "submitted": "Submitted",
     "discharged": "Discharged", "complied": "Complied", "not-applicable": "N/A",
@@ -21,7 +23,7 @@ STATUS_LABEL = {
 
 
 # ----- small helpers -----
-def _header(ws, labels, fill=NAVY):
+def _header(ws, labels, fill=BRAND):
     ws.append(labels)
     for cell in ws[ws.max_row]:
         cell.font = Font(bold=True, color="FFFFFF")
@@ -46,7 +48,7 @@ class _Lines:
     def __init__(self, ws):
         self.ws = ws
 
-    def head(self, text, fill=NAVY):
+    def head(self, text, fill=BRAND):
         self.ws.append([text])
         cell = self.ws.cell(row=self.ws.max_row, column=1)
         cell.font = Font(bold=True, color="FFFFFF")
@@ -176,7 +178,7 @@ def build_excel(data, programme=None, tracker=None):
     if programme and programme.get("has_dates"):
         wsp = wb.create_sheet("Programme")
         _header(wsp, ["Submit by", "Commission specialists by", "Needed before", "Conditions",
-                      "Specialists", "Council fee", "Status"], fill="2E6E4E")
+                      "Specialists", "Council fee", "Status"], fill="234F3D")
         for g in submission_groups(programme):
             wsp.append([fmt_date(g["submit_by"]), fmt_date(g["commission_by"]), g["before"],
                         cond_nums(g["discharge"]), ", ".join(g["specialists"]) or "In-house",
@@ -240,17 +242,17 @@ def discharge_plan_lines(plan):
     if not plan["fee_payable"]:
         out.append((f"≈ {app_word} to submit — no council fee.", True, "17663A"))
     elif scale is None:
-        out.append((f"≈ {app_word} to submit.", True, NAVY))
+        out.append((f"≈ {app_word} to submit.", True, BRAND))
         out.append((f"(No fee shown — this notice is from {juris_name or 'an unclear jurisdiction'}, and "
                     f"this tool holds the England and Wales scales only. The per-application principle "
                     f"still applies, so bundling still saves money.)", False, None))
     elif plan["fee"] is not None:
         scheme = "householder" if plan["householder"] else "non-householder"
-        out.append((f"≈ {app_word} × £{plan['fee']} = ~£{plan['cost']:,} in council fees.", True, NAVY))
+        out.append((f"≈ {app_word} × £{plan['fee']} = ~£{plan['cost']:,} in council fees.", True, BRAND))
         out.append((f"(Priced at the {scheme} rate for {juris_name}.{rise})", False, None))
     else:
         out.append((f"≈ {app_word} — about £{apps * scale['other']:,} at the standard rate, or "
-                    f"£{apps * scale['householder']:,} if this is a householder scheme.", True, NAVY))
+                    f"£{apps * scale['householder']:,} if this is a householder scheme.", True, BRAND))
         out.append((f"(Fee category unclear from this notice, so both {juris_name} rates are shown: "
                     f"£{scale['other']} vs £{scale['householder']} per application.{rise})", False, None))
     if plan["deemed_discharge"]:
@@ -354,9 +356,9 @@ def build_pdf(data, programme=None):
     from reportlab.lib.pagesizes import A4
     from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
     from reportlab.lib.units import mm
-    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+    from reportlab.platypus import Image, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-    ink, muted, accent = colors.HexColor("#1c1a17"), colors.HexColor("#6e675c"), colors.HexColor("#2e6e4e")
+    ink, muted, accent = colors.HexColor("#1b2a22"), colors.HexColor("#66706a"), colors.HexColor("#234f3d")
     red, amber, line = colors.HexColor("#a3352c"), colors.HexColor("#8a5a14"), colors.HexColor("#e5dfd0")
     ss = getSampleStyleSheet()
     body = ParagraphStyle("b", parent=ss["Normal"], fontName="Helvetica", fontSize=9, leading=12.5,
@@ -375,12 +377,17 @@ def build_pdf(data, programme=None):
                  ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
                  ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4)]
         if header:
-            style += [("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f4f1ea"))]
+            style += [("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#f4f1eb"))]
         t.setStyle(TableStyle(style))
         return t
 
     story = []
     title = notice_title(data, "Planning decision notice")
+    logo = Path(__file__).resolve().parent.parent / "theme" / "brand" / "aftergrant-wordmark.png"
+    if logo.exists():
+        img = Image(str(logo), width=34 * mm, height=34 * mm * LOGO_RATIO)
+        img.hAlign = "LEFT"
+        story += [img, Spacer(1, 4)]
     story.append(Paragraph("PLANNING CONDITIONS — SUMMARY", small))
     story.append(Paragraph(_p(title), h1))
     meta = " · ".join(_p(x) for x in [data.get("local_authority"),
@@ -483,7 +490,7 @@ def build_pdf(data, programme=None):
     if doc_type(data) in CIL_DOC_TYPES:
         story.append(Paragraph(_p(CIL_TEXT), small))
     story.append(Paragraph(_p(GATE_CAVEAT + " Generated " + fmt_date(date.today()) +
-                              " by the AI Planning Condition Tracker — always check against the "
+                              " by Aftergrant — always check against the "
                               "source notice."), small))
 
     buf = io.BytesIO()
@@ -493,7 +500,7 @@ def build_pdf(data, programme=None):
         canvas.setFont("Helvetica", 7)
         canvas.setFillColor(muted)
         canvas.drawString(18 * mm, 10 * mm, _p(title)[:110].replace("&amp;", "&"))
-        canvas.drawRightString(192 * mm, 10 * mm, f"Page {doc_.page}")
+        canvas.drawRightString(192 * mm, 10 * mm, f"Aftergrant  ·  Page {doc_.page}")
         canvas.restoreState()
 
     SimpleDocTemplate(buf, pagesize=A4, leftMargin=18 * mm, rightMargin=18 * mm,

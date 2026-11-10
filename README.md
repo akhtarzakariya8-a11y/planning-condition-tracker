@@ -1,4 +1,6 @@
-# AI Planning Condition Tracker
+# Aftergrant
+
+*From planning permission to start on site.* (Formerly the AI Planning Condition Tracker.)
 
 **Upload a UK planning permission decision notice (PDF) → get every planning condition extracted, categorised, and exported as a structured tracker spreadsheet in seconds.**
 

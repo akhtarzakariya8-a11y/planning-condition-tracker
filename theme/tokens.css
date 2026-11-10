@@ -1,11 +1,13 @@
-/* ── Condition Tracker — editorial theme ─────────────────────────────
-   Warm paper, a near-black rail, one forest green. Serif headings do the
-   authority; colour is semantic — red/amber/blue/green mean status only.
+/* ── Aftergrant theme ───────────────────────────────────────────────
+   Taken from the logo: cream paper, deep forest green, and the brighter
+   "arrow" green for anything that moves you forward. Montserrat headings
+   echo the wordmark; Public Sans does the reading. Status colours
+   (red/amber/slate/green) still mean status only.
    ------------------------------------------------------------------ */
 
 :root {
   /* Surfaces */
-  --ct-bg:            #f4f1ea;  /* page — warm paper */
+  --ct-bg:            #f4f1eb;  /* page — the logo's cream */
   --ct-surface:       #fffdf9;  /* cards, tables, panels */
   --ct-surface-alt:   #faf7f0;  /* inactive tile */
   --ct-surface-hover: #f6f2e8;  /* row hover */
@@ -17,40 +19,44 @@
   --ct-track:         #ece6d7;  /* progress track */
 
   /* Rail */
-  --ct-rail:        #21201b;
-  --ct-rail-raised: #35332b;  /* active nav item */
-  --ct-rail-hover:  #2b2923;
-  --ct-rail-ink:    #e9e4d8;
-  --ct-rail-muted:  #b8b1a0;
-  --ct-rail-faint:  #9a927f;
-  --ct-rail-dot:    #5a564b;
+  --ct-rail:        #1f3d30;  /* deep forest — the logo's letters, darkened */
+  --ct-rail-raised: #2c5341;  /* active nav item */
+  --ct-rail-hover:  #264a3a;
+  --ct-rail-ink:    #f1efe6;
+  --ct-rail-muted:  #b9cabe;
+  --ct-rail-faint:  #8fa898;
+  --ct-rail-dot:    #4f6f5f;
 
   /* Text */
-  --ct-ink:    #1c1a17;
-  --ct-body:   #3c382f;
-  --ct-muted:  #6e675c;
-  --ct-faint:  #9a927f;
+  --ct-ink:    #1b2a22;
+  --ct-body:   #36413a;
+  --ct-muted:  #66706a;
+  --ct-faint:  #939a92;
   --ct-hair:   #c4bca9;
 
-  /* Accent — interaction, primary actions */
-  --ct-accent:       #2e6e4e;
-  --ct-accent-hover: #25583f;
-  --ct-accent-tint:  #e9efe6;
-  --ct-accent-line:  #cfdccb;
+  /* Brand — forest for primary actions and links, arrow green for
+     progress, focus and "next step" highlights */
+  --ct-accent:       #234f3d;  /* logo letters */
+  --ct-accent-hover: #1a3d2f;
+  --ct-accent-ink:   #1f4434;  /* text on the tint */
+  --ct-accent-tint:  #e6efe8;
+  --ct-accent-line:  #c8dccd;
+  --ct-arrow:        #29875b;  /* logo arrow */
+  --ct-arrow-soft:   #7cc796;  /* arrow on the dark rail */
 
   /* Status semantics */
   --ct-overdue:       #a3352c;  --ct-overdue-tint:   #f3dedb;
   --ct-action:        #b07818;  --ct-action-tint:    #f6e8d2;  --ct-action-ink: #8a5a14;
   --ct-submitted:     #4a5878;  --ct-submitted-tint: #e7e9f0;  --ct-submitted-ink: #3e4c6d;
-  --ct-discharged:    #2e6e4e;  --ct-discharged-tint:#e3ede4;  --ct-discharged-ink: #25583f;
+  --ct-discharged:    #29875b;  --ct-discharged-tint:#e1efe5;  --ct-discharged-ink: #1f6b47;
 
   /* Type */
-  --ct-font-display: 'Source Serif 4', Georgia, serif;        /* 400–700 */
+  --ct-font-display: 'Montserrat', 'Public Sans', system-ui, sans-serif;  /* 500–700 */
   --ct-font-body:    'Public Sans', system-ui, sans-serif;    /* 400/500/600/700 */
 
-  --ct-h1: 600 30px/1.15 var(--ct-font-display);
-  --ct-h2: 600 21px/1.25 var(--ct-font-display);
-  --ct-stat: 600 28px/1 var(--ct-font-display);
+  --ct-h1: 700 32px/1.15 var(--ct-font-display);
+  --ct-h2: 600 20px/1.25 var(--ct-font-display);
+  --ct-stat: 700 28px/1 var(--ct-font-display);
   --ct-body-size: 13.5px;
   --ct-small: 12.5px;
   --ct-micro: 11.5px;
@@ -71,8 +77,8 @@
 
 /* ── Primitives ──────────────────────────────────────────────── */
 
-.ct-h1    { margin:0; font:var(--ct-h1); letter-spacing:-.3px; color:var(--ct-ink); }
-.ct-h2    { margin:0; font:var(--ct-h2); color:var(--ct-ink); }
+.ct-h1    { margin:0; font:var(--ct-h1); letter-spacing:-.6px; color:var(--ct-accent); }
+.ct-h2    { margin:0; font:var(--ct-h2); letter-spacing:-.2px; color:var(--ct-ink); }
 .ct-stat  { font:var(--ct-stat); color:var(--ct-ink); font-variant-numeric:tabular-nums; }
 .ct-body  { font:400 var(--ct-body-size)/1.65 var(--ct-font-body); color:var(--ct-body); }
 .ct-muted { font:400 var(--ct-small)/1.55 var(--ct-font-body); color:var(--ct-muted); }
@@ -152,7 +158,7 @@
 
 /* Confidence bar */
 .ct-conf      { height:4px; border-radius:2px; background:var(--ct-track); overflow:hidden; }
-.ct-conf i    { display:block; height:4px; border-radius:2px; background:var(--ct-accent); }
+.ct-conf i    { display:block; height:4px; border-radius:2px; background:var(--ct-arrow); }
 .ct-conf--low i { background:var(--ct-action); }
 
 /* Banner — soft green strip with hairline, never a gradient */
@@ -160,7 +166,7 @@
   display:flex; align-items:center; gap:var(--ct-s2);
   padding:11px 14px; border-radius:var(--ct-r-md);
   background:var(--ct-accent-tint); border:1px solid var(--ct-accent-line);
-  font:400 13px/1.5 var(--ct-font-body); color:#2b4a38;
+  font:400 13px/1.5 var(--ct-font-body); color:var(--ct-accent-ink);
 }
 
 /* Activity timeline */
@@ -171,3 +177,15 @@
 
 a       { color:var(--ct-accent); text-decoration:none; }
 a:hover { color:var(--ct-accent-hover); text-decoration:underline; }
+
+/* ── Brand ───────────────────────────────────────────────────── */
+.ag-brand      { display:flex; align-items:center; gap:14px; }
+.ag-brand img  { display:block; height:34px; width:auto; }
+.ag-tagline    { font:600 11px/1 var(--ct-font-body); letter-spacing:1px; text-transform:uppercase;
+                 color:var(--ct-faint); padding-left:14px; border-left:1px solid var(--ct-border-strong); }
+h1.ct-h1       { color:var(--ct-accent) !important; }
+@media (max-width: 600px) {
+  .ag-tagline  { display:none; }
+  .ag-brand img { height:28px !important; }
+  h1.ct-h1     { font-size:27px !important; }
+}

@@ -1,4 +1,4 @@
-"""AI Planning Condition Tracker — the web page.
+"""Aftergrant — the web page.
 
 Run locally with:   streamlit run app.py
 
@@ -16,7 +16,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from ct import config, drafting, extract, logic, panels, programme, reports, storage
-from theme.ct_theme import C, banner, inject_theme, label, note, pill, tile
+from theme.ct_theme import ICON_PNG, C, banner, brand, inject_theme, label, note, pill, tile
 
 load_dotenv()
 
@@ -36,7 +36,8 @@ def secret(name):
 # upload handler reported as "check it's a valid PDF" — blaming the user's file for our config.
 client = extract.get_client(secret("ANTHROPIC_API_KEY"))
 
-st.set_page_config(page_title="AI Planning Condition Tracker", page_icon="📋", layout="wide")
+st.set_page_config(page_title="Aftergrant — from planning permission to start on site",
+                   page_icon=ICON_PNG, layout="wide")
 inject_theme()
 st.markdown(panels.LAYOUT_CSS, unsafe_allow_html=True)
 
@@ -432,8 +433,8 @@ def save_button(col, key, name, data):
 # ----- PAGE: ANALYSE -----
 def page_analyse():
     st.markdown(
-        f'{label("AI PLANNING CONDITION TRACKER")}'
-        f'<h1 class="ct-h1" style="margin:10px 0 12px">Planning conditions, tracked in seconds.</h1>'
+        f'{brand("Planning conditions")}'
+        f'<h1 class="ct-h1" style="margin:30px 0 12px">From planning permission to start on site.</h1>'
         f'<p class="ct-body" style="max-width:660px;margin:0">A second pair of eyes on your planning '
         f'conditions. Upload a UK decision notice and get every condition read and categorised, what '
         f'stops you starting on site, when each discharge application must go in — and a first draft '
@@ -669,7 +670,8 @@ def render_project(project):
 page = "analyse"
 if store:
     with st.sidebar:
-        st.markdown(f'{label("CONDITION TRACKER")}', unsafe_allow_html=True)
+        st.markdown(f'<div style="margin:2px 0 18px">{brand(on_green=True, height=28)}</div>',
+                    unsafe_allow_html=True)
         if user:
             choice = st.radio("Go to", ["Analyse notices", "My projects"], key="nav",
                               label_visibility="collapsed")
@@ -697,7 +699,7 @@ else:
 # ----- FOOTER -----
 st.markdown(
     '<hr style="margin:var(--ct-s6) 0 var(--ct-s4)">'
-    + note('Built by Zak Akhtar · <a href="https://github.com/akhtarzakariya8-a11y/planning-condition-tracker">GitHub</a>')
+    + note('Aftergrant · built by Zak Akhtar · <a href="https://github.com/akhtarzakariya8-a11y/planning-condition-tracker">GitHub</a>')
     + note("A tool for UK planning decision notices. Always check outputs against the source "
            "document. Drafts and dates are planning aids, not legal advice."),
     unsafe_allow_html=True,
