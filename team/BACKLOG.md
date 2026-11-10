@@ -65,7 +65,31 @@ The complete list of things the team cannot do. Everything else it does.
 
 ## Proposed (scout adds here, with an evidence line each)
 
-_None yet._
+- **P1 (scout, 2026-11-10) "Scope for your quote" block at the top of the PDF summary.** One
+  block a consultant uses to price a discharge job: conditions needing discharge; number of
+  applications by stage; council fee per application and in total, today and for applications
+  made on or after 8 Dec 2026; specialist reports to commission, by discipline; earliest
+  commission-by date. Built only from existing outputs (`build_discharge_plan`, `build_specialists`,
+  the programme). No new rule, number or caveat.
+  - Evidence: small firms quote a fixed price after reading the notice, publish no discharge price,
+    and bill discharge outside the planning-stage fee. Half the firm pages that state the council fee
+    get it wrong. `team/research/2026-11-10-how-small-firms-discharge-conditions.md`
+  - Who it helps: group 1 in `team/MARKET.md` section 4 (small consultancies and architects), at the
+    unpaid quoting step. HYPOTHESIS that quoting time is unpaid; Zak's interviews can test it.
+  - Smallest version: one block in `ct/reports.py build_pdf` above the existing discharge plan. Excel
+    and the page can come later. Could be the first slice of ticket 14.
+  - Expected lane: GREEN (layout in `ct/reports.py` only, no rule change); AMBER while `autonomy: calibration`.
+
+- **P2 (coach, 2026-11-10) Put the TECHNIQUE ON TRIAL lines in the build log entry.** In
+  `team/RUNBOOK.md` step 8, extend the entry format to end with
+  `| trial: builder <TECHNIQUE ON TRIAL line>; reviewer <TECHNIQUE ON TRIAL line>`.
+  - Evidence: `.claude/agents/coach.md` step 3a judges each trial only from those lines "in the newest
+    build entry of `team/LOG.md`". The runbook's entry format has no field for them, so a conductor
+    that follows the format exactly drops them. The coach also cannot fall back on the PR page:
+    github.com did not load in the 2026-11-10 coach run. Without this field the daily trial cannot
+    be judged, and every technique ends up dropped as "untested".
+  - What changes: one line of `team/RUNBOOK.md`. No code, no tool, no new dependency.
+  - Lane: AMBER (`team/RUNBOOK.md` is off-limits to agents and needs Zak).
 
 ## Inbox (Zak's ideas, unsorted)
 

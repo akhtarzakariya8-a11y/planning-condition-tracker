@@ -82,7 +82,17 @@ NOT RESEARCHED: host prices. The scout should compare three before E13.
 
 ## Updates (scout adds dated lines here)
 
-_None yet._
+- 2026-11-10 (coach) | E2 / ticket 2, the smoke test: give `at.secrets` dummy values before the
+  first `.run()`, because Streamlit says a missing secret may stop the app from running. Keep
+  every API call out by using `CT_FIXTURE_DIR`. Show the test fail against a deliberately broken
+  page before trusting it, because a smoke test that cannot fail proves nothing.
+  https://docs.streamlit.io/develop/concepts/app-testing/beyond-the-basics
+- 2026-11-10 (coach) | Level 5: add a **Stop hook that runs `pytest`** as the first hook to trial.
+  The Claude Code docs now describe a Stop hook as a deterministic gate: the agent cannot end
+  its turn until the check passes. In an unattended run that is stronger than the written
+  "run pytest before hand-over". The same trusted-folder caveat as the protected-paths hook
+  applies, so trial it first, through an AMBER pull request.
+  https://code.claude.com/docs/en/best-practices#give-claude-a-way-to-verify-its-work
 
 ## Sources
 

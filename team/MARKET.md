@@ -141,8 +141,10 @@ The scout answers the top open question in depth each evening and saves the find
 `team/research/`. Zak can add a question at the top at any time; his come first.
 The scout keeps at least five open, most valuable first.
 
-- [ ] How do small planning consultancies and architects handle discharge of conditions today, step by step, and what do they charge clients for it? (Sets what our time saving is worth.)
-- [ ] How many small planning consultancies and SME developers are there in England, and where do they gather (bodies, forums, newsletters, events)? (Size and how to reach them.)
+- [x] How do small planning consultancies and architects handle discharge of conditions today, step by step, and what do they charge clients for it? Done 2026-11-10: [research/2026-11-10-how-small-firms-discharge-conditions.md](research/2026-11-10-how-small-firms-discharge-conditions.md)
+- [ ] How many small planning consultancies and SME developers are there in England, and where do they gather (bodies, forums, newsletters, events)? (Size and how to reach them. Leads from 2026-11-10: the RTPI Independent Consultants' Network and its yearly conference; the RTPI directory of planning consultants; Buildhub for self-builders.)
+- [ ] Which conditions are excluded from deemed discharge (DMPO 2015 Schedule 6)? The legislation.gov.uk text is images only; try the PDF of the Order or the gov.uk planning practice guidance. (The tracker's deemed-discharge prompt should not fire for excluded types.)
+- [ ] Between 1 and 8 Dec 2026: has Parliament approved and made the fee regulations that raise discharge fees to £435 / £125 on 8 Dec? If not, the automatic fee switch in `ct/logic.py` would show the wrong fee. (Time-boxed fact check.)
 - [ ] PlanningCore in depth: pricing, sign-up, exactly what its condition tools do and do not do, and what users say.
 - [ ] Avoice Practice and DevTrack in depth: the same questions.
 - [ ] What do development finance lenders and monitoring surveyors require on planning conditions before releasing funds? (Tests the lender-pack idea.)
@@ -151,10 +153,21 @@ The scout keeps at least five open, most valuable first.
 - [ ] Where can 20 or more public decision notices be found across different councils and permission types for the test set? (For ticket E7.)
 - [ ] How do comparable solo-built tools for UK property professionals win their first ten paying customers?
 - [ ] Wales and Scotland: how do conditions, fees and deemed discharge differ, and is either worth supporting?
+- [ ] Do specialist firms (drainage, ecology, trees) make discharge submissions themselves, what do they charge, and are they a channel or a competitor? (Two such firms market discharge directly; see the 2026-11-10 file.)
+- [ ] What share of discharge applications are invalid when first submitted, and which councils publish agent validation rates? (Tests a pre-submission completeness check. West Suffolk publishes one for all application types.)
 
 ## Updates (scout adds dated lines here)
 
-_None yet._
+- 2026-11-10 | Section 4, group 1 is refined, not dropped. Small firms mostly quote a fixed price
+  for discharge after reading the notice, and bill it outside the planning-stage fee. They do not
+  usually bill it by the hour. So the pitch is faster quoting and more margin on fixed-fee work.
+  "Saves billable hours" is a weak pitch, because on hourly work it cuts the firm's income.
+  Also: the client's bill is mostly specialist reports, which this tool does not reduce.
+  Evidence: [research/2026-11-10-how-small-firms-discharge-conditions.md](research/2026-11-10-how-small-firms-discharge-conditions.md)
+- 2026-11-10 | Section 1, point 2 now has some evidence. 3 of 6 firm pages from 2025 to 2026 that
+  state the council discharge fee get it wrong, and one says it is charged per condition. Professionals
+  publishing wrong fees suggests that correct, dated fee and batching advice is a real gap. It does not
+  show how often applicants actually overpay; that is still unmeasured. Same file.
 
 ## Sources
 
