@@ -18,8 +18,7 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 
 | # | Ticket | Lane | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| 16 | Rename the product to Aftergrant everywhere a user sees it: app title and page text, README, exports (Excel, PDF, Word), MCP server descriptions. Tagline: "From planning permission to start on site". Leave the repo name, file names and live URL alone | AMBER | none. Do this before ticket 4 so the landing page launches with the right name | Ready |
-| 2 | App smoke test: load `app.py` against the saved fixtures with no API call, so a broken page fails CI | GREEN | 1 | Ready |
+| 2 | App smoke test: load `app.py` against the saved fixtures with no API call, so a broken page fails CI | GREEN | 1 | In review (https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/7) |
 | 3 | "Try a sample notice" button: run the Lambeth 38-condition example from fixtures, no upload, no API cost | GREEN | 2 | Ready |
 | 4 | Landing page v1 in `site/`: what it does, three real outputs from the sample, the fee-rise hook, one button to the tool | GREEN | 3, GitHub Pages on | Ready |
 | 5 | README screenshots of the real outputs | GREEN | 3 | Ready |
@@ -33,6 +32,7 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 | 13 | Trial a newer Sonnet model through the eval | AMBER | Zak runs the eval (about $0.50) | Ready |
 | 14 | Client-ready report a consultant can send under their own name | GREEN | 3 | Ready |
 | 15 | Lender pack: one page showing what is cleared and what blocks drawdown | AMBER | HYPOTHESIS: needs 3 lenders or monitoring surveyors to confirm first (Zak) | Waiting on Zak |
+| 16b | Old name left only in places users barely see: `mcp_server/README.md` heading, `mcp_server/server.py` docstring, the `.ics` PRODID in `ct/programme.py`, `ct/__init__.py` docstring, `supabase/schema.sql` comment. Keep the MCP identifier `name="planning-condition-tracker"` (Zak's configs point at it) | AMBER | none; low value | Ready |
 | E1 | `ruff` lint and format check in CI | AMBER | none | Ready |
 | E3 | Coverage report with a floor that can only rise | AMBER | E1 | Ready |
 | E4 | `pip-audit` and Dependabot | AMBER | none | Ready |
@@ -100,3 +100,4 @@ _None yet._
 | # | Ticket | Date | PR |
 | --- | --- | --- | --- |
 | 1 | Team setup: `team/` files, agent files, runbook, lanes in `CLAUDE.md`, CI | 2026-11-09 | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/1 |
+| 16 | Rename to Aftergrant everywhere a user sees it (leftovers moved to 16b) | 2026-11-10 | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/5 and https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/6 |
