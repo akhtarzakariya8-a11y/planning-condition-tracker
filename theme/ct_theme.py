@@ -1,32 +1,38 @@
-"""Condition Tracker — editorial theme for Streamlit.
+"""Aftergrant theme for Streamlit — colours and type taken from the logo.
 
-    from theme_editorial.ct_theme import inject_theme, label, pill, tile, banner, conf
-    st.set_page_config(page_title="Conditions", layout="wide")
+    from theme.ct_theme import inject_theme, brand, label, pill, tile, banner, conf
+    st.set_page_config(page_title="Aftergrant", page_icon=ICON_PNG, layout="wide")
     inject_theme()
 """
 
+import base64
 from pathlib import Path
+
 import streamlit as st
 
+BRAND_DIR = Path(__file__).with_name("brand")
+ICON_PNG = str(BRAND_DIR / "aftergrant-icon-256.png")
+
 C = {
-    "bg": "#f4f1ea", "surface": "#fffdf9", "surface_alt": "#faf7f0",
+    "bg": "#f4f1eb", "surface": "#fffdf9", "surface_alt": "#faf7f0",
     "surface_hover": "#f6f2e8", "surface_sel": "#f4efe2", "fill": "#f1ede3",
     "border": "#e5dfd0", "border_strong": "#ddd6c6", "border_soft": "#f1ecdf",
     "track": "#ece6d7",
-    "rail": "#21201b", "rail_raised": "#35332b", "rail_hover": "#2b2923",
-    "rail_ink": "#e9e4d8", "rail_muted": "#b8b1a0", "rail_faint": "#9a927f",
-    "ink": "#1c1a17", "body": "#3c382f", "muted": "#6e675c",
-    "faint": "#9a927f", "hair": "#c4bca9",
-    "accent": "#2e6e4e", "accent_hover": "#25583f",
-    "accent_tint": "#e9efe6", "accent_line": "#cfdccb",
+    "rail": "#1f3d30", "rail_raised": "#2c5341", "rail_hover": "#264a3a",
+    "rail_ink": "#f1efe6", "rail_muted": "#b9cabe", "rail_faint": "#8fa898",
+    "ink": "#1b2a22", "body": "#36413a", "muted": "#66706a",
+    "faint": "#939a92", "hair": "#c4bca9",
+    "accent": "#234f3d", "accent_hover": "#1a3d2f", "accent_ink": "#1f4434",
+    "accent_tint": "#e6efe8", "accent_line": "#c8dccd",
+    "arrow": "#29875b", "arrow_soft": "#7cc796",
     "overdue": "#a3352c", "overdue_tint": "#f3dedb",
     "action": "#b07818", "action_tint": "#f6e8d2", "action_ink": "#8a5a14",
     "submitted": "#4a5878", "submitted_tint": "#e7e9f0", "submitted_ink": "#3e4c6d",
-    "discharged": "#2e6e4e", "discharged_tint": "#e3ede4", "discharged_ink": "#25583f",
+    "discharged": "#29875b", "discharged_tint": "#e1efe5", "discharged_ink": "#1f6b47",
 }
 
 FONTS = ("https://fonts.googleapis.com/css2?"
-         "family=Source+Serif+4:opsz,wght@8..60,400..700"
+         "family=Montserrat:wght@500;600;700"
          "&family=Public+Sans:wght@400;500;600;700&display=swap")
 
 # status key -> (tint bg, text colour, dot)
@@ -44,11 +50,17 @@ _STREAMLIT_CSS = """
 html, body, [data-testid="stAppViewContainer"] {
   background: var(--ct-bg); font-family: var(--ct-font-body); color: var(--ct-ink);
 }
+[data-testid="stHeader"] { background: var(--ct-bg); }
+[data-testid="stMarkdownContainer"] a, [data-testid="stCaptionContainer"] a {
+  color: var(--ct-accent); text-decoration: none; font-weight: 600;
+}
+[data-testid="stMarkdownContainer"] a:hover { color: var(--ct-arrow); text-decoration: underline; }
+[data-testid="stSidebar"] [data-testid="stCaptionContainer"] a { color: var(--ct-rail-ink); font-weight: 500; }
 .block-container { padding-top: 2rem; max-width: 1560px; }
 
-h1, h2, h3 { font-family: var(--ct-font-display) !important; font-weight:600 !important; }
-h1 { font-size:30px !important; letter-spacing:-.3px; }
-h2 { font-size:21px !important; }
+h1, h2, h3 { font-family: var(--ct-font-display) !important; font-weight:600 !important; color:var(--ct-ink); }
+h1 { font-size:32px !important; font-weight:700 !important; letter-spacing:-.6px; }
+h2 { font-size:20px !important; letter-spacing:-.2px; }
 h3 { font-size:17px !important; }
 p, li, [data-testid="stMarkdownContainer"] { font-size:13.5px; line-height:1.65; color:var(--ct-body); }
 
@@ -70,6 +82,8 @@ p, li, [data-testid="stMarkdownContainer"] { font-size:13.5px; line-height:1.65;
   background:var(--ct-rail-raised); color:var(--ct-rail-ink); font-weight:600;
 }
 [data-testid="stSidebar"] [data-testid="stRadio"] label { color:var(--ct-rail-muted) !important; }
+[data-testid="stSidebar"] .stButton > button[kind="primary"]:hover { background:var(--ct-arrow); }
+[data-testid="stSidebar"] hr { border-color:var(--ct-rail-raised); }
 
 /* Buttons */
 .stButton > button {
@@ -87,20 +101,20 @@ p, li, [data-testid="stMarkdownContainer"] { font-size:13.5px; line-height:1.65;
   border-radius:var(--ct-r-sm); font-size:13px; color:var(--ct-ink);
 }
 .stTextInput input::placeholder { color:var(--ct-faint); }
-.stTextInput input:focus { border-color:var(--ct-accent); box-shadow:none; }
+.stTextInput input:focus { border-color:var(--ct-arrow); box-shadow:none; }
 
 /* Uploader */
 [data-testid="stFileUploaderDropzone"] {
   background:var(--ct-surface); border:1.5px dashed var(--ct-border-strong);
   border-radius:var(--ct-r-lg); padding:2rem;
 }
-[data-testid="stFileUploaderDropzone"]:hover { border-color:var(--ct-accent); }
+[data-testid="stFileUploaderDropzone"]:hover { border-color:var(--ct-arrow); background:var(--ct-accent-tint); }
 
 /* Tabs */
 .stTabs [data-baseweb="tab-list"] { gap:6px; border-bottom:1px solid var(--ct-border); }
 .stTabs [data-baseweb="tab"] { height:auto; padding:8px 13px; font-size:13px; font-weight:500; color:var(--ct-muted); }
 .stTabs [aria-selected="true"] { color:var(--ct-ink) !important; font-weight:600; }
-.stTabs [data-baseweb="tab-highlight"] { background:var(--ct-accent); }
+.stTabs [data-baseweb="tab-highlight"] { background:var(--ct-arrow); }
 
 /* Cards, expanders, tables */
 [data-testid="stExpander"], [data-testid="stDataFrame"],
@@ -108,7 +122,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] > div:has(> [data-testid="stVert
   background:var(--ct-surface); border:1px solid var(--ct-border); border-radius:var(--ct-r-lg);
 }
 [data-testid="stExpander"] summary { font-size:13.5px; font-weight:600; }
-[data-testid="stExpander"] summary:hover { color:var(--ct-accent); }
+[data-testid="stExpander"] summary:hover { color:var(--ct-arrow); }
 
 [data-testid="stDataFrame"] { font-size:13px; }
 [data-testid="stDataFrame"] [role="columnheader"] {
@@ -130,14 +144,14 @@ div[data-testid="stVerticalBlockBorderWrapper"] > div:has(> [data-testid="stVert
 }
 
 /* Progress + divider */
-.stProgress > div > div > div > div { background:var(--ct-accent); }
+.stProgress > div > div > div > div { background:var(--ct-arrow); }
 .stProgress > div > div > div { background:var(--ct-track); height:4px; border-radius:2px; }
 hr { border-color:var(--ct-border); }
 
 /* Replace stock alerts with the paper banner */
 [data-testid="stAlert"] {
   border:1px solid var(--ct-accent-line); border-radius:var(--ct-r-md);
-  background:var(--ct-accent-tint); color:#2b4a38; font-size:13px;
+  background:var(--ct-accent-tint); color:var(--ct-accent-ink); font-size:13px;
 }
 """
 
@@ -163,6 +177,19 @@ def inject_theme(css_path: str | None = None) -> None:
 
 
 # ── Markup helpers ────────────────────────────────────────────────────
+
+def _svg_uri(name: str) -> str:
+    data = (BRAND_DIR / name).read_bytes()
+    return "data:image/svg+xml;base64," + base64.b64encode(data).decode("ascii")
+
+
+def brand(tagline: str = "", on_green: bool = False, height: int = 34) -> str:
+    """The Aftergrant wordmark (inline SVG, so it works on Streamlit Cloud with no static folder)."""
+    name = "aftergrant-wordmark-on-green.svg" if on_green else "aftergrant-wordmark.svg"
+    tag = f'<span class="ag-tagline">{tagline}</span>' if tagline else ""
+    return (f'<div class="ag-brand"><img src="{_svg_uri(name)}" alt="Aftergrant" '
+            f'style="height:{height}px">{tag}</div>')
+
 
 def label(text: str) -> str:
     """Uppercase micro-label above a heading or block."""
@@ -195,14 +222,14 @@ def banner(text: str, action: str = "") -> str:
     right = (f'<span style="margin-left:auto;font-weight:600;font-size:12.5px">{action}</span>'
              if action else "")
     return (f'<div class="ct-banner">'
-            f'<span style="width:8px;height:8px;border-radius:50%;background:{C["accent"]};flex-shrink:0"></span>'
+            f'<span style="width:8px;height:8px;border-radius:50%;background:{C["arrow"]};flex-shrink:0"></span>'
             f"<span>{text}</span>{right}</div>")
 
 
 def conf(value: float) -> str:
     """AI confidence: percentage + bar. Below 0.90 turns amber."""
     pct = round(value * 100)
-    col = C["action"] if value < 0.90 else C["accent"]
+    col = C["action"] if value < 0.90 else C["arrow"]
     return (f'<div style="font:600 12px/1 var(--ct-font-body);color:{col}">{pct}%</div>'
             f'<div class="ct-conf" style="margin-top:4px">'
             f'<i style="width:{pct}%;background:{col}"></i></div>')

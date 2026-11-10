@@ -1,18 +1,18 @@
-# Streamlit native tokens — editorial theme.
-# Copy to .streamlit/config.toml at your app root.
+# Streamlit native tokens — Aftergrant theme (colours from the logo).
+# theme/tokens.css holds the full palette; these make native widgets match.
 
 [theme]
 base = "light"
-primaryColor = "#2e6e4e"
+primaryColor = "#234f3d"
 backgroundColor = "#fffdf9"
-secondaryBackgroundColor = "#f4f1ea"
-textColor = "#1c1a17"
+secondaryBackgroundColor = "#f4f1eb"
+textColor = "#1b2a22"
 font = "sans serif"
 
 [theme.sidebar]
-backgroundColor = "#21201b"
-textColor = "#e9e4d8"
-primaryColor = "#7db894"
+backgroundColor = "#1f3d30"
+textColor = "#f1efe6"
+primaryColor = "#7cc796"
 
 [server]
 # 24MB, not the theme's default 40: base64 inflates a PDF by ~33% and the

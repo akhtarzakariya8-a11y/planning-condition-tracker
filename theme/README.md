@@ -1,36 +1,37 @@
-# Condition Tracker — editorial theme
+# Aftergrant — app theme
 
 ```
-your-app/
-├─ .streamlit/config.toml        # copy from theme-editorial/config.toml
-└─ theme_editorial/
-   ├─ tokens.css                 # the theme (CSS variables + primitives)
-   └─ ct_theme.py                # inject_theme() + markup helpers
+.streamlit/config.toml     # native widget colours (match tokens.css)
+theme/
+├─ tokens.css              # the theme (CSS variables + primitives)
+├─ ct_theme.py             # inject_theme(), brand() + markup helpers
+└─ brand/                  # wordmark SVGs and the app icon
 ```
 
 ```python
 import streamlit as st
-from theme_editorial.ct_theme import inject_theme, label, pill, tile, banner, conf, event, note, C
+from theme.ct_theme import ICON_PNG, inject_theme, brand, label, pill, tile, banner, conf, event, note, C
 
-st.set_page_config(page_title="Conditions", layout="wide")
+st.set_page_config(page_title="Aftergrant", page_icon=ICON_PNG, layout="wide")
 inject_theme()
 ```
 
 ## What makes it look like this
 
-**Warm paper, not white.** Page `#f4f1ea`, cards `#fffdf9`, borders `#e5dfd0`.
-Never pure white and never pure grey — the warmth is the whole identity.
+**Colours come from the logo.** Page cream `#f4f1eb`, cards `#fffdf9`, borders `#e5dfd0`.
+Forest `#234f3d` (the logo's letters) for primary buttons, links and the page heading.
+Arrow green `#29875b` (the logo's arrow) for anything that moves you forward: progress
+bars, the active tab, focus, the dot on the summary banner. Brand files are in `brand/`
+(`brand()` puts the wordmark on the page; `ICON_PNG` is the browser-tab icon).
 
-**Serif for authority.** Source Serif 4 on headings, big stat numbers and panel
-titles. Public Sans for everything else. Two faces, no exceptions.
+**Montserrat headings, Public Sans body.** Montserrat echoes the wordmark; Public Sans
+does the reading. Two faces, no exceptions.
 
-**A near-black rail.** `#21201b` sidebar with `#e9e4d8` text; the active item
-is a raised `#35332b` block, not a coloured bar. Every nav item carries a small
-dot — muted `#5a564b` when inactive, mint `#7db894` when active.
+**A forest-green rail.** `#1f3d30` sidebar with cream `#f1efe6` text and the light-arrow
+green `#7cc796` for the active item.
 
-**Green is the only accent.** `#2e6e4e` for primary buttons and links. Status
-uses its own four-colour set and nothing else: red overdue, amber action
-needed, slate submitted, green discharged — always a tinted pill with a dot.
+**Status keeps its own colours.** Red overdue, amber action needed, slate submitted,
+green discharged — always a tinted pill with a dot.
 
 **Generous radii.** 8–14px everywhere, pills at 99px. Nothing sharp.
 
@@ -57,9 +58,9 @@ CSS classes are available directly too: `.ct-card`, `.ct-row`, `.ct-chip`,
 
 | Role | Font | Size / weight |
 |---|---|---|
-| Page heading | Source Serif 4 | 30px / 600, `-0.3px` |
-| Panel heading | Source Serif 4 | 21px / 600 |
-| Stat number | Source Serif 4 | 28px / 600, tabular |
+| Page heading | Montserrat | 32px / 700, `-0.6px`, forest |
+| Panel heading | Montserrat | 20px / 600 |
+| Stat number | Montserrat | 28px / 700, tabular |
 | Table cell | Public Sans | 14px / 600 |
 | Body, clause text | Public Sans | 13.5px / 400, `1.65` |
 | Secondary | Public Sans | 12.5px / 400 |
