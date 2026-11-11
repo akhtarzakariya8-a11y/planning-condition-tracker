@@ -18,13 +18,11 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 
 | # | Ticket | Lane | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| 2 | App smoke test: load `app.py` against the saved fixtures with no API call, so a broken page fails CI | GREEN | 1 | In review (https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/7) |
 | 3 | "Try a sample notice" button: run the Lambeth 38-condition example from fixtures, no upload, no API cost | GREEN | 2 | Ready |
 | 4 | Landing page v1 in `site/`: what it does, three real outputs from the sample, the fee-rise hook, one button to the tool | GREEN | 3, GitHub Pages on | Ready |
 | 5 | README screenshots of the real outputs | GREEN | 3 | Ready |
 | 6 | Move the practice scripts out of the repo root (the repo is public and is a portfolio piece) | AMBER | none | Ready |
 | 7 | Prospect list and message drafts for the fee-rise outreach (scout, PROSPECTS step) | Scout | none; Zak sends on 7 Dec 2026 | Ready |
-| 8 | Privacy policy as a draft page (`legal/`, not published) | AMBER | Zak publishes by 16 Dec 2026 | In review (https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/8) |
 | 8b | Terms of use as a draft page (`legal/`, not published) | AMBER | Zak publishes by 16 Dec 2026 | Ready |
 | 9 | Free-tier limit using `store.usage_count()` | AMBER | Saved projects live (Zak's keys, 19 Nov 2026) | Ready |
 | 10 | Stripe checkout behind a switch, hidden until keys exist | AMBER | Zak's Stripe account; live by 31 Jan 2027 | Ready |
@@ -53,8 +51,7 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 
 The complete list of things the team cannot do. Everything else it does.
 
-- [ ] **Review and merge PR #7 (ticket 2) first: it unblocks tickets 3, 4, 5 and 14, the top of the plan.** https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/7
-- [ ] Privacy policy draft (PR #8): fill the placeholders, make the decisions in its "Notes for Zak" section, check the UNVERIFIED items, ideally have it reviewed. https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/8
+- [ ] Privacy policy draft (`legal/privacy-policy-draft.md`, merged 11 Nov): fill the placeholders, make the decisions in its "Notes for Zak" section, check the UNVERIFIED items, ideally have it reviewed. https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/8
 - [ ] Check on the ICO website whether Aftergrant must pay the data protection fee, and pay it if so (money, so only Zak).
 - [ ] Aftergrant name checks before spending on it: search Companies House and the UK trade mark register for "Aftergrant", then buy the domain.
 - [ ] Renaming the GitHub repo or the Streamlit URL: tell Claude first, because the scheduled runs point at the current repo name.
@@ -139,5 +136,7 @@ _None yet._
 
 | # | Ticket | Date | PR |
 | --- | --- | --- | --- |
+| 2 | App smoke test (E2) | 2026-11-11 | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/7 |
+| 8 | Privacy policy draft in `legal/` (not published; Zak fills placeholders and publishes) | 2026-11-11 | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/8 |
 | 1 | Team setup: `team/` files, agent files, runbook, lanes in `CLAUDE.md`, CI | 2026-11-09 | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/1 |
 | 16 | Rename to Aftergrant everywhere a user sees it (leftovers moved to 16b) | 2026-11-10 | https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/5 and https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/6 |

@@ -4,7 +4,7 @@
 
 WATCH (fee fact, unverified): the England discharge fee rise to £435 / £125 on 8 Dec 2026 is still not confirmed as made. 2026-11-11: the House of Lords approved the draft SI on 14 Oct 2026; Commons approval and the made SI could not be confirmed (Parliament and legislation.gov.uk pages failed to load), and the Planning Portal still calls the rise conditional. `ct/logic.py` says the Commons approved it on 27 Oct. If it is not made by 8 Dec, the automatic switch will show the wrong fee. Re-check 1 to 8 Dec (agenda item).
 Last run: 2026-11-11, build run: ticket 8 draft privacy policy (unpublished, `legal/`) parked for Zak as PR #8.
-Waiting on Zak: 2 pull requests: https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/7 (merge this first: it unblocks tickets 3, 4, 5, 14), https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/8
+Waiting on Zak: 0 pull requests (Zak merged PR #7 and PR #8 on 2026-11-11; ticket 3 is now unblocked).
 
 ## Entries (newest first)
 
