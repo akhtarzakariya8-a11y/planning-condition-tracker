@@ -90,6 +90,39 @@ The complete list of things the team cannot do. Everything else it does.
     be judged, and every technique ends up dropped as "untested".
   - What changes: one line of `team/RUNBOOK.md`. No code, no tool, no new dependency.
   - Lane: AMBER (`team/RUNBOOK.md` is off-limits to agents and needs Zak).
+  - Seen again 2026-11-11: github.com refused again. The conductor's manual copy into the 10 Nov entry
+    worked, which is the case for making it the format. Consider adding the FIX count to the same field.
+
+- **P3 (scout, 2026-11-11) Show the Planning Portal service charge next to the council fee.** The
+  Discharge Planner and the PDF give the council fee per application (£309 / £89) and a total. Add one
+  dated line under the total: submitting through the Planning Portal adds a service charge of up to
+  £99 inc VAT per application where the council fee is over £100 (Band 1, from 3 Sep 2026); applying
+  direct to the council may avoid it. Optionally show "up to £408 per application via the Portal".
+  - Evidence: the Portal's FAQ (charge only where the planning fee is over £100; Band 1 £99, Band 2 £149)
+    and banding guide (discharge "Band 0 or Band 1 – depends on development type/scale"). The Portal
+    handles over 90% of applications. `team/research/2026-11-11-how-many-buyers-and-where-they-gather.md`
+    and `team/EVIDENCE.md` 2026-11-11.
+  - Who it helps: anyone using the fee and batching advice, mainly group 1 when quoting a client (P1).
+    Each extra application costs up to about £408 today, not £309, so batching is worth more than the
+    tool now says. The fee rise makes this bigger: about £534 per application after 8 Dec 2026.
+  - Smallest version: one constant with a source comment and one caveat line in the Discharge Planner
+    panel and the PDF. Do not add it into the council-fee total, because applicants can avoid it.
+    Householder discharge (£89) is under the threshold today; at £125 how the Portal will band it is
+    UNVERIFIED, so say "up to" and do not compute it for householders.
+  - Expected lane: AMBER (a new number and caveat, in `ct/logic.py` or `ct/panels.py` and `ct/reports.py`).
+
+- **P4 (coach, 2026-11-11) Let the reviewer apply adopted techniques.** Add one line to
+  `.claude/agents/reviewer.md`: "Read the 'Adopted' section of `team/PLAYBOOK.md` and carry out every
+  reviewer step listed there; report each under CHECKS." Do not let it read the builder's reasoning; the
+  playbook is shared team rules, not the builder's work.
+  - Evidence: Red/green proof was adopted on 2026-11-11 with a reviewer step (re-run one new test against
+    `main`'s code and confirm it fails). The reviewer file gives it only the ticket, diff and test output,
+    and `.claude/agents/product-lead.md` step 5 attaches only "Trial today". Once a technique leaves
+    "Trial today", its reviewer half stops, and that half is what made the reviewer rate ticket 2 "better
+    than usual" (`team/LOG.md`, 2026-11-10).
+  - What changes: one line of one agent file. No code, no tool, no new dependency.
+  - Interim: the product lead copies each adopted reviewer step into ACCEPTANCE CHECKS (`team/LESSONS.md`).
+  - Lane: AMBER (`.claude/` is off-limits to agents and needs Zak).
 
 ## Inbox (Zak's ideas, unsorted)
 

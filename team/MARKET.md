@@ -142,9 +142,11 @@ The scout answers the top open question in depth each evening and saves the find
 The scout keeps at least five open, most valuable first.
 
 - [x] How do small planning consultancies and architects handle discharge of conditions today, step by step, and what do they charge clients for it? Done 2026-11-10: [research/2026-11-10-how-small-firms-discharge-conditions.md](research/2026-11-10-how-small-firms-discharge-conditions.md)
-- [ ] How many small planning consultancies and SME developers are there in England, and where do they gather (bodies, forums, newsletters, events)? (Size and how to reach them. Leads from 2026-11-10: the RTPI Independent Consultants' Network and its yearly conference; the RTPI directory of planning consultants; Buildhub for self-builders.)
+- [x] How many small planning consultancies and SME developers are there in England, and where do they gather (bodies, forums, newsletters, events)? Done 2026-11-11: [research/2026-11-11-how-many-buyers-and-where-they-gather.md](research/2026-11-11-how-many-buyers-and-where-they-gather.md)
+- [ ] Planning Portal SmartApply in depth (competitor check, repeat monthly): what the completeness checks and "Project Workspaces" actually do, whether anything touches decision notices, conditions or discharge, what professionals say about the £99 / £149 service charge, and how the Portal will band householder discharge once the fee is £125 (over its £100 threshold).
+- [ ] RTPI Independent Consultants' Network: how many members, the 2026 or 2027 conference date and cost, whether suppliers can sponsor or present, and what members discuss about software and AI (public pages only). (The single best place to reach group 1, per the 2026-11-11 file.)
 - [ ] Which conditions are excluded from deemed discharge (DMPO 2015 Schedule 6)? The legislation.gov.uk text is images only; try the PDF of the Order or the gov.uk planning practice guidance. (The tracker's deemed-discharge prompt should not fire for excluded types.)
-- [ ] Between 1 and 8 Dec 2026: has Parliament approved and made the fee regulations that raise discharge fees to £435 / £125 on 8 Dec? If not, the automatic fee switch in `ct/logic.py` would show the wrong fee. (Time-boxed fact check.)
+- [ ] Between 1 and 8 Dec 2026: has Parliament approved and made the fee regulations that raise discharge fees to £435 / £125 on 8 Dec? If not, the automatic fee switch in `ct/logic.py` would show the wrong fee. (Time-boxed fact check. 2026-11-11: Lords approved 14 Oct 2026; Commons approval and the made SI still not verified.)
 - [ ] PlanningCore in depth: pricing, sign-up, exactly what its condition tools do and do not do, and what users say.
 - [ ] Avoice Practice and DevTrack in depth: the same questions.
 - [ ] What do development finance lenders and monitoring surveyors require on planning conditions before releasing funds? (Tests the lender-pack idea.)
@@ -154,7 +156,8 @@ The scout keeps at least five open, most valuable first.
 - [ ] How do comparable solo-built tools for UK property professionals win their first ten paying customers?
 - [ ] Wales and Scotland: how do conditions, fees and deemed discharge differ, and is either worth supporting?
 - [ ] Do specialist firms (drainage, ecology, trees) make discharge submissions themselves, what do they charge, and are they a channel or a competitor? (Two such firms market discharge directly; see the 2026-11-10 file.)
-- [ ] What share of discharge applications are invalid when first submitted, and which councils publish agent validation rates? (Tests a pre-submission completeness check. West Suffolk publishes one for all application types.)
+- [ ] What share of discharge applications are invalid when first submitted, and which councils publish agent validation rates? (Tests a pre-submission completeness check. West Suffolk publishes one for all application types. Note: the Planning Portal added its own completeness checks in Oct 2026.)
+- [ ] How often are planning permissions in England subject to a court challenge that extends the start period under TCPA s91(3B) to (3BB)? (Decides whether the start-deadline panel needs a caveat; the current error is in the safe direction.)
 
 ## Updates (scout adds dated lines here)
 
@@ -168,6 +171,20 @@ The scout keeps at least five open, most valuable first.
   state the council discharge fee get it wrong, and one says it is charged per condition. Professionals
   publishing wrong fees suggests that correct, dated fee and batching advice is a real gap. It does not
   show how often applicants actually overpay; that is still unmeasured. Same file.
+- 2026-11-11 | Section 2, "NOT FOUND: a current count" is now partly answered. No firm count exists, but
+  headcounts give an order of size, UK: about 2,400 self-employed planners (RTPI 2019), about 3,000
+  RIBA chartered practices under 10 staff (2024), about 2,500 active housebuilders (2024). That is under
+  10,000 firms, so £50k a year needs about 0.5% to 2% of them, depending on price. Small RIBA practices
+  average £26k to £95k profit (2024), which supports a low price.
+  Evidence: [research/2026-11-11-how-many-buyers-and-where-they-gather.md](research/2026-11-11-how-many-buyers-and-where-they-gather.md)
+- 2026-11-11 | Section 3, a new player to watch: the Planning Portal (over 90% of applications) launched
+  SmartApply on 3 Sep 2026 (AI guidance, completeness checks, Project Workspaces planned) with a
+  service charge of £0 / £99 / £149 per application. It does nothing after the decision yet. It also
+  means the fee the tool shows (£309) understates the cost of a non-householder discharge made through
+  the Portal by up to £99. Same file.
+- 2026-11-11 | Section 1, "Small developers suffer most", is qualified. The FMB survey (Dec 2025, 169 small builders) found 64%
+  feel certain about planning outcomes and 47% call planning the greatest constraint. HBF's 94% joins
+  permission and discharge into one answer, so it does not show that conditions are the main pain. Same file.
 
 ## Sources
 

@@ -93,6 +93,25 @@ NOT RESEARCHED: host prices. The scout should compare three before E13.
   "run pytest before hand-over". The same trusted-folder caveat as the protected-paths hook
   applies, so trial it first, through an AMBER pull request.
   https://code.claude.com/docs/en/best-practices#give-claude-a-way-to-verify-its-work
+- 2026-11-11 (coach) | E2 carried into ticket 3 and every new button: a Streamlit button is True only
+  on the rerun its own click causes, so a result shown inside `if st.button(...)` disappears at the next
+  click anywhere on the page. Keep the sample result in `st.session_state`, set it in an `on_click`
+  callback, and initialise it behind an `if "key" not in st.session_state` guard; a forum case shows an
+  unguarded initialisation line resetting the value on every rerun, inside AppTest too. The test should
+  click, rerun once more and check the result is still on screen.
+  https://docs.streamlit.io/develop/concepts/design/buttons ·
+  https://discuss.streamlit.io/t/session-state-changes-within-button-onclick-not-making-it-back-to-apptest-instance/65127
+- 2026-11-11 (coach) | Level 4, E10: the screenshots should also be judged on the first screen, not only
+  "does it render". NN/g eyetracking (2018, 120 people, 1920x1080): 57% of viewing time above the fold,
+  74% in the first two screens; keep the main call to action above the fold and avoid layouts that look
+  finished before they are. For ticket 4: headline, one real output and the button visible without
+  scrolling on desktop. https://www.nngroup.com/articles/scrolling-and-attention/
+- 2026-11-11 (coach) | Level 5: Claude Code now ships a built-in `/verify` that "builds, runs, and
+  observes the changes in your application" (also in the changelog, 2.1.309). The Claude Code team
+  suggests trying it before writing project verify skills; they give no measured results. Trial `/verify`
+  in one build run before writing any project skill. UNVERIFIED whether it works in an unattended cloud
+  subagent. https://claude.com/blog/building-verification-loops-in-claude-code-with-skills ·
+  https://code.claude.com/docs/en/changelog
 
 ## Sources
 
