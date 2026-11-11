@@ -38,8 +38,14 @@ We have not appointed a data protection officer. [ZAK TO DECIDE: confirm, or add
   to Anthropic, the company whose AI model reads it.
 - If you do not sign in, we do not save your notice or its results. They are held only in
   memory for your browser session.
-- If you sign in and press **Save to My projects**, we store your email address and that
-  project's results until you delete it. **Delete project** removes it.
+- If you sign in, we record your email address with each analysis and draft you run, so we can
+  track costs and usage limits. If you also press **Save to My projects**, we store that
+  project's results until you delete it. **Delete project** removes the project but not the
+  usage records (section 11).
+<!-- Usage row with the signed-in email on every analysis and draft, saved or not: app.py:83-90
+(owner = user, app.py:88), app.py:180, app.py:272; ct/storage.py:171-173;
+supabase/schema.sql:22-28. Saved project: app.py:421-426, ct/storage.py:148-154. Delete removes
+only the projects row: ct/storage.py:167-169; usage_events untouched. -->
 - The page also loads fonts from Google, and the software the app is built on (Streamlit) may
   send usage statistics from your browser. Section 5 explains both.
 
@@ -327,8 +333,8 @@ aids that you should check against the notice; they are not legal advice.
 
 ## 16. Security
 
-- Our database is locked so that only the Aftergrant server can read it; the public access key
-  can read nothing.
+- Our database is locked so that the public access key can read nothing; the app reads it only
+  from our server, and only we, as administrators, have other access.
 - The server key stays on the server and is never sent to your browser.
 - Every database request is limited to the signed-in user's own projects.
 - Our keys are kept in the hosting provider's secrets settings, never in our code.
