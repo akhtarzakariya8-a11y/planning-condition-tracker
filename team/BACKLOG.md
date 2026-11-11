@@ -24,7 +24,8 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 | 5 | README screenshots of the real outputs | GREEN | 3 | Ready |
 | 6 | Move the practice scripts out of the repo root (the repo is public and is a portfolio piece) | AMBER | none | Ready |
 | 7 | Prospect list and message drafts for the fee-rise outreach (scout, PROSPECTS step) | Scout | none; Zak sends on 7 Dec 2026 | Ready |
-| 8 | Privacy policy and terms as draft pages | AMBER | Zak publishes by 16 Dec 2026 | Ready |
+| 8 | Privacy policy as a draft page (`legal/`, not published) | AMBER | Zak publishes by 16 Dec 2026 | In review (https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/8) |
+| 8b | Terms of use as a draft page (`legal/`, not published) | AMBER | Zak publishes by 16 Dec 2026 | Ready |
 | 9 | Free-tier limit using `store.usage_count()` | AMBER | Saved projects live (Zak's keys, 19 Nov 2026) | Ready |
 | 10 | Stripe checkout behind a switch, hidden until keys exist | AMBER | Zak's Stripe account; live by 31 Jan 2027 | Ready |
 | 11 | Save drafts inside saved projects | AMBER | 9 | Ready |
@@ -33,6 +34,9 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 | 14 | Client-ready report a consultant can send under their own name | GREEN | 3 | Ready |
 | 15 | Lender pack: one page showing what is cleared and what blocks drawdown | AMBER | HYPOTHESIS: needs 3 lenders or monitoring surveyors to confirm first (Zak) | Waiting on Zak |
 | 16b | Old name left only in places users barely see: `mcp_server/README.md` heading, `mcp_server/server.py` docstring, the `.ics` PRODID in `ct/programme.py`, `ct/__init__.py` docstring, `supabase/schema.sql` comment. Keep the MCP identifier `name="planning-condition-tracker"` (Zak's configs point at it) | AMBER | none; low value | Ready |
+| 17 | Turn off Streamlit usage statistics (`[browser] gatherUsageStats = false` in `.streamlit/config.toml`); found writing ticket 8: the default sets a one-year `ajs_anonymous_id` cookie | AMBER | none | Ready |
+| 18 | Host the Google Fonts in `theme/` so visitors' IPs are not sent to Google (found writing ticket 8) | GREEN | none | Ready |
+| 19 | "Delete all my data": remove a user's projects and usage records; wrap `store.delete_project` in error handling (found writing ticket 8) | AMBER | 9 | Ready |
 | E1 | `ruff` lint and format check in CI | AMBER | none | Ready |
 | E3 | Coverage report with a floor that can only rise | AMBER | E1 | Ready |
 | E4 | `pip-audit` and Dependabot | AMBER | none | Ready |
@@ -49,6 +53,9 @@ tickets, one E ticket from `team/ENGINEERING.md`, lowest level first.
 
 The complete list of things the team cannot do. Everything else it does.
 
+- [ ] **Review and merge PR #7 (ticket 2) first: it unblocks tickets 3, 4, 5 and 14, the top of the plan.** https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/7
+- [ ] Privacy policy draft (PR #8): fill the placeholders, make the decisions in its "Notes for Zak" section, check the UNVERIFIED items, ideally have it reviewed. https://github.com/akhtarzakariya8-a11y/planning-condition-tracker/pull/8
+- [ ] Check on the ICO website whether Aftergrant must pay the data protection fee, and pay it if so (money, so only Zak).
 - [ ] Aftergrant name checks before spending on it: search Companies House and the UK trade mark register for "Aftergrant", then buy the domain.
 - [ ] Renaming the GitHub repo or the Streamlit URL: tell Claude first, because the scheduled runs point at the current repo name.
 - [ ] Switch on GitHub Pages for the repo (Settings, Pages, Source: GitHub Actions). Needed for ticket 4.
